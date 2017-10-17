@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" output="target/classes" path="src/main/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry excluding="**" kind="src" output="target/classes" path="src/main/resources">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="src" output="target/test-classes" path="src/test/java">
+		<attributes>
+			<attribute name="optional" value="true"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="C:/Users/yoges/Desktop/Java Eclipse/eclipse-java-oxygen-R-win32-x86_64/eclipse/jre/lib"/>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="con" path="org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER">
+		<attributes>
+			<attribute name="maven.pomderived" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="hapi-dist-2.2-all/lib/hapi-base-2.2.jar"/>
+	<classpathentry kind="lib" path="hapi-dist-2.2-all/lib/hapi-examples-2.2.jar"/>
+	<classpathentry kind="lib" path="hapi-dist-2.2-all/lib/hapi-hl7overhttp-2.2.jar"/>
+	<classpathentry kind="lib" path="hapi-dist-2.2-all/lib/hapi-structures-v26-2.2.jar"/>
+	<classpathentry kind="lib" path="hapi-dist-2.2-all/lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="hapi-dist-2.2-all/lib/slf4j-api-1.6.6.jar"/>
+	<classpathentry kind="lib" path="C:/Users/yoges/Desktop/Java Eclipse/workspace/MASS-Adapter/lib/org.springframework.jdbc.jar"/>
+	<classpathentry kind="lib" path="C:/Users/yoges/Desktop/Java Eclipse/workspace/MASS-Adapter/lib/jdbc-se2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/yoges/Desktop/Java Eclipse/workspace/MASS-Adapter/lib/javax.persistence-2.1.0-rc1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/yoges/Desktop/Java Eclipse/workspace/MASS-Adapter/lib/spring-data-commons-core-1.0.0.RELEASE.jar"/>
+	<classpathentry kind="lib" path="C:/Users/yoges/Desktop/Java Eclipse/Hibernate/hibernate-release-5.2.11.Final/lib/required/hibernate-core-5.2.11.Final.jar"/>
+	<classpathentry kind="lib" path="C:/Users/yoges/Desktop/Java Eclipse/Hibernate/hibernate-release-5.2.11.Final/lib/required/jboss-logging-3.3.0.Final.jar"/>
+	<classpathentry kind="lib" path="C:/Users/yoges/Desktop/Java Eclipse/Hibernate/hibernate-release-5.2.11.Final/lib/required/hibernate-commons-annotations-5.0.1.Final.jar"/>
+	<classpathentry kind="lib" path="C:/Users/yoges/Desktop/Java Eclipse/Hibernate/hibernate-release-5.2.11.Final/lib/required/javassist-3.20.0-GA.jar"/>
+	<classpathentry kind="lib" path="C:/Users/yoges/Desktop/Java Eclipse/Hibernate/hibernate-release-5.2.11.Final/lib/required/classmate-1.3.0.jar"/>
+	<classpathentry kind="output" path="target/classes"/>
+</classpath>
