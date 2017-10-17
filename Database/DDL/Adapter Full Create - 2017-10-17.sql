@@ -330,25 +330,25 @@ GO
 
 --Insert the expected integration interfaces.
 --Scheduling Interface to Vista
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Scheduling - Epic to Vista','Incoming',NULL) 
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Scheduling - Epic to Vista','Outgoing',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('3E6C7FF1-32DF-4699-8D85-06F59809F956','Scheduling - Epic to Vista','Incoming',NULL) 
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('DCFA837E-DF14-45E0-A440-38B2FDA1985B','Scheduling - Epic to Vista','Outgoing',NULL)
 
 --Scheduling Interface to Epic
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Scheduling - Vista to Epic','Incoming',NULL)
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Scheduling - Vista to Epic','Outgoing',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('74B57C05-A581-4E79-8423-FE863D72FE49','Scheduling - Vista to Epic','Incoming',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('332A8690-D087-4E8F-871E-0B71A2D44E3F','Scheduling - Vista to Epic','Outgoing',NULL)
 
 --Demographics Interface to Epic
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Demographics - Vista to Epic','Outgoing',NULL)
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Demographics - Vista to Epic','Incoming',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('58004C37-1846-41DA-B002-26BF92304C7D','Demographics - Vista to Epic','Outgoing',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('633C6F74-946C-4C71-B1EA-2129E5B37952','Demographics - Vista to Epic','Incoming',NULL)
 
 --PCMM Interface to Epic
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'PCMM - PCMM to Epic','Outgoing',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('FDD64944-665D-4AAD-9C8A-BAADC496AF2C','PCMM - PCMM to Epic','Outgoing',NULL)
 --No incoming interface as these messages are being built by the adapter processes from data provided by Ensemble and PCMM.
 
 --Orders
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Orders - Vista to Epic','Incoming',NULL)
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Orders - Vista to Epic','Outgoing',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('4C92FB81-769E-44E4-B0FE-9AEAB04A84DD','Orders - Vista to Epic','Incoming',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('FEC46370-0CB1-436B-BFF1-2898E5C4F8D6','Orders - Vista to Epic','Outgoing',NULL)
 
 --Errors Interface
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Errors - Vista to Epic','Incoming',NULL)
-Insert into interfaces(ID,Name,Direction,PurgeDays) values (NEWID(),'Errors - Vista to Epic','Outgoing',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('C95808C1-8597-43E4-83DD-757CDF283574','Errors - Vista to Epic','Incoming',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('8FA5C77E-DAB1-46F2-8642-14D69415AF89','Errors - Vista to Epic','Outgoing',NULL)
