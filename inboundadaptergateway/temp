@@ -1,0 +1,3 @@
+server.ssl.key-store=D:\MASS\Adapter\inboundadaptergateway\localhost_self-signed.p12
+server.ssl.key-store-password=adapter
+server.ssl.keyStoreType=PKCS12
