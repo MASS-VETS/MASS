@@ -21,7 +21,7 @@ import javax.persistence.TypedQuery;
 		name = "callStoreKeyValueStoreProcedure", 
 		procedureName = "storeKeyValue", 
 		parameters = { 
-			@StoredProcedureParameter(mode = ParameterMode.IN, type = UUID.class, name = "msgID"),
+			@StoredProcedureParameter(mode = ParameterMode.IN, type = UUID.class, name = "messageID"),
 			@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class, name = "type"),
 			@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class, name = "value")
 		}
@@ -33,20 +33,20 @@ import javax.persistence.TypedQuery;
 public class KeyValue {
 
 	@Id
-	private UUID MessageID;
+	private UUID messageID;
 	private String Type;
 	private String Value;
 	
 	static public StoredProcedureQuery createStoreKeyValueStoredProcedureQuery(EntityManager em, UUID msgID, String type, String value) {
 		StoredProcedureQuery query = em.createNamedStoredProcedureQuery("callStoreKeyValueStoreProcedure");
-		query.setParameter("msgID", msgID);
+		query.setParameter("messageID", msgID);
 		query.setParameter("type", type);
 		query.setParameter("value", value);
 		return query;
 	}
 	
 	public KeyValue(UUID msgID, String type, String value) {
-		this.MessageID = msgID;
+		this.messageID = msgID;
 		this.Type = type;
 		this.Value = value;
 	}
@@ -55,12 +55,12 @@ public class KeyValue {
 	}
 
 	public UUID getMessageId() {
-		return this.MessageID;
+		return this.messageID;
 	}
 	
 	@Column(name = "MessageID", unique = true, nullable = false)
 	public void setMessageId(UUID msgID) {
-		this.MessageID = msgID;
+		this.messageID = msgID;
 	}
 	
 	@Column(name = "Type", nullable = false, length = 20)
@@ -81,6 +81,7 @@ public class KeyValue {
 		this.Value = value;
 	}
 	
+	/*
 	public void save(EntityManager em) {
 		em.getTransaction().begin();
 	    em.persist(this);
@@ -109,10 +110,11 @@ public class KeyValue {
 		TypedQuery<KeyValue> query = em.createQuery("SELECT k FROM KeyValue k", KeyValue.class);
 		 return (List<KeyValue>) query.getResultList();
 	}
+	*/
 	
 	@Override
 	public String toString() {
-		return "Message [MessageId=" + MessageID + ", Type="
+		return "Message [MessageId=" + messageID + ", Type="
 				+ Type + ", Value=" + Value + "]";
 	}
 

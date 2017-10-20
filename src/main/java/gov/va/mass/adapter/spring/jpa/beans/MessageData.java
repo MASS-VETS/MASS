@@ -22,7 +22,6 @@ import java.util.UUID;
 		parameters = { 
 			@StoredProcedureParameter(mode = ParameterMode.IN, type = UUID.class, name = "interface"),
 			@StoredProcedureParameter(mode = ParameterMode.IN, type = String.class, name = "messageContent"),
-			@StoredProcedureParameter(mode = ParameterMode.IN, type = UUID.class, name = "relatedID"),
 			@StoredProcedureParameter(mode = ParameterMode.OUT, type = UUID.class, name = "msgID")
 		}
 //		resultClasses = MessageData.class
@@ -34,7 +33,7 @@ public class MessageData {
 	@Id
 	private UUID ID;
 	private String MessageContent;
-	private UUID InterfaceID;
+	private UUID interfaceID;
 	private Date Datetime;
 	
 	public MessageData() {
@@ -42,24 +41,17 @@ public class MessageData {
 	
 	public MessageData(String messageContent, UUID interfaceID) {
 		this.MessageContent = messageContent;
-		this.InterfaceID = interfaceID;
+		this.interfaceID = interfaceID;
 		this.ID = UUID.randomUUID();
 		this.Datetime = new Date();
 		
 	}
 	
-	static public StoredProcedureQuery createStoreMessageStoredProcedureQuery(EntityManager em, UUID interfaceID, String messageContent, UUID relatedMsgID) {
+	static public StoredProcedureQuery createStoreMessageStoredProcedureQuery(EntityManager em, UUID interfaceID, String messageContent) {
 		StoredProcedureQuery query = em.createNamedStoredProcedureQuery("callStoreMessageStoreProcedure");
 		query.setParameter("interface", interfaceID);
-		//query.setParameter("msgID", msgID);
 		query.setParameter("messageContent", messageContent);
-		query.setParameter("relatedID", relatedMsgID);
 		return query;
-	}
-	
-	static public List<MessageData> getAll(EntityManager em) {
-		TypedQuery<MessageData> query = em.createQuery("SELECT k FROM MessageData k", MessageData.class);
-		 return (List<MessageData>) query.getResultList();
 	}
 	
 	@Column(name = "ID", unique = true, nullable = false)
@@ -91,12 +83,18 @@ public class MessageData {
 	
 	@Column(name = "InterfaceID", unique = true, nullable = false)
 	public UUID getInterfaceId() {
-		return this.InterfaceID;
+		return this.interfaceID;
 	}
 	
 	
 	public void setInterfaceId(UUID interfID) {
-		this.InterfaceID = interfID;
+		this.interfaceID = interfID;
+	}
+	
+	/*
+	 * 	static public List<MessageData> getAll(EntityManager em) {
+		TypedQuery<MessageData> query = em.createQuery("SELECT k FROM MessageData k", MessageData.class);
+		 return (List<MessageData>) query.getResultList();
 	}
 	
 	public void save(EntityManager em) {
@@ -143,11 +141,12 @@ public class MessageData {
 		m.setInterfaceId(interfID);
 		em.getTransaction().commit();
 	}
+	*/
 	
 	@Override
 	public String toString() {
 		return "Message [" + "msgID = " + ID + " MessageContent= "
-				+ MessageContent + " InterfaceID= " + InterfaceID + " Date = " + Datetime + " ]";
+				+ MessageContent + " InterfaceID= " + interfaceID + " Date = " + Datetime + " ]";
 	}
 
 }

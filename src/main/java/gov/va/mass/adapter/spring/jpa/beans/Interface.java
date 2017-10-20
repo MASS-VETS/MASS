@@ -94,6 +94,7 @@ public class Interface {
 		this.PurgeDays = purgeDays;
 	}
 	
+	/*
 	public void save(EntityManager em) {
 		em.getTransaction().begin();
 	    em.persist(this);
@@ -143,6 +144,7 @@ public class Interface {
 		i.setPurgeDays(days);
 		em.getTransaction().commit();
 	}
+	*/
 	
 	@Override
 	public String toString() {
