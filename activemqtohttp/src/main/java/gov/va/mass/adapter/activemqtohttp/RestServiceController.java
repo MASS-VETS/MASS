@@ -3,6 +3,7 @@ package gov.va.mass.adapter.activemqtohttp;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.http.ResponseEntity;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,10 +63,15 @@ public class RestServiceController {
         MSMonitor.incrementServiceIn();
         RestTemplate restTemplate = new RestTemplate();
         try {
-            String result = restTemplate.postForObject(url, text, String.class);
+            ResponseEntity<String> response
+                    = restTemplate.postForEntity(url,text, String.class);
+
+            System.out.println("Result is" + response.getBody());
+            System.out.println("Result Status is" + response.getStatusCode());
             MSMonitor.incrementServiceOutSuccess();
         }
         catch(Exception e){
+
             MSMonitor.incrementServiceOutFailed();
         }
     }

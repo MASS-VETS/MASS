@@ -6,11 +6,10 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
+import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
+import com.sun.xml.internal.ws.api.message.Header;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,6 +18,7 @@ import javax.json.JsonObject;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Map;
 
 
 @RestController
@@ -33,15 +33,9 @@ public class RestServiceController {
     @Value("${app.service.url}")
     private String url;
 
-
-    Message HL7Message;
-    int  requestCount = 0;
-    Date lastChecked = new Date();
-
     public RestServiceController() {
         restTemplate = new RestTemplate();
     }
-
 
 
     //HeartBeat and isAlive MicroService
@@ -94,7 +88,7 @@ public class RestServiceController {
                 System.out.println(" ======================================================");
                 System.out.println("Happy ACK Response is " + ACK);
                 System.out.println(" ======================================================\n");
-                requestCount++;}
+                }
             else
             {
                 ackResponse = hapiMessage.generateACK(AcknowledgmentCode.AE, new HL7Exception("HL7Exception"));
@@ -106,7 +100,7 @@ public class RestServiceController {
             try {
                 ackResponse = hapiMessage.generateACK(AcknowledgmentCode.AE, new HL7Exception("HL7Exception"));
                 ACK = ackResponse.toString().replace("\r", "\r\n");;
-                } catch (Exception ioe) {
+            } catch (Exception ioe) {
                 ioe.printStackTrace();
                 return ACK;
             }
@@ -122,5 +116,6 @@ public class RestServiceController {
         }
         return ACK;
     }
+
 
 }

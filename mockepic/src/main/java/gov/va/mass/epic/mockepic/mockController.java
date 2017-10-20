@@ -6,16 +6,41 @@ import ca.uhn.hl7v2.hoh.encoder.EncodingStyle;
 import ca.uhn.hl7v2.hoh.raw.api.RawSendable;
 import ca.uhn.hl7v2.hoh.raw.client.HohRawClientSimple;
 import ca.uhn.hl7v2.hoh.sockets.CustomCertificateTlsSocketFactory;
+import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLContextBuilder;
+import org.apache.http.conn.ssl.SSLContexts;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import sun.net.www.http.HttpClient;
+import sun.security.krb5.Credentials;
 
 import javax.json.Json;
 import javax.json.JsonObject;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
-@RestController
-@RequestMapping("/Epic")
+
+
 public class mockController {
 
 
@@ -43,7 +68,6 @@ public class mockController {
     private int sendattemptcounter = 0 ;
 
     URL outBoundURL = null;
-
 
     private String HL7 = null;
     //HeartBeat and isAlive MicroService
@@ -78,13 +102,15 @@ public class mockController {
                 "PID|||ZZZZZZ83M64Z148R^^^SSN^SSN^^20070103\r";
 
         HL7 = HL7.toString().replace("\r", "\r\n");;
+///////////////////////////
 
-        CustomCertificateTlsSocketFactory customtlsSF = new CustomCertificateTlsSocketFactory( KEYSTORE_TYPE, KEYSTORE_LOCATION , KEYSTORE_PASSWORD  );
+
+/////////////////////////////////////
+       CustomCertificateTlsSocketFactory customtlsSF = new CustomCertificateTlsSocketFactory( KEYSTORE_TYPE, KEYSTORE_LOCATION , KEYSTORE_PASSWORD  );
         try {
             outBoundURL = new URL(url);
         }
-        catch(Exception e)
-        {
+        catch(Exception e) {
 
         }
         HohRawClientSimple client = new HohRawClientSimple (outBoundURL);// parser);
@@ -93,19 +119,23 @@ public class mockController {
         EncodingStyle es = rawsendable.getEncodingStyle();
 
         /* Loop Start */
-
+        try {
         long startTime = System.currentTimeMillis();
         System.out.println(" Start Time " + startTime );
         for(int i = 0;  i< Integer.parseInt(count); i++) {
-        try {
+            System.out.println("HL7");
             MSMonitor.incrementServiceIn();
-            IReceivable<String> receivable = client.sendAndReceive(rawsendable);
-            String respstring = receivable.getMessage();
-            MSMonitor.incrementServiceOutSuccess();
+            IReceivable<String> receivable
+                    = client.sendAndReceive(rawsendable);
+
+            // receivavle.getRawMessage() provides the response
+            System.out.println("Response was:\n" + receivable.getMessage()+  "   " + receivable.getMetadata());
+            }
         } catch (Exception e) {
+            e.printStackTrace();
             MSMonitor.incrementServiceOutFailed();
         }
-    }
+
         /*for(int i = 0;  i< Integer.parseInt(count); i++) {
             MSMonitor.incrementServiceIn();
             System.out.println("Sending Mesage Number . " + i);
@@ -124,8 +154,34 @@ public class mockController {
         long endTime = System.currentTimeMillis();
         System.out.println(" End Time " + endTime );
 
-        long totalTime = endTime - startTime;
-        System.out.println(" Total Time " + totalTime );
+    //    long totalTime = endTime - startTime;
+    //    System.out.println(" Total Time in milliseconds " + totalTime );
 
     }
 }
+
+/*
+       DefaultHttpClient httpclient = new DefaultHttpClient();
+
+        KeyStore trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
+        FileInputStream instream = new FileInputStream(new File("my.keystore"));
+        try {
+            trustStore.load(instream, "nopassword".toCharArray());
+        } finally {
+            instream.close();
+        }
+
+        SSLSocketFactory socketFactory = new SSLSocketFactory(trustStore);
+        Scheme sch = new Scheme("https", socketFactory, 443);
+        httpclient.getConnectionManager().getSchemeRegistry().register(sch);
+
+        HttpGet httpget = new HttpGet("https://localhost/");
+
+        System.out.println("executing request" + httpget.getRequestLine());
+
+        HttpResponse response = httpclient.execute(httpget);
+        HttpEntity entity = response.getEntity();
+
+        System.out.println("----------------------------------------");
+        System.out.println(response.getStatusLine());
+ */
