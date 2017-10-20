@@ -1,0 +1,44 @@
+To run the active mq
+Go to active mq installation's bin folder.
+activemq start
+In a browser go to http://localhost:8161/admin/queues.jsp
+login as admin, password admin
+Go to queues tab
+Create a queue with name "readytosendtoepic.queue"
+Create a queue with name "writetodb.queue"
+
+
+
+To run receiveoverhapi in test:
+1. Make sure your adapter keystore is in C:\TEST-KEYS. Epic keys can be under the same folder. 
+2. The epic keys should be setup in SOAP UI preferences. 
+3. set ENV=test
+4. Optionally -If you have to build from source, 
+   mvn clean package
+5. java -jar target\receiveoverhapi-0.0.1-SNAPSHOT.jar
+
+java -jar receiveoverhapi-0.0.1-SNAPSHOT.jar
+
+To run sendandgetack in test:
+1. Make sure your adapter keystore is in C:\TEST-KEYS. Epic keys can be under the same folder. 
+2. The epic keys should be setup in SOAP UI preferences. 
+3. set ENV=test
+4. Optionally -If you have to build from source, 
+   mvn clean package
+5. java -jar target\sendandgetack-0.0.1-SNAPSHOT.jar
+java -jar sendandgetack-0.0.1-SNAPSHOT.jar
+
+
+To run mssqlservice in test
+1. Check that resources/META-INF/persistence.xml is pointing to the correct sql instance.
+2. Set ENV=test
+3. Optionally -If you have to build from source, 
+   mvn clean package
+4. java -jar target\mssqlservice-0.0.1-SNAPSHOT.jar
+
+
+High level Build proces
+Setup keystore
+Build receiveoverhapi using 'mvn clean package' in root application folder
+Build sendandgetack using 'mvn clean package' in root application folder
+Run activemq and create queue "readytosendtoepic.queue"
