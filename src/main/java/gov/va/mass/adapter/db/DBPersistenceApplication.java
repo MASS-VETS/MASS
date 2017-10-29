@@ -1,5 +1,7 @@
 package gov.va.mass.adapter.db;
 
+import java.util.List;
+
 /*
 import java.util.UUID;
 import javax.persistence.EntityManager;
@@ -12,18 +14,58 @@ import gov.va.mass.adapter.spring.jpa.beans.MessageData;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+//import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+
+import gov.va.mass.adapter.db.spring.jpa.beans.Interface;
+import gov.va.mass.adapter.db.spring.jpa.beans.MessageData;
+import gov.va.mass.adapter.db.spring.jpa.repository.InterfaceRepository;
 
 @SpringBootApplication
+//@EnableJpaRepositories
 public class DBPersistenceApplication {
 
 	private static final Logger logger = LoggerFactory.getLogger(DBPersistenceApplication.class);
+//	@Autowired
+//	private InterfaceRepository repository;
 
 	public static void main(String[] args) {
 		logger.info("DBPersistenceApplication running in environment: " + System.getenv("ENV"));
 		SpringApplication.run(DBPersistenceApplication.class, args);
-	
+		
+		DBPersistenceService dal = new DBPersistenceService();
+		//dal.purgeMessages(1);
+		//System.out.println("Messages purged");
+		//dal.saveMessage("Scheduling - Vista to Epic", "Incoming", "Test Message 1");
+		//System.out.println("Message saved");
+		//Interface i = dal.queryInterfaceByNameAndDirection("Scheduling - Vista to Epic", "Incoming");
+		//System.out.println(i.toString());
+		dal.updateInterface("Scheduling - Vista to Epic","Scheduling - Vista to Epic","Incoming", "IN", 5);
+		//.deleteAllMessagesOfInterface("Scheduling - Vista to Epic", "Incoming");
+		/*
+		MessageData m = dal.saveMessage("Scheduling - Vista to Epic", "Incoming","Test Message 3");
+		List<MessageData> l = dal.queryMessagesByInterface("Scheduling - Vista to Epic", "Incoming");
+		for (MessageData j : l) {
+			System.out.println(j.toString());
+		}	
+		*/
+		//System.out.println(m.toString());
+		/*
+		List<Interface> l = dal.queryAllInterfaces();
+		for (Interface j : l) {
+			System.out.println(j.toString());
+		}	
+
+		List<MessageData> msgs = dal.queryMessagesByInterface("Scheduling - Vista to Epic", "Incoming");
+		for (MessageData m : msgs) {
+			System.out.println(m.toString());
+		}	
+		*/
+		
     /*  working named query
     Query nq = em.createNamedQuery("insertInterface")
     		.setParameter("interfID", UUID.fromString("00000001-0000-0000-0000-000000000000"))
@@ -100,4 +142,35 @@ public class DBPersistenceApplication {
 	}	
 			working code */ 
 }
+	/*
+	@Bean
+	public CommandLineRunner demo() {
+		return (args) -> {
+			// save a couple of customers
+			/*
+			repository.save(new Customer("Jack", "Bauer"));
+			repository.save(new Customer("Chloe", "O'Brian"));
+			repository.save(new Customer("Kim", "Bauer"));
+			repository.save(new Customer("David", "Palmer"));
+			repository.save(new Customer("Michelle", "Dessler"));
+
+			
+			// fetch all customers
+			logger.info("Interfaces found with findAll():");
+			logger.info("-------------------------------");
+			for (Interface i : repository.findAll()) {
+				logger.info(i.toString());
+			}
+			logger.info("");
+
+			// fetch Interfaces by last name
+			logger.info("Interface found with findByNameAndDirection('Vista to Epic'):");
+			logger.info("--------------------------------------------");
+			Interface vista = repository.findByNameAndDirection("Scheduling - Vista to Epic", "Incoming"); 
+			logger.info(vista.toString());
+			logger.info("");
+		};
+	}
+*/
+	
 }
