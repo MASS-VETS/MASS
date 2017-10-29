@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Bean;
 
 import gov.va.mass.adapter.db.spring.jpa.beans.Interface;
 import gov.va.mass.adapter.db.spring.jpa.beans.MessageData;
-import gov.va.mass.adapter.db.spring.jpa.repository.InterfaceRepository;
 
 @SpringBootApplication
 //@EnableJpaRepositories
@@ -44,7 +43,7 @@ public class DBPersistenceApplication {
 		//System.out.println("Message saved");
 		//Interface i = dal.queryInterfaceByNameAndDirection("Scheduling - Vista to Epic", "Incoming");
 		//System.out.println(i.toString());
-		dal.updateInterface("Scheduling - Vista to Epic","Scheduling - Vista to Epic","Incoming", "IN", 5);
+		dal.updateInterface("Scheduling - Vista to Epic","Scheduling - Vista to Epic", "IN", "Incoming", 5);
 		//.deleteAllMessagesOfInterface("Scheduling - Vista to Epic", "Incoming");
 		/*
 		MessageData m = dal.saveMessage("Scheduling - Vista to Epic", "Incoming","Test Message 3");
