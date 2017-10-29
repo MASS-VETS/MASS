@@ -43,8 +43,8 @@ public class DBPersistenceApplication {
 		//System.out.println("Message saved");
 		//Interface i = dal.queryInterfaceByNameAndDirection("Scheduling - Vista to Epic", "Incoming");
 		//System.out.println(i.toString());
-		dal.updateInterface("Scheduling - Vista to Epic","Scheduling - Vista to Epic", "IN", "Incoming", 5);
-		//.deleteAllMessagesOfInterface("Scheduling - Vista to Epic", "Incoming");
+		//dal.updateInterface("Scheduling - Vista to Epic","Scheduling - Vista to Epic", "IN", "Incoming", 5);
+		//dal.deleteAllMessagesOfInterface("Scheduling - Vista to Epic", "Incoming");
 		/*
 		MessageData m = dal.saveMessage("Scheduling - Vista to Epic", "Incoming","Test Message 3");
 		List<MessageData> l = dal.queryMessagesByInterface("Scheduling - Vista to Epic", "Incoming");
