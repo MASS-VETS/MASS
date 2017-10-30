@@ -1,0 +1,4 @@
+gov\va\mass\monitoring\AppRunner.class
+gov\va\mass\monitoring\monitorController.class
+gov\va\mass\monitoring\MicromonitoringApplication.class
+gov\va\mass\monitoring\MicroService.class

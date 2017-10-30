@@ -1,0 +1,95 @@
+package gov.va.mass.monitoring;
+
+/**
+ * Created by n_nac on 10/26/2017.
+ */
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.concurrent.CompletableFuture;
+
+@Component
+public class AppRunner implements CommandLineRunner {
+
+    @Value("${microService.httpendpoints}")
+    private String[] HTTPSURLS;
+
+    @Value("${microService.ssl.key-store}")
+    private String[] KEY_STORE_PATH ;
+
+    @Value("${microService.ssl.key-store-password}")
+    private String[] KEY_STORE_PASSWORD ;
+
+    @Value("${microService.ssl.keyStoreType}")
+    private String[] KEY_STORE_TYPE ;
+
+
+
+    private static final Logger logger = LoggerFactory.getLogger(AppRunner.class);
+
+    private final MicroServiceLookupService MicroServiceLookupService;
+
+    public AppRunner(MicroServiceLookupService MicroServiceLookupService) {
+        this.MicroServiceLookupService = MicroServiceLookupService;
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+
+        String ServiceState[] = new String[HTTPSURLS.length];
+        CompletableFuture<String> heartBeat[] = null;
+        heartBeat = new CompletableFuture[HTTPSURLS.length];
+        // Start the clock
+        long start = System.currentTimeMillis();
+
+        for(int i= 0; i< HTTPSURLS.length;i++)
+        {
+            String keyStorePath, keyStorePassword, keyStoreType = null;
+            System.out.println(HTTPSURLS[i]);
+            String URL = HTTPSURLS[i].substring(HTTPSURLS[i].indexOf('@')+1);
+            String serviceName = HTTPSURLS[i].substring(+0,HTTPSURLS[i].indexOf('@'));
+            System.out.println(serviceName +  URL + KEY_STORE_PASSWORD[i] + KEY_STORE_PATH[i] + KEY_STORE_TYPE[i]);
+            System.out.println(KEY_STORE_PATH[i].substring(0,KEY_STORE_PATH[i].indexOf('@')) + "   " + serviceName );
+
+            if(KEY_STORE_PATH[i].substring(0,KEY_STORE_PATH[i].indexOf('@')).equals(serviceName) &&
+               KEY_STORE_PASSWORD[i].substring(0,KEY_STORE_PASSWORD[i].indexOf('@')).equals(serviceName) &&
+               KEY_STORE_TYPE[i].substring(0,KEY_STORE_TYPE[i].indexOf('@')).equals(serviceName)) {
+                keyStorePath = KEY_STORE_PATH[i].substring(KEY_STORE_PATH[i].indexOf('@')+1);
+                keyStorePassword = KEY_STORE_PATH[i].substring(KEY_STORE_PATH[i].indexOf('@')+1);
+                keyStoreType = KEY_STORE_PATH[i].substring(KEY_STORE_PATH[i].indexOf('@')+1);
+                System.out.println(URL + serviceName + keyStorePath + keyStoreType+ keyStorePassword);
+                heartBeat[i] = new CompletableFuture<String>();
+                heartBeat[i] = MicroServiceLookupService.checkHTTPSService( URL, serviceName,keyStorePath,keyStorePassword,keyStoreType);
+
+            }
+            else{
+                System.out.println("Key Store Error");
+            }
+           //      heartBeat[i] = new CompletableFuture<String>();
+            //      heartBeat[i] = MicroServiceLookupService.checkService("HTTP", URL, serviceName);
+          //       ServiceState[i] = String.valueOf(heartBeat[i].get());
+            ServiceState[i] = String.valueOf(heartBeat[i]);
+            CompletableFuture.allOf(heartBeat).join();
+        }
+
+
+        // Kick of multiple, asynchronous lookups
+        // Wait until they are all done
+
+
+
+        System.out.println(Arrays.toString(ServiceState));
+
+
+        // Print results, including elapsed time
+        logger.info("Total time: " + (System.currentTimeMillis() - start));
+
+
+    }
+
+}
