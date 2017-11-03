@@ -8,7 +8,6 @@ import javax.jms.MapMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.PropertySource;
@@ -35,7 +34,7 @@ public class HL7MessageDbService {
 	@Autowired
 	JdbcTemplate jdbcTemplate;
 	
-	// TODO: heartbeat/pulse/whatever
+	// TODO: heartbeat
 	
 	// check the database connection at startup and fail.
 	// TODO: use this with the heartbeat endpoint.

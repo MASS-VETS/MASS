@@ -24,6 +24,12 @@ import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.validation.impl.NoValidation;
 
+/**
+ * VA Adapter Message Transform Service
+ * 
+ * @author avolkano
+ * @author daves
+ */
 @Component
 @PropertySource("classpath:application.properties")
 public class TransformService {
