@@ -25,7 +25,7 @@ public class ServiceConfig {
     @Value("${service.servletpath}")
 	private  String SERVICE_SERVLETPATH ;
     
-    private static final Logger logger = LoggerFactory.getLogger(ReceiveoverhapiApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReceiveOverHapiApplication.class);
 	
     private static ApplicationContext springctxt = null;
 

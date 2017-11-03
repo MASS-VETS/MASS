@@ -1,32 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-
-	<groupId>gov.va.mass.adapter.comm.hapi</groupId>
-	<artifactId>receiveoverhapi</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<groupId>gov.va.mass.adapter</groupId>
+	<artifactId>receive-over-hapi</artifactId>
+	<version>0.0.1</version>
 	<packaging>jar</packaging>
-
-	<name>receiveoverhapi</name>
+	<name>receive-over-hapi</name>
 	<description>receiver hl7 message using http over hapi with 2 way ssl capability and routes within adapter</description>
-
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.7.RELEASE</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<version>1.5.8.RELEASE</version>
+		<relativePath/>
+		<!-- lookup parent from repository -->
 	</parent>
-
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>1.8</java.version>
 	</properties>
-
 	<dependencies>
-
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-activemq</artifactId>
@@ -37,133 +30,91 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-log4j2</artifactId>
 		</dependency>
-
-		<!-- Needed for json logging -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<!-- <version>2.8.8.1</version> -->
 		</dependency>
-
-
-
-
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
-			<version>9.3.20.v20170531</version>
 		</dependency>
-
-
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>
-			<version>9.3.20.v20170531</version>
 		</dependency>
-
-		<!-- original version : <version>9.3.0.M2</version> -->
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-util</artifactId>
-			<version>9.3.20.v20170531</version>
 		</dependency>
-
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-io</artifactId>
-			<version>9.3.20.v20170531</version>
-
 		</dependency>
-
-
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-hl7overhttp</artifactId>
 			<version>2.2</version>
 		</dependency>
-
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-osgi-base <dependency> 
-			<groupId>ca.uhn.hapi</groupId> <artifactId>hapi-osgi-base</artifactId> <version>2.0</version> 
-			</dependency> -->
-
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-base</artifactId>
 			<version>2.2</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v21 -->
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-structures-v21</artifactId>
 			<version>2.3</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v22 -->
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-structures-v22</artifactId>
 			<version>2.3</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v23 -->
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-structures-v23</artifactId>
 			<version>2.3</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v24 -->
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-structures-v24</artifactId>
 			<version>2.3</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v25 -->
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-structures-v25</artifactId>
 			<version>2.3</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v26 -->
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-structures-v26</artifactId>
 			<version>2.3</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v27 -->
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-structures-v27</artifactId>
 			<version>2.3</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v231 -->
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-structures-v231</artifactId>
 			<version>2.3</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/ca.uhn.hapi/hapi-structures-v231 -->
 		<dependency>
 			<groupId>ca.uhn.hapi</groupId>
 			<artifactId>hapi-structures-v251</artifactId>
 			<version>2.3</version>
 		</dependency>
-
-
-
-
-
 	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -171,8 +122,5 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
-
 	</build>
-
-
 </project>

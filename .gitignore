@@ -2,5 +2,6 @@ Scripts/
 Code/*/target/
 Code/*/.project
 Code/*/.classpath
+Code/*/.springBeans
 Code/*/.settings/**
 *.class

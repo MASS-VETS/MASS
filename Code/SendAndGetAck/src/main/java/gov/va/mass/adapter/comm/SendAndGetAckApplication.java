@@ -1,4 +1,4 @@
-package gov.va.mass.adapter.comm.epic;
+package gov.va.mass.adapter.comm;
 
 import javax.jms.Queue;
 
@@ -10,18 +10,17 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jms.annotation.EnableJms;
 
-
 @SpringBootApplication
 @EnableJms
-public class SendandgetackApplication {
+public class SendAndGetAckApplication {
 
-	private static final Logger logger = LoggerFactory.getLogger(SendandgetackApplication.class);
+	private static final Logger logger = LoggerFactory.getLogger(SendAndGetAckApplication.class);
 
 	public static void main(String[] args) {
 		logger.info("SendandgetackApplication running in environment: " + System.getenv("ENV"));
-		SpringApplication.run(SendandgetackApplication.class, args);
+		SpringApplication.run(SendAndGetAckApplication.class, args);
 	}
-	
+
 	@Bean
 	public Queue dbqueue() {
 		return new ActiveMQQueue("writetodb.queue");

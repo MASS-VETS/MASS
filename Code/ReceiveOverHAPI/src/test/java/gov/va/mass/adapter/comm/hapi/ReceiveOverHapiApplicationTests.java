@@ -7,7 +7,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class ReceiveoverhapiApplicationTests {
+public class ReceiveOverHapiApplicationTests {
 
 	@Test
 	public void contextLoads() {

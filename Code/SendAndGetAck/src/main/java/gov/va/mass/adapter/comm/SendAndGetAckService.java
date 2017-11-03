@@ -1,4 +1,4 @@
-package gov.va.mass.adapter.comm.epic;
+package gov.va.mass.adapter.comm;
 
 import java.io.IOException;
 

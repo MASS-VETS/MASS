@@ -22,14 +22,14 @@ import org.slf4j.LoggerFactory;
 @SpringBootApplication
 @EnableJms
 
-public class ReceiveoverhapiApplication {
+public class ReceiveOverHapiApplication {
      
-    private static final Logger logger = LoggerFactory.getLogger(ReceiveoverhapiApplication.class);
+    private static final Logger logger = LoggerFactory.getLogger(ReceiveOverHapiApplication.class);
  
     
 	public static void main(String[] args) {
 		
-		ApplicationContext springctxt = SpringApplication.run(ReceiveoverhapiApplication.class, args);
+		ApplicationContext springctxt = SpringApplication.run(ReceiveOverHapiApplication.class, args);
 		
 		logger.info("Current Adapter Environment: " + System.getenv("ENV")); 
 		
