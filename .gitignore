@@ -3,5 +3,7 @@ Code/*/target/
 Code/*/.project
 Code/*/.classpath
 Code/*/.springBeans
-Code/*/.settings/**
+Code/*/.settings/
+Code/*/id_file
+Code/*/logs/
 *.class
