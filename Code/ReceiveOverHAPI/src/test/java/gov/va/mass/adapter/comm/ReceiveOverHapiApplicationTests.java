@@ -1,4 +1,4 @@
-package gov.va.mass.adapter.comm.hapi;
+package gov.va.mass.adapter.comm;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
