@@ -1,0 +1,6 @@
+Code/*/target/
+Code/*/target/**
+Code/*/.project
+Code/*/.classpath
+Code/*/.settings/**
+*.class
