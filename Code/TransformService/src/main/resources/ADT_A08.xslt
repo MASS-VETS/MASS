@@ -90,20 +90,24 @@
   <xsl:template name="addZFY">
     <xsl:element name="ZFY" namespace="{$v}">
       <xsl:element name="ZFY.1" namespace="{$v}"> VA FLAG </xsl:element>
-      <xsl:element name="ZFY.2" namespace="{$v}"> 
         <xsl:choose>
           <xsl:when test="v:ZSP/v:ZSP.2/. = 'Y'">
-            ACTIVE
+            <xsl:element name="ZFY.2" namespace="{$v}"> 
+              ACTIVE
+            </xsl:element>
+            <xsl:element name="ZFY.3" namespace="{$v}">
+              SERVICE CONNECTED
+            </xsl:element>
+            <xsl:element name="ZFY.4" namespace="{$v}">
+              <xsl:value-of select="v:ZSP/v:ZSP.3"/>% Service Connected
+            </xsl:element>
           </xsl:when>
           <xsl:otherwise>
-            INACTIVE
+            <xsl:element name="ZFY.2" namespace="{$v}"> 
+              INACTIVE
+            </xsl:element>
           </xsl:otherwise>
         </xsl:choose>
-      </xsl:element>
-    
-      <!--  TODO: Believe this should be conditional, checking with developer-->  
-      <xsl:element name="ZFY.3" namespace="{$v}">SERVICE CONNECTED</xsl:element>
-      <xsl:element name="ZFY.4" namespace="{$v}">50% Service Connected</xsl:element>
     </xsl:element>
   </xsl:template>
 
@@ -130,7 +134,6 @@
       <xsl:element name="ZEL.6" namespace="{$v}">
         <xsl:value-of select="v:ZEL[1]/v:ZEL.38"/>
       </xsl:element>
-      
     </xsl:element>
   </xsl:template>
   
