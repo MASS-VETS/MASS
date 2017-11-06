@@ -22,6 +22,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 public class MessageDbServiceApplicationTests {
 	static final Logger log = LoggerFactory.getLogger(MessageDbServiceApplicationTests.class);
 	
+	@Test
+	public void contextLoads() {
+	}
+	
+	/* that's not how a unit test works...
+	
 	@Autowired
 	JdbcTemplate jdbcTemplate;
 	
@@ -36,12 +42,10 @@ public class MessageDbServiceApplicationTests {
 			+ "OBX|2|TX|Narrative||LINE SIX\r" + "OBX|2|TX|Narrative||LINE SEVEN\r" + "OBX|2|TX|Narrative||LINE EIGHT\r"
 			+ "OBX|3|TX|Narrative||LINE NINE\r";
 	
-	/**/
+	private String interfaceId = "3E6C7FF1-32DF-4699-8D85-06F59809F956";
+	
 	@Autowired
 	HL7MessageDbService svc;
-	
-	@Value("${interface.id}")
-	private String interfaceId;
 	
 	private String[] getMessagesWithKeyValue(String key, String value) {
 		String sql = "SELECT messageData.MessageContent FROM messageData JOIN keyValues ON messageData.ID=keyValues.MessageID WHERE keyValues.Type=? AND keyValues.Value=?";
@@ -108,6 +112,5 @@ public class MessageDbServiceApplicationTests {
 			log.info("}");
 		}
 	}
-	
-	/**/
+	*/
 }

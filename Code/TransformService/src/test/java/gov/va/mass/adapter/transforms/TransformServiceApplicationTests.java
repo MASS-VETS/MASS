@@ -97,7 +97,7 @@ public class TransformServiceApplicationTests {
 		String pipeMsg = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20171010163409-0500||ADT^A08^|500 9406|T^|2.4|||AL|NE\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PA^^^^||19350409|M|P8^^^^^~DXL^TEST^^^^||123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C^||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008|||||||||\r"
 				+ "PV1|1|||||||||||||||||SC VETERAN\r"
-				+ "ZCT|1|DXL^EMERGENCY^^^^|Brother|123 Emergency St^Apt 111^Madison^WI^^^^|(865)776-0002\r"
+				+ "ZCT|1|DXL^EMERGENCY|Brother|123 Emergency St^Apt 111^Madison^WI^^^^|(865)776-0002\r"
 				+ "ZEL|1|SC LESS THAN 50%||||||||VERIFIED|||||||||||||||||||||||||||YES|20090917\r"
 				+ "ZEL|2|ALLIED VETERAN|||||||||||||||||||||||||||||||||||\r"
 				+ "ZEL|3|WORLD WAR I|||||||||||||||||||||||||||||||||||\r" + "ZEN|1|||UNVERIFIED|||||GROUP 1|||\r"
@@ -105,8 +105,8 @@ public class TransformServiceApplicationTests {
 		
 		String expected = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20171010163409-0500||ADT^A31|500 9406|T|2.4|||AL|NE\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PA||19350409|M|P8~DXL^TEST||123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008\r"
+				+ "NK1|1|DXL^EMERGENCY|Brother|123 Emergency St^Apt 111^Madison^WI|(865)776-0002\r"
 				+ "PV1|1|||||||||||||||||SC VETERAN\r"
-				+ "NK1|1|DXL^EMERGENCY^^^^|Brother|123 Emergency St^Apt 111^Madison^WI|(865)776-0002\r"
 				+ "ZFY|VA FLAG|ACTIVE|SERVICE CONNECTED|50% Service Connected\r"
 				+ "ZEL|SC LESS THAN 50%~ALLIED VETERAN~WORLD WAR I|CLASS II|GROUP 1|UNVERIFIED|YES|20090917\r";
 		

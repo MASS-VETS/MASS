@@ -8,6 +8,7 @@ import javax.jms.MapMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.PropertySource;
@@ -28,6 +29,9 @@ import org.springframework.stereotype.Component;
 public class HL7MessageDbService {
 	static final Logger log = LoggerFactory.getLogger(HL7MessageDbService.class);
 	
+	@Value("${database.pingonstartup}")
+	Boolean pingOnStartup;
+	
 	@Autowired
 	ApplicationContext context;
 	
@@ -40,6 +44,9 @@ public class HL7MessageDbService {
 	// TODO: use this with the heartbeat endpoint.
 	@PostConstruct
 	public void checkConnection() throws SQLException {
+		if(!pingOnStartup) {
+			return;
+		}
 		log.info("checking connection to database...");
 		boolean connectionValid = false;
 		try {
