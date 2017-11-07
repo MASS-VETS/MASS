@@ -15,7 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.DefaultHapiContext;
+import ca.uhn.hl7v2.ErrorCode;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
@@ -29,6 +32,9 @@ public class ReceiveOverHapiService {
 
 	int i = 0;
 
+	@Value("${interface.processingId}")
+	String processingId;
+	
 	@Value("${interface.id}")
 	String interfaceId;
 
@@ -68,8 +74,19 @@ public class ReceiveOverHapiService {
 			// bad format
 			throw new InvalidMessageException(); // return HTTP 415 error if the HL7 could not be parsed.
 		}
-		String id = getMessageIdFromMessage(message);
-		MDC.put("MSGID", id);
+		HashMap<String,String> msgValues = getMessageIdFromMessage(message);
+		
+		//Check the Processing ID before we allow this message to go any further. If the processing ID doesn't match then NACK the message.
+		if (msgValues.get("processingId") != processingId) {
+			try {
+				return message.generateACK(AcknowledgmentCode.CR, new HL7Exception(("Invalid Processing ID. Expected: " + processingId + " Received: " + msgValues.get("controlId")), ErrorCode.UNSUPPORTED_PROCESSING_ID)).encode();
+			} catch (HL7Exception | IOException e) {
+				e.printStackTrace();
+				throw new InvalidMessageException(); // return HTTP 415 error if the HL7 is invalid.
+			}
+		}
+		
+		MDC.put("MSGID", msgValues.get("processingId"));
 		logger.info("Message received = " + msg);
 		
 		//Create the database communication object with the appropriate values.
@@ -84,8 +101,8 @@ public class ReceiveOverHapiService {
 		jmsMsgTemplate.convertAndSend(outputQueue, msg);
 
 		//Log the actions.
-		logger.info("Msg Id " + id + " Message forwarded to queue = " + outputQueue);
-		logger.info("Msg Id " + id + " Message forwarded to queue = " + databaseQueue);
+		logger.info("Msg Id " + msgValues.get("processingId") + " Message forwarded to queue = " + outputQueue);
+		logger.info("Msg Id " + msgValues.get("processingId") + " Message forwarded to queue = " + databaseQueue);
 		MDC.clear();
 		logger.debug("Threadmapcontext cleared");
 		try {
@@ -115,16 +132,19 @@ public class ReceiveOverHapiService {
 		return hapiMsg;
 	}
 
-	// replace sending application with message id
-	private String getMessageIdFromMessage(Message msg) {
-		String msgid = "";
+	// Get the required values for processing from the message.
+	private HashMap<String,String> getMessageIdFromMessage(Message msg) {
+		HashMap<String,String> msgValues = new HashMap<String,String>();
+		
 		Terser terser = new Terser(msg);
 		try {
-			msgid = terser.get("/MSH-10");
+			msgValues.put("controlId", terser.get("/MSH-10")); //Control ID
+			msgValues.put("processingId",terser.get("/MSH-11")); //Processing ID (PRD/DEV/TST)
+			msgValues.put("AckType",terser.get(".MSH-15"));
 		} catch (HL7Exception e) {
 			logger.error("Unable to get msg id from the message.");
 			e.printStackTrace();
 		}
-		return msgid;
+		return msgValues;
 	}
 }
