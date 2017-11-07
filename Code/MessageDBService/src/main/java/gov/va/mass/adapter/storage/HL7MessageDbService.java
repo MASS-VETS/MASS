@@ -71,11 +71,13 @@ public class HL7MessageDbService {
 		String messageContent = ""; 
 		String interfaceId = "";
 		String fieldList = "";
+		String dateTime = "";
 		
 		try {
 			messageContent = msg.getString("messageContent");
 			interfaceId = msg.getString("interfaceId");
 			fieldList = msg.getString("fieldList");
+			dateTime = msg.getString("dateTime");
 			
 		} catch (JMSException e1) {
 			log.info("Message received does not contain appropriate mapping for interface or message content.");
@@ -88,10 +90,12 @@ public class HL7MessageDbService {
 		log.info("interfaceId=" + interfaceId);
 		log.info("messageContent=" + messageContent);
 		log.info("fieldList=" + fieldList);
+		log.info("dateTime=" + dateTime);
 		
 		addParam(parameters, "interface", interfaceId);
 		addParam(parameters, "messageContent", messageContent);
 		addParam(parameters, "fieldList", fieldList);
+		addParam(parameters, "dateTime", dateTime);
 		
 		try {
 		call.execute(parameters);

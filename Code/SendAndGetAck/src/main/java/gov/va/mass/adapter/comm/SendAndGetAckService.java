@@ -3,8 +3,8 @@ package gov.va.mass.adapter.comm;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -14,7 +14,6 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.stereotype.Component;
-
 import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
@@ -131,16 +130,24 @@ public class SendAndGetAckService {
 	}
 
 	private void sendMessageToWriteToDBQueue(String msg) {
-		// Create the Hashmap for MapMessage JMS queue.
+		//Get current date time for later.
+		String dateTime = String.format("%1$tF %1$tT",new Date());
+		
+		// Create the HashMap for MapMessage JMS queue.
 		HashMap<String, Object> mmsg = new HashMap<String, Object>();
+		
 		// Build the MapMessage
 		mmsg.put("messageContent", msg);
 		mmsg.put("fieldList", fieldList);
 		mmsg.put("interfaceId", interfaceId);
-		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg); // send to the database
+		mmsg.put("dateTime", dateTime);
+		
+		//Send to the database
+		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
 		logger.info("Forwarded to queue = " + databaseQueue);
 	}
 
+	//TODO : complete this function.
 	private void writeMessageToErrorQueue() {
 		logger.info("At this point will be marking this message as unable to send to EPIC");
 	}

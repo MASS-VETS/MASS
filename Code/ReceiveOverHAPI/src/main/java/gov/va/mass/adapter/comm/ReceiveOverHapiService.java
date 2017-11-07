@@ -1,8 +1,8 @@
 package gov.va.mass.adapter.comm;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
 import ca.uhn.hl7v2.DefaultHapiContext;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
@@ -57,6 +56,10 @@ public class ReceiveOverHapiService {
 	@PostMapping(path = "/receive", consumes = "application/hl7-v2", produces = "application/hl7-v2; charset=UTF-8")
 	public String receiveAndRouteMessage(@RequestBody String msg) {
 		logger.info("In service: " + appname);
+		
+		//Get the current time for later.
+		String dateTime = String.format("%1$tF %1$tT",new Date());
+		
 		// Later - based on the message type
 		// send the message to correct active mq destination using a lookup.
 		// Get the msg id from the msg body
@@ -68,15 +71,19 @@ public class ReceiveOverHapiService {
 		String id = getMessageIdFromMessage(message);
 		MDC.put("MSGID", id);
 		logger.info("Message received = " + msg);
-
+		
+		//Create the database communication object with the appropriate values.
 		HashMap<String, Object> mmsg = new HashMap<String, Object>();
 		mmsg.put("messageContent", msg);
 		mmsg.put("fieldList", fieldList);
 		mmsg.put("interfaceId", interfaceId);
+		mmsg.put("dateTime", dateTime);
 
+		//Put the message on the respective JMS queues.
 		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
 		jmsMsgTemplate.convertAndSend(outputQueue, msg);
 
+		//Log the actions.
 		logger.info("Msg Id " + id + " Message forwarded to queue = " + outputQueue);
 		logger.info("Msg Id " + id + " Message forwarded to queue = " + databaseQueue);
 		MDC.clear();
