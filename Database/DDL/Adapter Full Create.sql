@@ -159,6 +159,7 @@ GO
 CREATE PROCEDURE [dbo].[storeMessage]
 	@interface UNIQUEIDENTIFIER, --Specific interface which sent or received the message.
 	@messageContent NVARCHAR(MAX), --Full content of the message.
+	@dateTime DATETIME,
 	@msgID UNIQUEIDENTIFIER OUTPUT
 AS
 BEGIN
@@ -169,7 +170,7 @@ BEGIN
 	SET @msgID = NEWID()
 
     --Insert the new message into the messages table.
-	INSERT INTO messageData(ID,InterfaceID,Datetime,MessageContent) VALUES (@msgID,@interface,GETDATE(),@messageContent)
+	INSERT INTO messageData(ID,InterfaceID,Datetime,MessageContent) VALUES (@msgID,@interface,@dateTime,@messageContent)
 
 END
 GO
@@ -312,7 +313,8 @@ GO
 CREATE PROCEDURE [dbo].[storeHAPIMessage] 
 	@interface UNIQUEIDENTIFIER, --Specific interface which sent or received the message.
 	@messageContent NVARCHAR(MAX), --Full content of the message.
-	@fieldList NVARCHAR(255) --List of fields which are in the format <SEGMENT>-<FIELD> All repetitions will be stored with the messages repitition seperator between them.
+	@fieldList NVARCHAR(255), --List of fields which are in the format <SEGMENT>-<FIELD> All repetitions will be stored with the messages repitition seperator between them.
+	@dateTime DATETIME
 AS
 BEGIN
 	-- SET NOCOUNT ON added to prevent extra result sets from
@@ -321,7 +323,7 @@ BEGIN
 	DECLARE @msgID as UNIQUEIDENTIFIER
 
     --Insert the message into the database
-	EXEC storeMessage @interface, @messageContent, @msgID = @msgID OUTPUT;
+	EXEC storeMessage @interface, @messageContent, @dateTime, @msgID = @msgID OUTPUT;
 
 	--Execute the Key value mapping.
 	EXEC storeHAPIKeyValue @fieldList, @msgID
