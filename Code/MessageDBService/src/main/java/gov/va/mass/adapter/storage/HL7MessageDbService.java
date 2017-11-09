@@ -41,13 +41,17 @@ public class HL7MessageDbService {
 	// TODO: heartbeat
 	
 	// check the database connection at startup and fail.
-	// TODO: use this with the heartbeat endpoint.
+	// TODO: use this with the heartbeat endpoint to confirm database is still accessable.
 	@PostConstruct
 	public void checkConnection() throws SQLException {
+		
+		//Only check to make sure that the database is running when in production.
 		if(!pingOnStartup) {
 			return;
 		}
 		log.info("checking connection to database...");
+		
+		//Initialize the connection state then check to see if the connection is valid with 30 second timeout.
 		boolean connectionValid = false;
 		try {
 			connectionValid = jdbcTemplate.getDataSource().getConnection().isValid(30);
@@ -61,18 +65,20 @@ public class HL7MessageDbService {
 			throw e;
 		}
 		
-		// if we get here, the connection has become borked.
+		//This should be unreachable in theory as both valid connections and the broken ones will have been caught in the above try/catch.
 		throw new SQLException("Connection to the database is no longer valid.");
 	}
 	
 	@JmsListener(destination = "${jms.inputQ}")
 	public void storeHL7Message(MapMessage msg) {
 		
+		//Initialize the parameters for the query.
 		String messageContent = ""; 
 		String interfaceId = "";
 		String fieldList = "";
 		String dateTime = "";
 		
+		//Attempt to get the values from the queue message.
 		try {
 			messageContent = msg.getString("messageContent");
 			interfaceId = msg.getString("interfaceId");
@@ -84,9 +90,11 @@ public class HL7MessageDbService {
 			return;
 		}
 		
+		//Create the query & New parameters objects.
 		SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("storeHAPIMessage");
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
 		
+		//Log and add the parameters to the parameter list object.
 		log.info("interfaceId=" + interfaceId);
 		log.info("messageContent=" + messageContent);
 		log.info("fieldList=" + fieldList);
@@ -97,6 +105,7 @@ public class HL7MessageDbService {
 		addParam(parameters, "fieldList", fieldList);
 		addParam(parameters, "dateTime", dateTime);
 		
+		//Attempt to execute the query to store the data.
 		try {
 		call.execute(parameters);
 		
@@ -111,6 +120,7 @@ public class HL7MessageDbService {
 		}
 	}
 	
+	//Handle the addition of null parameters to the parameter list object.
 	private void addParam(MapSqlParameterSource parameters, String paramName, String value) {
 		if (value == null || value.length() == 0) {
 			parameters.addValue(paramName, null, java.sql.Types.NULL); // SQL throws a fit if it's not at least there
