@@ -332,10 +332,6 @@ GO
 
 --Create SP for heartbeat data
 
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 -- =============================================
 -- Author:		Alex Hanson
 -- Create date: 2017-11-09
@@ -350,7 +346,7 @@ BEGIN
 	SET NOCOUNT ON;
 
     -- Get the values for the latest date time for all messages.
-	SELECT InterfaceID,MAX(Datetime) as LastEntry FROM messageData group by InterfaceID
+	SELECT intf.ID,MAX(md.Datetime) as LastEntry FROM messageData md right join interfaces as intf on md.InterfaceID=intf.ID group by intf.ID
 END
 GO
 
