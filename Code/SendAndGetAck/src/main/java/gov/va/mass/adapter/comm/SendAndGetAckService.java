@@ -30,7 +30,7 @@ import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.util.Terser;
 
 /*
- * Pick up messages from readytosendtoepic queue and send to epic via hl7 over hapi
+ * Pick up messages from readytosend queue and send via HAPI
  * Receive acknowledgement and write to Ack queue
  * 
  * TODO : Add log4j
@@ -59,7 +59,7 @@ public class SendAndGetAckService {
 	@Value("${app.name}")
 	private String appname;
 
-	@Value("${maxattempts.epicsend}")
+	@Value("${maxattempts.send}")
 	private int MAX_SEND_ATTEMPTS;
 
 	@Value("${sendattempt.interval}")
@@ -82,53 +82,69 @@ public class SendAndGetAckService {
 	private static final Logger logger = LoggerFactory.getLogger(SendAndGetAckService.class);
 
 	@JmsListener(destination = "${jms.inputQ}")
-	public void sendMessagesToEpicFromReadyQueue(String msgtxt) throws MalformedURLException {
+	public void sendMessagesFromReadyQueue(String msgtxt) throws MalformedURLException {
+		
+		//Log message and save to database before sending.
 		logger.info("Received from Q: " + msgtxt);
 		sendMessageToWriteToDBQueue(msgtxt);
 		putMsgIdAndSenderOnMDC(msgtxt);
-		sendToEpicOverHapi(msgtxt);
+		sendOverHAPI(msgtxt);
 		MDC.clear();
 		logger.debug("MDC cleared");
 	}
 
-	private void sendToEpicOverHapi(String msgtxt) throws MalformedURLException {
+	//Function to send messages using the HAPI Specification.
+	private void sendOverHAPI(String msgtxt) throws MalformedURLException {
+		
+		//Initialize variables and destination URL.
 		HohRawClientSimple client = new HohRawClientSimple(new URL(DESTINATION_URL));
 		CustomCertificateTlsSocketFactory customtlsSF;
+		
+		//If TLS is enabled.
 		if (TLS_ENABLED) {
 			customtlsSF = new CustomCertificateTlsSocketFactory(KEYSTORE_TYPE, KEYSTORE_LOCATION, KEYSTORE_PASSWORD);
 			client.setSocketFactory(customtlsSF);
 		}
+		
+		//Get sendable data.
+		@SuppressWarnings("rawtypes")
 		ISendable rawsendable = new RawSendable(msgtxt);
 		EncodingStyle es = rawsendable.getEncodingStyle();
 		logger.debug(" rawsendable " + " encoding style " + es.toString() + " content type " + es.getContentType());
+		
+		//Loop attempting to send until max attempts reached.
 		sendattemptcounter = 0;
 		do {
 			try {
+				//Increment send count and send.
 				++sendattemptcounter;
-				logger
-						.info(" \n\nSending to EPIC attempt# " + sendattemptcounter + "\n " + rawsendable.getMessage().toString());
+				logger.info(" \n\nSending to attempt# " + sendattemptcounter + "\n " + rawsendable.getMessage().toString());
 				IReceivable<String> receivable = client.sendAndReceive(rawsendable);
 				String respstring = receivable.getMessage();
-				logger.info("\nEpic response :\n" + respstring + "\n");
-				sendMessageToWriteToDBQueue(respstring);
+				logger.info("\nResponse :\n" + respstring + "\n");
 				break;
 			} catch (DecodeException | IOException | EncodeException e) {
+				//If we are at the maximum number of attempts then log that to the error queue.
 				if (sendattemptcounter == MAX_SEND_ATTEMPTS) {
-					logger.info("MAX attempts to send to EPIC exceeded.");
-					writeMessageToErrorQueue();
+					logger.info("MAX attempts to send to exceeded.");
+					writeMessageToErrorQueue(); //TODO : Close / Sleep the service here.
 					break;
-				} else
+				} else {
 					logger.debug("Wait for a certain period, before reattempting to send. Or push this on a hold queue");
+				}
+				
+				//Pause for the set amount of time.
 				try {
 					Thread.sleep(SEND_ATTEMPT_INTERVAL);
 				} catch (InterruptedException e1) {
 					// TODO: what would cause this?
-					// what is the best response to this situation?
+					// what is the best response to this situation? Shut down the service if this happens it would only happen if there was a major system error.
 				}
 			}
-		} while (sendattemptcounter < MAX_SEND_ATTEMPTS);
+		} while (sendattemptcounter < MAX_SEND_ATTEMPTS); //Loop
 	}
 
+	//Write to the database function.
 	private void sendMessageToWriteToDBQueue(String msg) {
 		//Get current date time for later.
 		String dateTime = String.format("%1$tF %1$tT",new Date());
@@ -149,23 +165,29 @@ public class SendAndGetAckService {
 
 	//TODO : complete this function.
 	private void writeMessageToErrorQueue() {
-		logger.info("At this point will be marking this message as unable to send to EPIC");
+		logger.info("At this point will be marking this message as unable to send.");
 	}
 
 	// TODO : close HapiContext at the correct point
+	//Function to add to MDC.
 	private void putMsgIdAndSenderOnMDC(String msg) {
+		
+		//Initialize the context.
 		HapiContext context = new DefaultHapiContext();
 		Parser p = context.getGenericParser();
 		Message hapiMsg = null;
 		String sendingApplication = null;
 		String msgid = null;
+		
+		//Parse the message into the HAPI structure.
 		try {
 			hapiMsg = p.parse(msg);
 		} catch (HL7Exception e) {
 			logger.error("Unable to parse message.");
-			e.printStackTrace();
+			e.printStackTrace(); //TODO : Should this return here as the Terser cannot work without a HAPI message.
 		}
-		;
+		
+		//Use the HAPI Terser to parse the message.
 		Terser terser = new Terser(hapiMsg);
 		try {
 			sendingApplication = terser.get("/.MSH-3-1");
