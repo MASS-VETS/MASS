@@ -45,8 +45,8 @@ public class TransformServiceApplicationTests {
 		
 		String expected = "MSH|^~\\&|XDPS|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|HLO DEMO RECEIVING APPLICATION|^dhcp.epic.com:5106^DNS|20170914151436-0500||ADT^A31|500 880|T|2.4|||AL|NE\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PATIENT||19350407|M|P8~DXL^TEST||Line 1^LINE 2^SEYMOUR^TN^37865^^BA~123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008\r"
-				+ "ZFY|VA FLAG|INACTIVE|BEHAVIORAL|shows signs of potential violence\r"
-				+ "ZFY|VA FLAG|ACTIVE|HIGH RISK FOR SUICIDE|LINE ONE~LINE TWO~LINE THREE~LINE FOUR~LINE FIVE~LINE SIX~LINE SEVEN~LINE EIGHT~LINE NINE\r";
+				+ "ZFY|BEHAVIORAL|INACTIVE|BEHAVIORAL|shows signs of potential violence\r"
+				+ "ZFY|HIGH RISK FOR SUICIDE|ACTIVE|HIGH RISK FOR SUICIDE|LINE ONE\\.br\\LINE TWO\\.br\\LINE THREE\\.br\\LINE FOUR\\.br\\LINE FIVE\\.br\\LINE SIX\\.br\\LINE SEVEN\\.br\\LINE EIGHT\\.br\\LINE NINE\r";
 		
 		svc.xsltName = "ORU_R01";
 		JmsResponse<String> response = svc.transformPipeMessage(pipeMsg);
@@ -64,7 +64,7 @@ public class TransformServiceApplicationTests {
 		
 		String expected = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20170914151436-0500||ADT^A31|500 8207|T|2.4|||AL|NE\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PATIENT||19350407|M|P8~DXL^TEST||Line 1^LINE 2^SEYMOUR^TN^37865^^BA~123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008\r"
-				+ "ZFY|VA FLAG|ACTIVE|BAD ADDRESS|HOMELESS2\r";
+				+ "ZFY|BAD ADDRESS|ACTIVE|BAD ADDRESS|HOMELESS2\r";
 		
 		svc.xsltName = "ORU_R01";
 		JmsResponse<String> response = svc.transformPipeMessage(pipeMsg);
@@ -82,7 +82,7 @@ public class TransformServiceApplicationTests {
 		
 		String expected = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20170914151436-0500||ADT^A31|500 8207|T|2.4|||AL|NE\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PATIENT||19350407|M|P8~DXL^TEST||Line 1^LINE 2^SEYMOUR^TN^37865^^BA~123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008\r"
-				+ "ZFY|VA FLAG|ACTIVE|SENSITIVITY\r";
+				+ "ZFY|SENSITIVITY|ACTIVE|SENSITIVITY\r";
 		
 		svc.xsltName = "ORU_R01";
 		JmsResponse<String> response = svc.transformPipeMessage(pipeMsg);
@@ -105,9 +105,9 @@ public class TransformServiceApplicationTests {
 		
 		String expected = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20171010163409-0500||ADT^A31|500 9406|T|2.4|||AL|NE\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PA||19350409|M|P8~DXL^TEST||123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008\r"
-				+ "NK1|1|DXL^EMERGENCY|Brother|123 Emergency St^Apt 111^Madison^WI|(865)776-0002\r"
+				+ "NK1|1||123 Emergency St Apt 111 Madison WI\r"
 				+ "PV1|1|||||||||||||||||SC VETERAN\r"
-				+ "ZFY|VA FLAG|ACTIVE|SERVICE CONNECTED|50% Service Connected\r"
+				+ "ZFY|SERVICE CONNECTED|ACTIVE|SERVICE CONNECTED|50% Service Connected\r"
 				+ "ZEL|SC LESS THAN 50%~ALLIED VETERAN~WORLD WAR I|CLASS II|GROUP 1|UNVERIFIED|YES|20090917\r";
 		
 		svc.xsltName = "ADT_A08";
