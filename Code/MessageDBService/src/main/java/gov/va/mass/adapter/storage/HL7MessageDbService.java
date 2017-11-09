@@ -1,6 +1,10 @@
 package gov.va.mass.adapter.storage;
 
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import javax.annotation.PostConstruct;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
@@ -14,6 +18,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.jms.annotation.JmsListener;
@@ -44,6 +49,7 @@ public class HL7MessageDbService {
 	// TODO: use this with the heartbeat endpoint to confirm database is still accessable.
 	@PostConstruct
 	public void checkConnection() throws SQLException {
+		getHeartBeatData();
 		
 		//Only check to make sure that the database is running when in production.
 		if(!pingOnStartup) {
@@ -67,6 +73,14 @@ public class HL7MessageDbService {
 		
 		//This should be unreachable in theory as both valid connections and the broken ones will have been caught in the above try/catch.
 		throw new SQLException("Connection to the database is no longer valid.");
+	}
+	
+	//Function to get the databases most recent times for messages to ensure that all of the queues are running appropriately.
+	public void getHeartBeatData() {
+		SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("heartBeatData");
+		
+		Map<String, Object> res = call.execute();
+		List<Map> results = (List<Map>) res.get(res.keySet().iterator().next());
 	}
 	
 	@JmsListener(destination = "${jms.inputQ}")
