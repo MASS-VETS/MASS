@@ -79,7 +79,7 @@ public class ReceiveOverHapiService {
 		//Check the Processing ID before we allow this message to go any further. If the processing ID doesn't match then NACK the message.
 		if (!msgValues.get("processingId").equals(processingId)) {
 			
-			logger.info("Invalid Processing ID. Expected: \"" + processingId + "\" Received: \"" + msgValues.get("controlId") + "\"");
+			logger.info("Invalid Processing ID. Expected: \"" + processingId + "\" Received: \"" + msgValues.get("processingId") + "\"");
 			
 			try {
 				return message.generateACK(AcknowledgmentCode.CR, new HL7Exception(("Invalid Processing ID. Expected: " + processingId + " Received: " + msgValues.get("controlId")), ErrorCode.UNSUPPORTED_PROCESSING_ID)).encode();
@@ -151,8 +151,8 @@ public class ReceiveOverHapiService {
 		
 		Terser terser = new Terser(msg);
 		try {
-			msgValues.put("controlId", terser.get("/MSH-11-1")); //Control ID
-			msgValues.put("processingId",terser.get("/MSH-12-1")); //Processing ID (PRD/DEV/TST)
+			msgValues.put("controlId", terser.get("/MSH-10-1")); //Control ID
+			msgValues.put("processingId",terser.get("/MSH-11-1")); //Processing ID (PRD/DEV/TST)
 		} catch (HL7Exception e) {
 			logger.error("Unable to get msg id from the message.");
 			e.printStackTrace();
