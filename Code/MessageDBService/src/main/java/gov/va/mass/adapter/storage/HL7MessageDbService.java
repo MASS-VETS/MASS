@@ -47,7 +47,6 @@ public class HL7MessageDbService {
 	// TODO: use this with the heartbeat endpoint to confirm database is still accessable.
 	@PostConstruct
 	public void checkConnection() throws SQLException {
-		getHeartBeatData();
 		
 		//Only check to make sure that the database is running when in production.
 		if(!pingOnStartup) {
