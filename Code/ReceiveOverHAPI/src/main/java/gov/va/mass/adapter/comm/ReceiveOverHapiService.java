@@ -82,7 +82,7 @@ public class ReceiveOverHapiService {
 			logger.info("Invalid Processing ID. Expected: \"" + processingId + "\" Received: \"" + msgValues.get("processingId") + "\"");
 			
 			try {
-				return message.generateACK(AcknowledgmentCode.CR, new HL7Exception(("Invalid Processing ID. Expected: " + processingId + " Received: " + msgValues.get("controlId")), ErrorCode.UNSUPPORTED_PROCESSING_ID)).encode();
+				return message.generateACK(AcknowledgmentCode.CR, new HL7Exception(("Invalid Processing ID. Expected: " + processingId + " Received: " + msgValues.get("processingId")), ErrorCode.UNSUPPORTED_PROCESSING_ID)).encode();
 			} catch (HL7Exception | IOException e) {
 				e.printStackTrace();
 				throw new InvalidMessageException(); // return HTTP 415 error if the HL7 is invalid.
@@ -90,7 +90,7 @@ public class ReceiveOverHapiService {
 		}
 		
 		//Log the Processing ID for later reference.
-		MDC.put("MSGID", msgValues.get("processingId"));
+		MDC.put("MSGID", msgValues.get("controlId"));
 		logger.info("Message received = " + msg);
 		
 		//Create the database communication object with the appropriate values.
@@ -105,8 +105,8 @@ public class ReceiveOverHapiService {
 		jmsMsgTemplate.convertAndSend(outputQueue, msg);
 
 		//Log the actions.
-		logger.info("Msg Id " + msgValues.get("processingId") + " Message forwarded to queue = " + outputQueue);
-		logger.info("Msg Id " + msgValues.get("processingId") + " Message forwarded to queue = " + databaseQueue);
+		logger.info("Msg Id " + msgValues.get("controlId") + " Message forwarded to queue = " + outputQueue);
+		logger.info("Msg Id " + msgValues.get("controlId") + " Message forwarded to queue = " + databaseQueue);
 		MDC.clear();
 		logger.debug("Threadmapcontext cleared");
 		try {
