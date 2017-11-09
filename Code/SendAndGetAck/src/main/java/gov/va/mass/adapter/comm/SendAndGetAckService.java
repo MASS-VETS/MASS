@@ -83,8 +83,8 @@ public class SendAndGetAckService {
 
 	@JmsListener(destination = "${jms.inputQ}")
 	public void sendMessagesFromReadyQueue(String msgtxt) throws MalformedURLException {
-		
-		//Log message and save to database before sending.
+
+		// Log message and save to database before sending.
 		logger.info("Received from Q: " + msgtxt);
 		sendMessageToWriteToDBQueue(msgtxt);
 		putMsgIdAndSenderOnMDC(msgtxt);
@@ -93,101 +93,109 @@ public class SendAndGetAckService {
 		logger.debug("MDC cleared");
 	}
 
-	//Function to send messages using the HAPI Specification.
+	// Function to send messages using the HAPI Specification.
 	private void sendOverHAPI(String msgtxt) throws MalformedURLException {
-		
-		//Initialize variables and destination URL.
+
+		// Initialize variables and destination URL.
 		HohRawClientSimple client = new HohRawClientSimple(new URL(DESTINATION_URL));
 		CustomCertificateTlsSocketFactory customtlsSF;
-		
-		//If TLS is enabled.
+
+		// If TLS is enabled.
 		if (TLS_ENABLED) {
 			customtlsSF = new CustomCertificateTlsSocketFactory(KEYSTORE_TYPE, KEYSTORE_LOCATION, KEYSTORE_PASSWORD);
 			client.setSocketFactory(customtlsSF);
 		}
-		
-		//Get sendable data.
+
+		// Get sendable data.
 		@SuppressWarnings("rawtypes")
 		ISendable rawsendable = new RawSendable(msgtxt);
 		EncodingStyle es = rawsendable.getEncodingStyle();
 		logger.debug(" rawsendable " + " encoding style " + es.toString() + " content type " + es.getContentType());
-		
-		//Loop attempting to send until max attempts reached.
+
+		// Loop attempting to send until max attempts reached.
 		sendattemptcounter = 0;
 		do {
 			try {
-				//Increment send count and send.
+				// Increment send count and send.
 				++sendattemptcounter;
-				logger.info(" \n\nSending to attempt# " + sendattemptcounter + "\n " + rawsendable.getMessage().toString());
+				logger.info(
+						" \n\nSending to attempt# " + sendattemptcounter + "\n " + rawsendable.getMessage().toString());
 				IReceivable<String> receivable = client.sendAndReceive(rawsendable);
 				String respstring = receivable.getMessage();
 				logger.info("\nResponse :\n" + respstring + "\n");
 				break;
 			} catch (DecodeException | IOException | EncodeException e) {
-				//If we are at the maximum number of attempts then log that to the error queue.
+				// If we are at the maximum number of attempts then log that to the error queue.
 				if (sendattemptcounter == MAX_SEND_ATTEMPTS) {
 					logger.info("MAX attempts to send to exceeded.");
-					writeMessageToErrorQueue(); //TODO : Close / Sleep the service here.
+					writeMessageToErrorQueue(); // TODO : Close / Sleep the service here.
 					break;
 				} else {
-					logger.debug("Wait for a certain period, before reattempting to send. Or push this on a hold queue");
+					logger.debug(
+							"Wait for a certain period, before reattempting to send. Or push this on a hold queue");
 				}
-				
-				//Pause for the set amount of time.
+
+				// Pause for the set amount of time.
 				try {
 					Thread.sleep(SEND_ATTEMPT_INTERVAL);
 				} catch (InterruptedException e1) {
 					// TODO: what would cause this?
-					// what is the best response to this situation? Shut down the service if this happens it would only happen if there was a major system error.
+					// what is the best response to this situation? Shut down the service if this
+					// happens it would only happen if there was a major system error.
 				}
 			}
-		} while (sendattemptcounter < MAX_SEND_ATTEMPTS); //Loop
+		} while (sendattemptcounter < MAX_SEND_ATTEMPTS); // Loop
 	}
 
-	//Write to the database function.
+	// Write to the database function.
 	private void sendMessageToWriteToDBQueue(String msg) {
-		//Get current date time for later.
-		String dateTime = String.format("%1$tF %1$tT",new Date());
-		
+		// Get current date time for later.
+		String dateTime = String.format("%1$tF %1$tT", new Date());
+
 		// Create the HashMap for MapMessage JMS queue.
 		HashMap<String, Object> mmsg = new HashMap<String, Object>();
-		
+
 		// Build the MapMessage
 		mmsg.put("messageContent", msg);
 		mmsg.put("fieldList", fieldList);
 		mmsg.put("interfaceId", interfaceId);
 		mmsg.put("dateTime", dateTime);
-		
-		//Send to the database
+
+		// Send to the database
 		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
 		logger.info("Forwarded to queue = " + databaseQueue);
 	}
 
-	//TODO : complete this function.
+	// TODO : complete this function.
 	private void writeMessageToErrorQueue() {
 		logger.info("At this point will be marking this message as unable to send.");
 	}
 
-	// TODO : close HapiContext at the correct point
-	//Function to add to MDC.
+	// Function to add to MDC.
 	private void putMsgIdAndSenderOnMDC(String msg) {
-		
-		//Initialize the context.
+
+		// Initialize the context.
 		HapiContext context = new DefaultHapiContext();
 		Parser p = context.getGenericParser();
 		Message hapiMsg = null;
 		String sendingApplication = null;
 		String msgid = null;
-		
-		//Parse the message into the HAPI structure.
+
+		// Parse the message into the HAPI structure.
 		try {
 			hapiMsg = p.parse(msg);
-		} catch (HL7Exception e) {
+			context.close();
+		} catch (HL7Exception | IOException e) {
 			logger.error("Unable to parse message.");
-			e.printStackTrace(); //TODO : Should this return here as the Terser cannot work without a HAPI message.
+			e.printStackTrace();
 		}
-		
-		//Use the HAPI Terser to parse the message.
+
+		//Make sure that we return if we were unable to parse the message string into a message.
+		if (hapiMsg == null) {
+			return;
+		}
+
+		// Use the HAPI Terser to parse the message.
 		Terser terser = new Terser(hapiMsg);
 		try {
 			sendingApplication = terser.get("/.MSH-3-1");
