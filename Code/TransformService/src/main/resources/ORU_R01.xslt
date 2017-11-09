@@ -29,7 +29,9 @@
       <xsl:element name="ORU_R01" namespace="{$v}"> </xsl:element>
 
       <xsl:element name="ZFY" namespace="{$v}">
-        <xsl:element name="ZFY.1" namespace="{$v}"> VA FLAG </xsl:element>
+        <xsl:element name="ZFY.1" namespace="{$v}">
+          <xsl:value-of select="v:OBR[1]/v:OBR.4[1]/v:CE.1[1]/."/>  
+        </xsl:element>
         <xsl:element name="ZFY.2" namespace="{$v}">
           <xsl:value-of select="v:ORU_R01.OBSERVATION[v:OBX/v:OBX.2 = 'ST']/v:OBX/v:OBX.5/."/>
         </xsl:element>

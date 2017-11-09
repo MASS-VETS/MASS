@@ -89,7 +89,9 @@
   <!--  Template to construct brand new ZFY segments-->
   <xsl:template name="addZFY">
     <xsl:element name="ZFY" namespace="{$v}">
-      <xsl:element name="ZFY.1" namespace="{$v}"> VA FLAG </xsl:element>
+      <xsl:element name="ZFY.1" namespace="{$v}">
+        SERVICE CONNECTED 
+      </xsl:element>
         <xsl:choose>
           <xsl:when test="v:ZSP/v:ZSP.2/. = 'Y'">
             <xsl:element name="ZFY.2" namespace="{$v}"> 
