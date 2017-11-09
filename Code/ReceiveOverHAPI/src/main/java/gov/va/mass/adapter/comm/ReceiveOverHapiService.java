@@ -148,8 +148,8 @@ public class ReceiveOverHapiService {
 		
 		Terser terser = new Terser(msg);
 		try {
-			msgValues.put("controlId", terser.get("/MSH-10")); //Control ID
-			msgValues.put("processingId",terser.get("/MSH-11")); //Processing ID (PRD/DEV/TST)
+			msgValues.put("controlId", terser.get("/MSH-10-1")); //Control ID
+			msgValues.put("processingId",terser.get("/MSH-11-1")); //Processing ID (PRD/DEV/TST)
 		} catch (HL7Exception e) {
 			logger.error("Unable to get msg id from the message.");
 			e.printStackTrace();
