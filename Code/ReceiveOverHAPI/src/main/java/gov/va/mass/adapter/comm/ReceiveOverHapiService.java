@@ -68,7 +68,7 @@ public class ReceiveOverHapiService {
 		
 		// Later - based on the message type
 		// send the message to correct active mq destination using a lookup.
-		// Get the msg id from the msg body
+		// Get required message values from the message content.
 		Message message = makeMessage(msg);
 		if (message == null) {
 			// bad format
@@ -86,6 +86,7 @@ public class ReceiveOverHapiService {
 			}
 		}
 		
+		//Log the Processing ID for later reference.
 		MDC.put("MSGID", msgValues.get("processingId"));
 		logger.info("Message received = " + msg);
 		
@@ -113,22 +114,31 @@ public class ReceiveOverHapiService {
 		}
 	}
 
+	//Create HAPI message from string to allow parsing.
 	private Message makeMessage(String rawMessage) {
+		
+		//Initialize parser and variables.
 		HapiContext context = new DefaultHapiContext();
 		Parser p = context.getGenericParser();
 		Message hapiMsg = null;
+		
+		//Attempt to parse the message.
 		try {
 			hapiMsg = p.parse(rawMessage);
 		} catch (HL7Exception e) {
 			logger.error("Unable to parse message");
 			e.printStackTrace();
 		}
+		
+		//Prevent close() from NULLREF on itself.
 		try {
-			context.getExecutorService(); // stupid hack to prevent close() from nullref-ing itself
+			context.getExecutorService();
 			context.close();
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+		
+		//Return the HAPI msg.
 		return hapiMsg;
 	}
 
