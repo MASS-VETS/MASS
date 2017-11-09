@@ -78,6 +78,9 @@ public class ReceiveOverHapiService {
 		
 		//Check the Processing ID before we allow this message to go any further. If the processing ID doesn't match then NACK the message.
 		if (msgValues.get("processingId") != processingId) {
+			
+			logger.info("Invalid Processing ID. Expected: " + processingId + " Received: " + msgValues.get("controlId"));
+			
 			try {
 				return message.generateACK(AcknowledgmentCode.CR, new HL7Exception(("Invalid Processing ID. Expected: " + processingId + " Received: " + msgValues.get("controlId")), ErrorCode.UNSUPPORTED_PROCESSING_ID)).encode();
 			} catch (HL7Exception | IOException e) {
