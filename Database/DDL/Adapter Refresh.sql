@@ -342,6 +342,30 @@ BEGIN
 END
 GO
 
+--Create SP for heartbeat data
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+-- =============================================
+-- Author:		Alex Hanson
+-- Create date: 2017-11-09
+-- Description:	Gather the most recent time for all interfaces having sent or received a message.
+-- =============================================
+CREATE PROCEDURE heartBeatData 
+	
+AS
+BEGIN
+	-- SET NOCOUNT ON added to prevent extra result sets from
+	-- interfering with SELECT statements.
+	SET NOCOUNT ON;
+
+    -- Get the values for the latest date time for all messages.
+	SELECT InterfaceID,MAX(Datetime) as LastEntry FROM messageData group by InterfaceID
+END
+GO
+
 --Insert the expected integration interfaces.
 --Scheduling Interface to Vista
 Insert into interfaces(ID,Name,Direction,PurgeDays) values ('3E6C7FF1-32DF-4699-8D85-06F59809F956','Scheduling - Epic to Vista','Incoming',NULL) 
