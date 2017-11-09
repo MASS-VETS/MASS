@@ -126,7 +126,7 @@
       </xsl:element>
       <xsl:element name="ZEL.3" namespace="{$v}">
         <xsl:value-of select="v:ZEN/v:ZEN.9"/>
-        <xsl:value-of select="v:ZEN/v:ZEN.10"/>
+        <xsl:value-of select="v:ZEN/v:ZEN.13"/>
       </xsl:element>
       <xsl:element name="ZEL.4" namespace="{$v}">
         <xsl:value-of select="v:ZEN/v:ZEN.4"/>
