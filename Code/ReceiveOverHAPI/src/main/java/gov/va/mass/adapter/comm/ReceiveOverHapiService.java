@@ -77,7 +77,7 @@ public class ReceiveOverHapiService {
 		HashMap<String,String> msgValues = getMessageIdFromMessage(message);
 		
 		//Check the Processing ID before we allow this message to go any further. If the processing ID doesn't match then NACK the message.
-		if (msgValues.get("processingId") != processingId) {
+		if (!msgValues.get("processingId").equals(processingId)) {
 			
 			logger.info("Invalid Processing ID. Expected: \"" + processingId + "\" Received: \"" + msgValues.get("controlId") + "\"");
 			
