@@ -76,11 +76,13 @@ public class HL7MessageDbService {
 	}
 	
 	//Function to get the databases most recent times for messages to ensure that all of the queues are running appropriately.
+	//This function will potentially be used by the monitoring for time since last message.
 	public void getHeartBeatData() {
 		SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("heartBeatData");
 		
 		Map<String, Object> res = call.execute();
-		List<Map> results = (List<Map>) res.get(res.keySet().iterator().next());
+		@SuppressWarnings("unchecked")
+		List<Map<String, Object>> results = (List<Map<String, Object>>) res.get(res.keySet().iterator().next()); //Get #result-set-1
 	}
 	
 	@JmsListener(destination = "${jms.inputQ}")
