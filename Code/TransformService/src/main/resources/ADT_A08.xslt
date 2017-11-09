@@ -52,13 +52,13 @@
       </xsl:element>    
     </xsl:element>
     <xsl:element name="XPN.2" namespace="{$v}">
-      <xsl:value-of select="v:ZCT/v:ZCT.4/v:UNKNOWN.2"/>
+      <xsl:value-of select="v:ZCT/v:ZCT.3/v:UNKNOWN.2"/>
     </xsl:element>
   </xsl:template>
   
   <xsl:template name="NK1.3">
     <xsl:element name="CE.1" namespace="{$v}">
-      <xsl:value-of select="v:ZCT/v:ZCT.5"/>
+      <xsl:value-of select="v:ZCT/v:ZCT.4"/>
     </xsl:element>
   </xsl:template>
   
@@ -66,23 +66,23 @@
   <xsl:template name="NK1.4">
     <xsl:element name="XAD.1" namespace="{$v}">
       <xsl:element name="SAD.1" namespace="{$v}">
-        <xsl:value-of select="v:ZCT/v:ZCT.6/v:UNKNOWN.1"/>
+        <xsl:value-of select="v:ZCT/v:ZCT.5/v:UNKNOWN.1"/>
       </xsl:element>
     </xsl:element>
     <xsl:element name="XAD.2" namespace="{$v}">
-      <xsl:value-of select="v:ZCT/v:ZCT.6/v:UNKNOWN.2"/>
+      <xsl:value-of select="v:ZCT/v:ZCT.5/v:UNKNOWN.2"/>
     </xsl:element>
     <xsl:element name="XAD.3" namespace="{$v}">
-      <xsl:value-of select="v:ZCT/v:ZCT.6/v:UNKNOWN.3"/>
+      <xsl:value-of select="v:ZCT/v:ZCT.5/v:UNKNOWN.3"/>
     </xsl:element>
     <xsl:element name="XAD.4" namespace="{$v}">
-      <xsl:value-of select="v:ZCT/v:ZCT.6/v:UNKNOWN.4"/>
+      <xsl:value-of select="v:ZCT/v:ZCT.5/v:UNKNOWN.4"/>
     </xsl:element>
   </xsl:template>
     
   <xsl:template name="NK1.5">
     <xsl:element name="XTN.1" namespace="{$v}">
-      <xsl:value-of select="v:ZCT/v:ZCT.7"/>
+      <xsl:value-of select="v:ZCT/v:ZCT.6"/>
     </xsl:element>
   </xsl:template>
   
