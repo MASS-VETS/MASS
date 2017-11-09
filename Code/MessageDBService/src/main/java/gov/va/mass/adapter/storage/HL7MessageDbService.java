@@ -1,7 +1,6 @@
 package gov.va.mass.adapter.storage;
 
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +17,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.jms.annotation.JmsListener;
@@ -81,7 +79,7 @@ public class HL7MessageDbService {
 		SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("heartBeatData");
 		
 		Map<String, Object> res = call.execute();
-		@SuppressWarnings("unchecked")
+		@SuppressWarnings({ "unchecked", "unused" })
 		List<Map<String, Object>> results = (List<Map<String, Object>>) res.get(res.keySet().iterator().next()); //Get #result-set-1
 	}
 	
