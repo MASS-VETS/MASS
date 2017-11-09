@@ -38,13 +38,23 @@
         </xsl:element>
 
         <!-- loop every narrative (TX) -->
-        <xsl:for-each select="v:ORU_R01.OBSERVATION">
-          <xsl:if test="v:OBX/v:OBX.2/. = 'TX'">
-            <xsl:element name="ZFY.4" namespace="{$v}">
+        <xsl:variable name="zfy4br">
+          <xsl:for-each select="v:ORU_R01.OBSERVATION">
+            <xsl:if test="v:OBX/v:OBX.2/. = 'TX'">
+              <xsl:text>\.br\</xsl:text>
               <xsl:value-of select="v:OBX/v:OBX.5/."/>
-            </xsl:element>
+            </xsl:if>
+          </xsl:for-each>
+        </xsl:variable>
+        <!-- remove first \.br\ -->
+        <xsl:variable name="zfy4">
+          <xsl:if test="string-length($zfy4br) > 0">
+            <xsl:value-of select="substring($zfy4br,6)" />
           </xsl:if>
-        </xsl:for-each>
+        </xsl:variable>
+        <xsl:element name="ZFY.4" namespace="{$v}">
+          <xsl:value-of select="$zfy4"/>
+        </xsl:element>
 
       </xsl:element>
     </xsl:for-each>
