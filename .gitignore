@@ -1,4 +1,5 @@
-Scripts/
+Scripts/JARs/
+Scripts/stop-all.ahk
 Code/*/target/
 Code/*/.project
 Code/*/.classpath
