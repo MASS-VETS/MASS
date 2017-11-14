@@ -86,15 +86,18 @@ public class SendAndGetAckService {
 
 		// Log message and save to database before sending.
 		logger.info("Received from Q: " + msgtxt);
-		sendMessageToWriteToDBQueue(msgtxt);
 		putMsgIdAndSenderOnMDC(msgtxt);
-		sendOverHAPI(msgtxt);
+		if (sendOverHAPI(msgtxt)) {
+			sendMessageToWriteToDBQueue(msgtxt);
+		}
 		MDC.clear();
-		logger.debug("MDC cleared");
+		logger.info("MDC cleared");
 	}
 
 	// Function to send messages using the HAPI Specification.
-	private void sendOverHAPI(String msgtxt) throws MalformedURLException {
+	// RETURNS: True if message ACK'd.
+	private boolean sendOverHAPI(String msgtxt) throws MalformedURLException {
+		boolean acked = false;
 
 		// Initialize variables and destination URL.
 		HohRawClientSimple client = new HohRawClientSimple(new URL(DESTINATION_URL));
@@ -110,7 +113,7 @@ public class SendAndGetAckService {
 		@SuppressWarnings("rawtypes")
 		ISendable rawsendable = new RawSendable(msgtxt);
 		EncodingStyle es = rawsendable.getEncodingStyle();
-		logger.debug(" rawsendable " + " encoding style " + es.toString() + " content type " + es.getContentType());
+		logger.info(" rawsendable " + " encoding style " + es.toString() + " content type " + es.getContentType());
 
 		// Loop attempting to send until max attempts reached.
 		sendattemptcounter = 0;
@@ -123,6 +126,8 @@ public class SendAndGetAckService {
 				IReceivable<String> receivable = client.sendAndReceive(rawsendable);
 				String respstring = receivable.getMessage();
 				logger.info("\nResponse :\n" + respstring + "\n");
+				//TODO: analyze return string for ACK.  If NAK set return to false.
+				acked = true;
 				break;
 			} catch (DecodeException | IOException | EncodeException e) {
 				// If we are at the maximum number of attempts then log that to the error queue.
@@ -131,7 +136,7 @@ public class SendAndGetAckService {
 					writeMessageToErrorQueue(); // TODO : Close / Sleep the service here.
 					break;
 				} else {
-					logger.debug(
+					logger.info(
 							"Wait for a certain period, before reattempting to send. Or push this on a hold queue");
 				}
 
@@ -145,6 +150,7 @@ public class SendAndGetAckService {
 				}
 			}
 		} while (sendattemptcounter < MAX_SEND_ATTEMPTS); // Loop
+		return acked;
 	}
 
 	// Write to the database function.
@@ -184,12 +190,18 @@ public class SendAndGetAckService {
 		// Parse the message into the HAPI structure.
 		try {
 			hapiMsg = p.parse(msg);
-			context.close();
-		} catch (HL7Exception | IOException e) {
+			//Prevent close() from NULLREF on itself.
+			try {
+				context.getExecutorService();
+				context.close();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		} catch (HL7Exception e) {
 			logger.error("Unable to parse message.");
 			e.printStackTrace();
 		}
-
+		
 		//Make sure that we return if we were unable to parse the message string into a message.
 		if (hapiMsg == null) {
 			return;
