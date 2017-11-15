@@ -1,6 +1,8 @@
 package gov.va.mass.adapter.transforms;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -8,6 +10,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jms.listener.adapter.JmsResponse;
 import org.springframework.test.context.junit4.SpringRunner;
+import ca.uhn.hl7v2.HL7Exception;
+import gov.va.mass.adapter.core.MicroserviceException;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -21,19 +25,22 @@ public class TransformServiceApplicationTests {
 	}
 	
 	@Test
-	public void testUnknownTransform() {
+	public void testUnknownTransform() throws HL7Exception {
 		String input = "MSH|^~\\&|XDPS||||20170914151436-0500||ADT^A03|1|T|2.3\r";
 		
 		svc.xsltName = "ADT_A01";
-		JmsResponse<String> response = svc.transformPipeMessage(input);
-		String output = response.getResponse();
-		LOG.debug(output);
-		assertEquals(input, output);
+		try {
+			svc.transformPipeMessage(input);
+			
+			fail("Shouldn't get here, because transform should have thrown an exception!");
+		} catch (MicroserviceException e) {
+			assertTrue(true);
+		}
 	}
 	
 	@Test
 	// Patient Record Flags (ORU^R01)
-	public void testDLUMessage1() {
+	public void testDLUMessage1() throws HL7Exception, MicroserviceException {
 		String pipeMsg = "MSH|^~\\&|XDPS|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|HLO DEMO RECEIVING APPLICATION|^dhcp.epic.com:5106^DNS|20170914151436-0500||ORU^R01^|500 880|T^|2.4|||AL|NE|\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PATIENT^^^^||19350407|M|P8^^^^^~DXL^TEST^^^^||Line 1^LINE 2^SEYMOUR^TN^37865^^BA^~123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C^||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008||||||||||\r"
 				+ "OBR|1|||BEHAVIORAL\r" + "OBX|1|ST|Status||INACTIVE\r"
@@ -57,7 +64,7 @@ public class TransformServiceApplicationTests {
 	
 	@Test
 	// Bad Address Indicator (ORU^R01)
-	public void testDLUMessage2() {
+	public void testDLUMessage2() throws HL7Exception, MicroserviceException {
 		String pipeMsg = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20170914151436-0500||ORU^R01^|500 8207|T^|2.4|||AL|NE|\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PATIENT^^^^||19350407|M|P8^^^^^~DXL^TEST^^^^||Line 1^LINE 2^SEYMOUR^TN^37865^^BA^~123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C^||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008||||||||||\r"
 				+ "OBR|1|||BAD ADDRESS\r" + "OBX|1|ST|Status||ACTIVE\r" + "OBX|2|TX|Narrative||HOMELESS2\r";
@@ -75,7 +82,7 @@ public class TransformServiceApplicationTests {
 	
 	@Test
 	// Patient Sensitivity Flag (ORU^R01)
-	public void testDLUMessage3() {
+	public void testDLUMessage3() throws HL7Exception, MicroserviceException {
 		String pipeMsg = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20170914151436-0500||ORU^R01^|500 8207|T^|2.4|||AL|NE|\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PATIENT^^^^||19350407|M|P8^^^^^~DXL^TEST^^^^||Line 1^LINE 2^SEYMOUR^TN^37865^^BA^~123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C^||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008\r"
 				+ "OBR|1|||SENSITIVITY\r" + "OBX|1|ST|Status||ACTIVE\r";
@@ -93,7 +100,7 @@ public class TransformServiceApplicationTests {
 	
 	@Test
 	// Patient Update Messages (ADT^A08)
-	public void testDLUMessage4() {
+	public void testDLUMessage4() throws HL7Exception, MicroserviceException {
 		String pipeMsg = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20171010163409-0500||ADT^A08^|500 9406|T^|2.4|||AL|NE\r"
 				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PA^^^^||19350409|M|P8^^^^^~DXL^TEST^^^^||123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C^||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008|||||||||\r"
 				+ "PV1|1|||||||||||||||||SC VETERAN\r"

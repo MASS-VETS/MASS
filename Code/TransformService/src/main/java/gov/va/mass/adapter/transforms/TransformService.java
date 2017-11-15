@@ -23,6 +23,8 @@ import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.validation.impl.NoValidation;
+import gov.va.mass.adapter.core.JmsMicroserviceBase;
+import gov.va.mass.adapter.core.MicroserviceException;
 
 /**
  * VA Adapter Message Transform Service
@@ -32,11 +34,14 @@ import ca.uhn.hl7v2.validation.impl.NoValidation;
  */
 @Component
 @PropertySource("classpath:application.properties")
-public class TransformService {
+public class TransformService extends JmsMicroserviceBase {
 	static final Logger LOG = LoggerFactory.getLogger(TransformService.class);
 	
 	@Value("${xslt.name}")
 	String xsltName;
+	
+	@Value("${jms.inputQ}")
+	String inputQueue;
 	
 	@Value("${jms.outputQ}")
 	String outputQueue;
@@ -45,7 +50,7 @@ public class TransformService {
 	String errorQueue;
 	
 	@JmsListener(destination = "${jms.inputQ}")
-	public JmsResponse<String> transformPipeMessage(String pipeMessage) {
+	public JmsResponse<String> transformPipeMessage(String pipeMessage) throws MicroserviceException {
 		LOG.info("Received message");
 		logMessage(pipeMessage);
 		
@@ -58,14 +63,12 @@ public class TransformService {
 			Parser hl7Parser = context.getGenericParser();
 			Message hapiMessage = hl7Parser.parse(pipeMessage);
 			
-			// Determine the transform to use
-			// String xsltName = xsltNameForMessage(hapiMessage); //not basing this on message anymore
-			
 			// Get the actual transform
 			Source xsltSource = xsltSource(xsltName);
 			if (xsltSource == null) {
 				LOG.error("No transform found '" + xsltName + "'");
-				return JmsResponse.forQueue(pipeMessage, outputQueue);
+				this.enterErrorState("No transform found '" + xsltName + "'");
+				// return JmsResponse.forQueue(pipeMessage, outputQueue);
 			}
 			
 			// Turn the message into XML...
@@ -85,16 +88,15 @@ public class TransformService {
 			logMessage(transPipeMessage);
 			
 			return JmsResponse.forQueue(transPipeMessage, outputQueue);
-		}
-		catch (HL7Exception e) {
+		} catch (HL7Exception e) {
 			LOG.error("HL7 Exception in TransformService", e);
-			return JmsResponse.forQueue(e.toString(), errorQueue);
-		}
-		finally {
+			
+			this.enterErrorState(e.getMessage());
+			return JmsResponse.forQueue(pipeMessage, outputQueue); // this shouldn't actually happen; enterErrorState throws
+		} finally {
 			try {
 				context.close();
-			}
-			catch (IOException e) {
+			} catch (IOException e) {
 				LOG.error("Could not close HapiContext", e);
 			}
 		}
@@ -114,20 +116,16 @@ public class TransformService {
 				return null;
 			}
 			return new StreamSource(input);
-		}
-		catch (IOException e) {
+		} catch (IOException e) {
 			return null;
 		}
 	}
 	
 	/*
-	 * not doing this based on message type anymore
-	 * private static String xsltNameForMessage(Message hapiMessage) throws HL7Exception
-	 * {
-	 * Terser terser = new Terser(hapiMessage);
-	 * String getMsgType = terser.get("/.MSH-9-1");
-	 * String getMsgEvent = terser.get("/.MSH-9-2");
-	 * return getMsgType + "_" + getMsgEvent;
+	 * not doing this based on message type anymore private static String
+	 * xsltNameForMessage(Message hapiMessage) throws HL7Exception { Terser terser =
+	 * new Terser(hapiMessage); String getMsgType = terser.get("/.MSH-9-1"); String
+	 * getMsgEvent = terser.get("/.MSH-9-2"); return getMsgType + "_" + getMsgEvent;
 	 * }
 	 */
 	private String transformXmlMessage(String xmlMessage, Source xsltSource) {
@@ -151,12 +149,10 @@ public class TransformService {
 			
 			// return the result
 			return writer.toString();
-		}
-		catch (TransformerException e) {
+		} catch (TransformerException e) {
 			LOG.error("Exception in XSLT process", e);
 			return "";
-		}
-		finally {
+		} finally {
 			// clean up after ourselves
 			if (reader != null) {
 				reader.close();
@@ -164,11 +160,16 @@ public class TransformService {
 			if (writer != null) {
 				try {
 					writer.close();
-				}
-				catch (IOException e) {
+				} catch (IOException e) {
 					LOG.error("Could not close XML writer", e);
 				}
 			}
 		}
+	}
+	
+	@Override
+	protected String serviceName() {
+		System.out.println("wat123");
+		return "TransformService";
 	}
 }
