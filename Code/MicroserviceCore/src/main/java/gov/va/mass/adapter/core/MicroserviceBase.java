@@ -1,6 +1,5 @@
 package gov.va.mass.adapter.core;
 
-import javax.annotation.PostConstruct;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,20 +14,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/")
 public abstract class MicroserviceBase {
-	public MicroserviceState state;
-	
-	/**
-	 * initialize the monitor state object.
-	 */
-	@PostConstruct
-	private void setStateObject() {
-		state = initStateObject();
-	}
+	protected MicroserviceState state = new MicroserviceState(serviceName());
 	
 	/**
 	 * extending class needs to implement this to construct their state object
 	 */
-	protected abstract MicroserviceState initStateObject();
+	protected abstract String serviceName();
+	
+	/**
+	 * gets the state object for a microservice
+	 */
+	protected MicroserviceState getStateObject() {
+		return state;
+	}
 	
 	/**
 	 * monitor will call this to determine if the microservice is even running

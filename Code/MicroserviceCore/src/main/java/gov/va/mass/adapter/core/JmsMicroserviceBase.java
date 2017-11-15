@@ -1,6 +1,5 @@
 package gov.va.mass.adapter.core;
 
-import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.config.JmsListenerEndpointRegistry;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,21 +17,7 @@ import gov.va.mass.adapter.core.JmsMicroserviceState.RunState;
 @RestController
 @RequestMapping("/")
 public abstract class JmsMicroserviceBase extends MicroserviceBase {
-	public JmsMicroserviceState state;
-	
-	/**
-	 * initialize the monitor state object.
-	 */
-	@PostConstruct
-	private void setStateObject() {
-		state = initStateObject();
-	}
-	
-	/**
-	 * extending class needs to implement this to construct their state object
-	 */
-	@Override
-	protected abstract JmsMicroserviceState initStateObject();
+	protected JmsMicroserviceState state = new JmsMicroserviceState(serviceName());
 	
 	@Autowired
 	private JmsListenerEndpointRegistry registry;
@@ -43,17 +28,27 @@ public abstract class JmsMicroserviceBase extends MicroserviceBase {
 	 */
 	@GetMapping("/jms/pauselistener")
 	public void pauseJmsListener() {
-		registry.stop();
+		if (registry != null) {
+			registry.stop();
+		}
 		state.runState = RunState.Paused;
 	}
 	
 	/**
 	 * extending class should use this if it encounters an unrecoverable error
 	 * condition and should stop.
+	 * 
+	 * @throws MicroserviceException
+	 *           always thrown so that microservice will leave message on queue
 	 */
-	protected void enterErrorState() {
-		registry.stop();
+	protected void enterErrorState(String errorMessage) throws MicroserviceException {
+		if (registry != null) {
+			registry.stop();
+		}
+		state.errorMessage = errorMessage;
 		state.runState = RunState.ErrorCondition;
+		
+		throw new MicroserviceException(errorMessage);
 	}
 	
 	/**
@@ -61,7 +56,9 @@ public abstract class JmsMicroserviceBase extends MicroserviceBase {
 	 */
 	@GetMapping("/jms/restartlistener")
 	public void restartJmsListener() {
-		registry.start();
+		if (registry != null) {
+			registry.start();
+		}
 		state.runState = RunState.Running;
 	}
 }
