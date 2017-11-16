@@ -87,9 +87,13 @@ public class SendAndGetAckService {
 		// Log message and save to database before sending.
 		logger.info("Received from Q: " + msgtxt);
 		putMsgIdAndSenderOnMDC(msgtxt);
+		
+		//Only write to the database that the message was sent if we successfully send the message without NACK.
 		if (sendOverHAPI(msgtxt)) {
 			sendMessageToWriteToDBQueue(msgtxt);
 		}
+		
+		//Clear MDC
 		MDC.clear();
 		logger.info("MDC cleared");
 	}
@@ -121,14 +125,18 @@ public class SendAndGetAckService {
 			try {
 				// Increment send count and send.
 				++sendattemptcounter;
-				logger.info(
-						" \n\nSending to attempt# " + sendattemptcounter + "\n " + rawsendable.getMessage().toString());
+				
+				//Log sending attemp and the raw message.
+				logger.info(" \n\nSending to attempt# " + sendattemptcounter + "\n " + rawsendable.getMessage().toString());
+				
+				//Attempt to get the raw sendable information and transmit receiving the acknowledgement and logging it.
 				IReceivable<String> receivable = client.sendAndReceive(rawsendable);
 				String respstring = receivable.getMessage();
 				logger.info("\nResponse :\n" + respstring + "\n");
-				//TODO: analyze return string for ACK.  If NAK set return to false.
-				acked = true;
-				break;
+				
+				//Return whether the ack was positive or negative.
+				acked = isPositiveAck(respstring);
+				break; //If we reached this point then we want to make sure that we break this loop.
 			} catch (DecodeException | IOException | EncodeException e) {
 				// If we are at the maximum number of attempts then log that to the error queue.
 				if (sendattemptcounter == MAX_SEND_ATTEMPTS) {
@@ -140,7 +148,7 @@ public class SendAndGetAckService {
 							"Wait for a certain period, before reattempting to send. Or push this on a hold queue");
 				}
 
-				// Pause for the set amount of time.
+				// Pause for the set amount of time if we were unsuccessful in sending the message. If a single message reaches this point something is wrong with communications.
 				try {
 					Thread.sleep(SEND_ATTEMPT_INTERVAL);
 				} catch (InterruptedException e1) {
@@ -219,4 +227,42 @@ public class SendAndGetAckService {
 		MDC.put("MsgId", msgid);
 		MDC.put("Sender", sendingApplication);
 	}
+
+	// Get the required values for processing from the message.
+	// FUTURE: Update code to modularize the get values from message string function which is present here and other places into a library.
+	private boolean isPositiveAck(String respmsg) {
+			String AckValue = "";
+		
+			//Initialize parser and variables.
+			HapiContext context = new DefaultHapiContext();
+			Parser p = context.getGenericParser();
+			Message msg = null;
+			
+			//Attempt to parse the message.
+			try {
+				msg = p.parse(respmsg);
+			} catch (HL7Exception e) {
+				logger.error("Unable to parse message");
+				e.printStackTrace();
+			}
+			
+			//Prevent close() from NULLREF on itself.
+			try {
+				context.getExecutorService();
+				context.close();
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+			
+			//Use the Terser to find a specific message value in this case that is the acknowledgement's code.
+			Terser terser = new Terser(msg);
+			try {
+				AckValue = terser.get("/MSA-1-1");
+			} catch (HL7Exception e) {
+				logger.error("Unable to get msg id from the message.");
+				e.printStackTrace();
+			}
+			
+			return (AckValue.equals("AA") || AckValue.equals("CA"));
+		}
 }
