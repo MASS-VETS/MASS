@@ -22,13 +22,6 @@ public abstract class MicroserviceBase {
 	protected abstract String serviceName();
 	
 	/**
-	 * gets the state object for a microservice
-	 */
-	protected MicroserviceState getStateObject() {
-		return state;
-	}
-	
-	/**
 	 * monitor will call this to determine if the microservice is even running
 	 */
 	@GetMapping("/heartbeat/isalive")

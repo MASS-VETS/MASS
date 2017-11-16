@@ -41,14 +41,14 @@ public abstract class JmsMicroserviceBase extends MicroserviceBase {
 	 * @throws MicroserviceException
 	 *           always thrown so that microservice will leave message on queue
 	 */
-	protected void enterErrorState(String errorMessage) throws MicroserviceException {
+	protected MicroserviceException enterErrorState(String errorMessage) {
 		if (registry != null) {
 			registry.stop();
 		}
 		state.errorMessage = errorMessage;
 		state.runState = RunState.ErrorCondition;
 		
-		throw new MicroserviceException(errorMessage);
+		return new MicroserviceException(errorMessage);
 	}
 	
 	/**

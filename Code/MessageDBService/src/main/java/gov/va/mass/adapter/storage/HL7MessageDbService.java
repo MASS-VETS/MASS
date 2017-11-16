@@ -1,18 +1,13 @@
 package gov.va.mass.adapter.storage;
 
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-
 import javax.annotation.PostConstruct;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.dao.DataAccessException;
@@ -21,6 +16,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+import gov.va.mass.adapter.core.JmsMicroserviceBase;
+import gov.va.mass.adapter.core.MicroserviceException;
 
 /**
  * VA Adapter Message Database Service
@@ -29,7 +26,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @PropertySource("classpath:application.properties")
-public class HL7MessageDbService {
+public class HL7MessageDbService extends JmsMicroserviceBase {
 	static final Logger log = LoggerFactory.getLogger(HL7MessageDbService.class);
 	
 	@Value("${database.pingonstartup}")
@@ -41,20 +38,17 @@ public class HL7MessageDbService {
 	@Autowired
 	JdbcTemplate jdbcTemplate;
 	
-	// TODO: heartbeat
-	
-	// check the database connection at startup and fail.
-	// TODO: use this with the heartbeat endpoint to confirm database is still accessable.
 	@PostConstruct
 	public void checkConnection() throws SQLException {
 		
-		//Only check to make sure that the database is running when in production.
-		if(!pingOnStartup) {
+		// Only check to make sure that the database is running when in production.
+		if (!pingOnStartup) {
 			return;
 		}
 		log.info("checking connection to database...");
 		
-		//Initialize the connection state then check to see if the connection is valid with 30 second timeout.
+		// Initialize the connection state then check to see if the connection is valid
+		// with 30 second timeout.
 		boolean connectionValid = false;
 		try {
 			connectionValid = jdbcTemplate.getDataSource().getConnection().isValid(30);
@@ -62,52 +56,42 @@ public class HL7MessageDbService {
 				log.info("Connection good!");
 				return;
 			}
-		}
-		catch (SQLException e) {
+		} catch (SQLException e) {
 			log.info("Could not connect to the database.");
 			throw e;
 		}
 		
-		//This should be unreachable in theory as both valid connections and the broken ones will have been caught in the above try/catch.
+		// This should be unreachable in theory as both valid connections and the broken
+		// ones will have been caught in the above try/catch.
 		throw new SQLException("Connection to the database is no longer valid.");
 	}
 	
-	//Function to get the databases most recent times for messages to ensure that all of the queues are running appropriately.
-	//This function will potentially be used by the monitoring for time since last message.
-	public void getHeartBeatData() {
-		SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("heartBeatData");
-		
-		Map<String, Object> res = call.execute();
-		@SuppressWarnings({ "unchecked", "unused" })
-		List<Map<String, Object>> results = (List<Map<String, Object>>) res.get(res.keySet().iterator().next()); //Get #result-set-1
-	}
-	
 	@JmsListener(destination = "${jms.inputQ}")
-	public void storeHL7Message(MapMessage msg) {
-		
-		//Initialize the parameters for the query.
-		String messageContent = ""; 
+	public void storeHL7Message(MapMessage msg) throws MicroserviceException {
+		this.state.serviceCalled();
+		// Initialize the parameters for the query.
+		String messageContent = "";
 		String interfaceId = "";
 		String fieldList = "";
 		String dateTime = "";
 		
-		//Attempt to get the values from the queue message.
+		// Attempt to get the values from the queue message.
 		try {
 			messageContent = msg.getString("messageContent");
 			interfaceId = msg.getString("interfaceId");
 			fieldList = msg.getString("fieldList");
 			dateTime = msg.getString("dateTime");
-			
 		} catch (JMSException e1) {
 			log.info("Message received does not contain appropriate mapping for interface or message content.");
+			this.state.serviceFailed();
 			return;
 		}
 		
-		//Create the query & New parameters objects.
+		// Create the query & New parameters objects.
 		SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("storeHAPIMessage");
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
 		
-		//Log and add the parameters to the parameter list object.
+		// Log and add the parameters to the parameter list object.
 		log.info("interfaceId=" + interfaceId);
 		log.info("messageContent=" + messageContent);
 		log.info("fieldList=" + fieldList);
@@ -118,28 +102,28 @@ public class HL7MessageDbService {
 		addParam(parameters, "fieldList", fieldList);
 		addParam(parameters, "dateTime", dateTime);
 		
-		//Attempt to execute the query to store the data.
+		// Attempt to execute the query to store the data.
 		try {
-		call.execute(parameters);
-		
-		log.info("Message stored");
-		}
-		catch (DataAccessException e) {
-			log.info("Data access exception shutting down the service.");
-			
-			SpringApplication.exit(context); //Do the shutdown if the server cannot get a connection.
-			
-			throw e;
+			call.execute(parameters);
+			log.info("Message stored");
+			this.state.serviceSucceeded();
+		} catch (DataAccessException e) {
+			this.state.serviceFailed();
+			throw this.enterErrorState("Data access exception shutting down the service.");
 		}
 	}
 	
-	//Handle the addition of null parameters to the parameter list object.
+	// Handle the addition of null parameters to the parameter list object.
 	private void addParam(MapSqlParameterSource parameters, String paramName, String value) {
 		if (value == null || value.length() == 0) {
 			parameters.addValue(paramName, null, java.sql.Types.NULL); // SQL throws a fit if it's not at least there
-		}
-		else {
+		} else {
 			parameters.addValue(paramName, value);
 		}
+	}
+	
+	@Override
+	protected String serviceName() {
+		return "MessageDBService";
 	}
 }

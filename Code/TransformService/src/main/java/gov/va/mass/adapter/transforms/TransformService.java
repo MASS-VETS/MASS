@@ -46,6 +46,7 @@ public class TransformService extends JmsMicroserviceBase {
 	@JmsListener(destination = "${jms.inputQ}")
 	public JmsResponse<String> transformPipeMessage(String pipeMessage) throws MicroserviceException {
 		LOG.info("Received message");
+		this.state.serviceCalled();
 		logMessage(pipeMessage);
 		
 		// Set up HAPI context
@@ -61,7 +62,7 @@ public class TransformService extends JmsMicroserviceBase {
 			Source xsltSource = xsltSource(xsltName);
 			if (xsltSource == null) {
 				LOG.error("No transform found '" + xsltName + "'");
-				this.enterErrorState("No transform found '" + xsltName + "'");
+				throw this.enterErrorState("No transform found '" + xsltName + "'");
 			}
 			
 			// Turn the message into XML...
@@ -84,8 +85,7 @@ public class TransformService extends JmsMicroserviceBase {
 		} catch (HL7Exception e) {
 			LOG.error("HL7 Exception in TransformService", e);
 			
-			this.enterErrorState(e.getMessage());
-			return JmsResponse.forQueue(pipeMessage, outputQueue); // this shouldn't actually happen; enterErrorState throws
+			throw this.enterErrorState(e.getMessage());
 		} finally {
 			try {
 				context.close();

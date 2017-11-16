@@ -25,5 +25,6 @@ public class JmsMicroserviceState extends MicroserviceState {
 	protected void addCustomProperties(JsonObjectBuilder builder) {
 		// add the run state. Maybe this should be in the base class instead?
 		builder.add("runState", runState.toString());
+		builder.add("errorMessgae", errorMessage);
 	}
 }
