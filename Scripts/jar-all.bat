@@ -5,8 +5,8 @@ IF "%ENV%"=="" (
 IF NOT EXIST "%~dp0JARs\" (
 	MKDIR "%~dp0JARs\"
 )
-call:install ..\Code\MicroserviceCore
-call:move ..\Code\MicroserviceCore
+call:install ..\Code\MicroserviceCore || goto error
+call:move ..\Code\MicroserviceCore || goto error
 FOR /D %%a IN (..\Code\*) DO (
 	if not "%%a"=="..\Code\MicroserviceCore" (
 		call:compile %%a || goto error
