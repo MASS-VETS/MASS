@@ -84,7 +84,6 @@ AS
 BEGIN
 	DECLARE @startTime DATETIME = getdate() --Get the current date and time for comparison.
 	DECLARE @interface UNIQUEIDENTIFIER
-	DECLARE @messageID UNIQUEIDENTIFIER
 	DECLARE @intfPurgeDays TINYINT
 	DECLARE @purgeDate DATETIME
 	DECLARE @count int = 0
@@ -103,38 +102,20 @@ BEGIN
 	--Loop over all of the interfaces to remove messages.
 	WHILE @@FETCH_STATUS = 0 BEGIN
 		--First check and see if purge days should be overwritten.
-		IF @intfPurgeDays = NULL SET @intfPurgeDays=@systemPurgeDays
+		IF @intfPurgeDays IS NULL SET @intfPurgeDays=@systemPurgeDays
 
 		--Now check to see if we should be purging this interface and do so.
 		IF @intfPurgeDays <> 0 BEGIN
+			
+			--Get the date to delete to.
 			SET @purgeDate = DATEADD("D",-@intfPurgeDays,@startTime)
 
-			--Cursor over all of the messages that should be deleted.
-			DECLARE msgCurs CURSOR FOR
-			SELECT ID FROM messageData WHERE ((InterfaceID = @interface) AND (Datetime < @purgeDate))
+			--Delete from keyValue
+			DELETE kv FROM keyValues kv INNER JOIN messageData md on kv.MessageID = md.ID where md.Datetime < @purgeDate
 
-			OPEN msgCurs
-			FETCH NEXT FROM msgCurs into @messageID
-
-			--Loop over all the messages and remove from the keys and routings table the message before removing the message itself.
-			WHILE @@FETCH_STATUS = 0 BEGIN
-				
-				--Increase our count
-				SET @count = @count + 1
-
-				--Delete from the keyValues table.
-				DELETE FROM keyValues WHERE MessageID=@messageID
-				
-				--Delete from the message table.
-				DELETE FROM messageData where ID=@messageID 
-
-				--Get the next row.
-				FETCH NEXT FROM msgCurs into @messageID
-			END
-
-			--Wrap up the use of the message cursor.
-			CLOSE msgCurs
-			DEALLOCATE msgCurs
+			--Delete from messageData
+			DELETE FROM messageData where Datetime < @purgeDate
+			SET @count=@count+@@ROWCOUNT
 		END
 
 		--Fetch the next interface
@@ -327,26 +308,6 @@ BEGIN
 
 	--Execute the Key value mapping.
 	EXEC storeHAPIKeyValue @fieldList, @msgID
-END
-GO
-
---Create SP for heartbeat data
-
--- =============================================
--- Author:		Alex Hanson
--- Create date: 2017-11-09
--- Description:	Gather the most recent time for all interfaces having sent or received a message.
--- =============================================
-CREATE PROCEDURE heartBeatData 
-	
-AS
-BEGIN
-	-- SET NOCOUNT ON added to prevent extra result sets from
-	-- interfering with SELECT statements.
-	SET NOCOUNT ON;
-
-    -- Get the values for the latest date time for all messages.
-	SELECT intf.ID,MAX(md.Datetime) as LastEntry FROM messageData md right join interfaces as intf on md.InterfaceID=intf.ID group by intf.ID
 END
 GO
 
