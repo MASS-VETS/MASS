@@ -1,4 +1,10 @@
 @echo off
+IF "%ENV%"=="" (
+	SET ENV=DEV
+)
+IF NOT EXIST "%~dp0JARs\" (
+	MKDIR "%~dp0JARs\"
+)
 call:install ..\Code\MicroserviceCore
 call:move ..\Code\MicroserviceCore
 FOR /D %%a IN (..\Code\*) DO (
