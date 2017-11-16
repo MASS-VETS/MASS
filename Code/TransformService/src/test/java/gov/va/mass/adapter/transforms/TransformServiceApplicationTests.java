@@ -21,7 +21,6 @@ public class TransformServiceApplicationTests {
 	
 	public TransformServiceApplicationTests() {
 		svc.outputQueue = "UTresponseQ";
-		svc.errorQueue = "UTerrorQ";
 	}
 	
 	@Test
