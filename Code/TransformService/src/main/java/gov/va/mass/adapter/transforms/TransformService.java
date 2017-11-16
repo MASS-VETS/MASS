@@ -40,14 +40,8 @@ public class TransformService extends JmsMicroserviceBase {
 	@Value("${xslt.name}")
 	String xsltName;
 	
-	@Value("${jms.inputQ}")
-	String inputQueue;
-	
 	@Value("${jms.outputQ}")
 	String outputQueue;
-	
-	@Value("${jms.errorQ}")
-	String errorQueue;
 	
 	@JmsListener(destination = "${jms.inputQ}")
 	public JmsResponse<String> transformPipeMessage(String pipeMessage) throws MicroserviceException {
@@ -68,7 +62,6 @@ public class TransformService extends JmsMicroserviceBase {
 			if (xsltSource == null) {
 				LOG.error("No transform found '" + xsltName + "'");
 				this.enterErrorState("No transform found '" + xsltName + "'");
-				// return JmsResponse.forQueue(pipeMessage, outputQueue);
 			}
 			
 			// Turn the message into XML...
@@ -121,13 +114,6 @@ public class TransformService extends JmsMicroserviceBase {
 		}
 	}
 	
-	/*
-	 * not doing this based on message type anymore private static String
-	 * xsltNameForMessage(Message hapiMessage) throws HL7Exception { Terser terser =
-	 * new Terser(hapiMessage); String getMsgType = terser.get("/.MSH-9-1"); String
-	 * getMsgEvent = terser.get("/.MSH-9-2"); return getMsgType + "_" + getMsgEvent;
-	 * }
-	 */
 	private String transformXmlMessage(String xmlMessage, Source xsltSource) {
 		StringReader reader = null;
 		StringWriter writer = null;
@@ -169,7 +155,6 @@ public class TransformService extends JmsMicroserviceBase {
 	
 	@Override
 	protected String serviceName() {
-		System.out.println("wat123");
 		return "TransformService";
 	}
 }
