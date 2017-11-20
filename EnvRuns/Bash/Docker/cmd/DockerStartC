@@ -1,0 +1,3 @@
+#!/bin/bash
+#--- Start all Containers
+docker start $(docker ps -a -q -n=15)

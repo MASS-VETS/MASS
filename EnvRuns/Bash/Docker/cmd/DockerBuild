@@ -1,0 +1,12 @@
+#!/bin/bash
+cd build/dockerrcv
+docker build . -t rcv_i
+cd ../dockerq
+docker build . -t amq_i
+cd ../dockersql
+docker build . -t sql_i
+cd ../dockerxslt
+docker build . -t xslt_i
+cd ../dockersnd
+docker build . -t snd_i
+cd ../..

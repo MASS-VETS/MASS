@@ -1,0 +1,4 @@
+#!/bin/bash
+#--- Stop all Containers except ActiveMQ
+docker stop $(docker ps -a -q -n=15)
+
