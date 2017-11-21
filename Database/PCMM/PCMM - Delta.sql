@@ -11,28 +11,28 @@ SELECT
 
 --
 -- Patient Information
-vPat.DFN PatIdentifier, --Local patient identifier
-vPat.STA3N StationID, --IEN for the Facility
+ISNULL(vPat.DFN PatIdentifier,''), --Local patient identifier
+ISNULL(vPat.STA3N StationID,''), --IEN for the Facility
 
-pat.LAST_NAME PatLastName, -- Patient Name as seperate columns to make transformation to HL7 simpler.
-pat.FIRST_NAME PatFirstName,
-pat.MIDDLE_NAME PatMiddleName,
+ISNULL(pat.LAST_NAME PatLastName,''), -- Patient Name as seperate columns to make transformation to HL7 simpler.
+ISNULL(pat.FIRST_NAME PatFirstName,''),
+ISNULL(pat.MIDDLE_NAME PatMiddleName,''),
 
-pat.BIRTH_DATE PatBirthDate,
-pat.GENDER_ID PatGender,
+ISNULL(pat.BIRTH_DATE PatBirthDate,''),
+ISNULL(pat.GENDER_ID PatGender,''),
 
 --
 -- Provider Information
-teamRole.NAME TeamRole,
-staff.STA3N StaffStation,
-staff.STAFF_IEN StaffIdentifier,
-staff.LAST_NAME StaffLastName,
-staff.FIRST_NAME StaffFirstName,
-staff.MIDDLE_NAME StaffMiddleName,
+ISNULL(teamRole.NAME TeamRole,''),
+ISNULL(staff.STA3N StaffStation,''),
+ISNULL(staff.STAFF_IEN StaffIdentifier,''),
+ISNULL(staff.LAST_NAME StaffLastName,''),
+ISNULL(staff.FIRST_NAME StaffFirstName,''),
+ISNULL(staff.MIDDLE_NAME StaffMiddleName,''),
 
 -- Association Start and End Dates
-teamPatAssign.START_DATE AssocStart,
-teamPatAssign.END_DATE AssocEnd
+ISNULL(teamPatAssign.START_DATE AssocStart,''),
+ISNULL(teamPatAssign.END_DATE AssocEnd,'')
 
 
 FROM
