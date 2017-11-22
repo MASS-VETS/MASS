@@ -2,12 +2,16 @@
 #descriptive names for incoming params
 nm=$1
 rcvport=$2
-msgCnt=$4
-msgType=$3
+msgCnt=$3
+msgRate=$5
+msgType=$6
 
 #defaults
 if [ -z $msgCnt ]; then
   msgCnt=100
+fi
+if [ -z $msgRate ]; then
+  msgRate=10
 fi
 if [ -z $msgType ]; then
   msgType="ADT^A01"
@@ -15,4 +19,4 @@ fi
 
 
 #--- DOCKER CONTAINER for a single interface running hammer
-docker run -d --name hammer${nm}_c hammer_i --destination.url=http://severusqa-submission1:${rcvport}/receive --message.type=${msgType} --message.count=${msgCnt}
+docker run -d --name hammer${nm}_c hammer_i --destination.url=http://severusqa-submission1:${rcvport}/receive --message.type=${msgType} --message.count=${msgCnt} --message.rate=${msgRate}
