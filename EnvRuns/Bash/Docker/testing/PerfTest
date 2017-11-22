@@ -3,25 +3,26 @@ docker stop hammer_c
 
 docker rm -f hammer_c
 
-docker rmi -f hammer_i
+docker rmi -f hammer_i 
 
 #docker start hammer_c
 
 cd build
-docker build . -t hammer_i 
+docker build . -t hammer_i
 cd ..
 
 #------Scheduling INCOMING
-DockerHammer insched 5100
+./DockerHammer insched 5100
 #------Errors
-DockerHammer error 5200
+./DockerHammer error 5200
 #------Orders
-DockerHammer order 5300
+./DockerHammer order 5300
 #------Scheduling
-DockerHammer sched 5400
+./DockerHammer sched 5400
 #------Demographics ADT
-DockerHammer demogADT 5500
+./DockerHammer demogADT 5500
 #------Demographics ORU
-DockerHammer demogORU 5600
+./DockerHammer demogORU 5600
 
 docker logs perf_c
+
