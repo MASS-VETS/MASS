@@ -3,8 +3,8 @@
 nm=$1
 rcvport=$2
 msgCnt=$3
-msgRate=$5
-msgType=$6
+msgRate=$4
+msgType=$5
 
 #defaults
 if [ -z $msgCnt ]; then
