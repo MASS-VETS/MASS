@@ -34,7 +34,7 @@ if [ "$reConfig" -gt 0 ] ; then
 	#Docker container SQL
 	cmd/DockerStartSql
 	#Docker container all Interface Instances
-	DockerInts
+	./DockerInts
 else
 	cmd/DockerStartC
 fi
