@@ -4,23 +4,23 @@
 reConfig=$1
 rebuildI=$2
 
-if [ -z $reConfig ] ; then
+if [ ${#reConfig} -eq 0 ] ; then
 	reConfig=0
 fi
-if [ -z $rebuildI ] ; then
+if [ ${#rebuildI} -eq 0 ] ; then
 	rebuildI=0
 fi
 
 #Stop all Docker Containers (except ActiveMQ)
 cmd/DockerStopC
 
-if [ "$reConfig" -gt 0 ] ; then
+if [ $reConfig -gt 0 ] ; then
 	#Remove all containters (except ActiveMQ)
 	cmd/DockerRmvC
 fi
 
 #delete all docker images and rebuild them, but only if asked to
-if [ "$rebuildI" -gt 0 ] ; then
+if [ $rebuildI -gt 0 ] ; then
 	#Clear all Docker Images
 	cmd/DockerClearI
 	#Build docker images
@@ -30,7 +30,7 @@ if [ "$rebuildI" -gt 0 ] ; then
 	cmd/DockerStartAmq
 fi
 
-if [ "$reConfig" -gt 0 ] ; then
+if [ $reConfig -gt 0 ] ; then
 	#Docker container SQL
 	cmd/DockerStartSql
 	#Docker container all Interface Instances

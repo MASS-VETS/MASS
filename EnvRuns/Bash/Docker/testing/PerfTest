@@ -1,16 +1,28 @@
 #!/bin/bash
-docker stop hammer_c
 
-docker rm -f hammer_c
+#--- Stop any active hammer containers
+active=$(docker ps -q -f name=hammer)
+if [ ${#active} -gt 0 ] ; then
+	docker stop $active
+fi
 
-docker rmi -f hammer_i 
+#--- Remove all hammer containers
+containers=$(docker ps -q -a -f name=hammer)
+if [ ${#containers} -gt 0 ] ; then
+	docker rm -f $containers
+fi
 
 #docker start hammer_c
 
+#--- Remove the hammer image
+docker rmi -f hammer_i 
+
+#--- Build the hammer image
 cd build
 docker build . -t hammer_i
 cd ..
 
+#--- Fire up a hammer for each interface
 #------Scheduling INCOMING
 ./DockerHammer insched 5100
 #------Errors
@@ -23,6 +35,4 @@ cd ..
 ./DockerHammer demogADT 5500
 #------Demographics ORU
 ./DockerHammer demogORU 5600
-
-docker logs perf_c
 

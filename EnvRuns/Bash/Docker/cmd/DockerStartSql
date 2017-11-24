@@ -1,3 +1,3 @@
 #!/bin/bash
 #--- DOCKER CONTAINER: SQL
-docker run -d -p 1433:1433 --name sql_c sql_i --jms.inputQ=sqlQ --spring.datasource.url=jdbc:sqlserver://vista-client.epic.com --spring.activemq.broker-url=tcp://severusqa-submission1.epic.com:61616 --spring.datasource.password=va
+docker run -d -p 1433:1433 -p 5001:5001 --name sql_c sql_i --jms.inputQ=sqlQ --spring.datasource.url=jdbc:sqlserver://vista-client.epic.com --spring.activemq.broker-url=tcp://severusqa-submission1.epic.com:61616 --spring.datasource.password=va
