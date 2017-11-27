@@ -10,7 +10,7 @@ ISNULL(pat.LAST_NAME PatLastName,''), -- Patient Name as seperate columns to mak
 ISNULL(pat.FIRST_NAME PatFirstName,''),
 ISNULL(pat.MIDDLE_NAME PatMiddleName,''),
 
-ISNULL(pat.BIRTH_DATE PatBirthDate,''),
+FORMAT(ISNULL(pat.BIRTH_DATE PatBirthDate,''), N'yyyyMMdd'),
 ISNULL(pat.GENDER_ID PatGender,''),
 
 --
@@ -23,8 +23,8 @@ ISNULL(staff.FIRST_NAME StaffFirstName,''),
 ISNULL(staff.MIDDLE_NAME StaffMiddleName,''),
 
 -- Association Start and End Dates
-ISNULL(teamPatAssign.START_DATE AssocStart,''),
-ISNULL(teamPatAssign.END_DATE AssocEnd,'')
+FORMAT(ISNULL(teamPatAssign.START_DATE AssocStart,''), N'yyyyMMddHHmmss'),
+FORMAT(ISNULL(teamPatAssign.END_DATE AssocEnd,''), N'yyyyMMddHHmmss')
 
 FROM
 
