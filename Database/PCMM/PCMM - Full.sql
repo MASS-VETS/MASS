@@ -3,21 +3,21 @@ SELECT
 
 --
 -- Patient Information
-ISNULL(vPat.DFN,'') PatIdentifier, --Local patient identifier
-ISNULL(vPat.STA3N,'') StationID, --IEN for the Facility
+vPat.DFN PatIdentifier, --Local patient identifier
+vPat.STA3N StationID, --IEN for the Facility
 
 ISNULL(pat.LAST_NAME,'') PatLastName, -- Patient Name as seperate columns to make transformation to HL7 simpler.
 ISNULL(pat.FIRST_NAME,'') PatFirstName,
 ISNULL(pat.MIDDLE_NAME,'') PatMiddleName,
 
 CASE WHEN TRY_CONVERT(DATETIME,pat.BIRTH_DATE,102) IS NULL THEN '' ELSE FORMAT(TRY_CONVERT(DATETIME,pat.BIRTH_DATE,102), N'yyyyMMdd') END PatBirthDate,
-ISNULL(pat.GENDER_ID,'') PatGender,
+pat.GENDER_ID PatGender,
 
 --
 -- Provider Information
 ISNULL(teamRole.NAME,'') TeamRole,
-ISNULL(staff.STA3N,'') StaffStation,
-ISNULL(staff.STAFF_IEN,'') StaffIdentifier,
+staff.STA3N StaffStation,
+staff.STAFF_IEN StaffIdentifier,
 ISNULL(staff.LAST_NAME,'') StaffLastName,
 ISNULL(staff.FIRST_NAME,'') StaffFirstName,
 ISNULL(staff.MIDDLE_NAME,'') StaffMiddleName,
