@@ -18,7 +18,7 @@ ISNULL(pat.LAST_NAME,'') PatLastName, -- Patient Name as seperate columns to mak
 ISNULL(pat.FIRST_NAME,'') PatFirstName,
 ISNULL(pat.MIDDLE_NAME,'') PatMiddleName,
 
-CASE WHEN pat.BIRTH_DATE IS NULL THEN '' ELSE FORMAT(pat.BIRTH_DATE, N'yyyyMMdd') END PatBirthDate,
+CASE WHEN TRY_CONVERT(DATETIME,pat.BIRTH_DATE,102) IS NULL THEN '' ELSE FORMAT(TRY_CONVERT(DATETIME,pat.BIRTH_DATE,102), N'yyyyMMdd') END PatBirthDate,
 ISNULL(pat.GENDER_ID,'') PatGender,
 
 --
