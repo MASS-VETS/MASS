@@ -1,15 +1,13 @@
 #!/bin/bash
 #descriptive names for incoming params
-nm=$1
-rcvport=$2
-inGuid=$3
-outGuid=$4
-desturl=$5
-numSenders=$6
-xslt=$7
-#queues
-
-amqBroker=tcp://severusqa-submission1.epic.com:61616
+amqBroker=$1
+nm=$2
+rcvport=$3
+inGuid=$4
+outGuid=$5
+desturl=$6
+numSenders=$7
+xslt=$8
 
 #--- DOCKER CONTAINER: Transform
 if [ -z $xslt ]; then
@@ -18,7 +16,8 @@ if [ -z $xslt ]; then
 else
   rcvo=$1XsltQ
   sndi=$1SndQ
-  docker run -d --name ${nm}_xslt_c xslt_i --jms.inputQ=$rcvo --jms.outputQ=$sndi --xslt.name=$xslt --spring.activemq.broker-url=$amqBroker
+  port=$(( $rcvport + 5 ))
+  docker run -d -p ${port}:${port} --name ${nm}_xslt_c xslt_i --jms.inputQ=$rcvo --jms.outputQ=$sndi --xslt.name=$xslt --spring.activemq.broker-url=$amqBroker
 fi
 
 #fire up the docker containers
@@ -31,5 +30,6 @@ if [ -z $numSenders ]; then
 fi
 for (( i=1; i<=$numSenders; i++ ))
 do
-  docker run -d -e ENV='dev' --name ${nm}_snd${i}_c snd_i --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid --spring.activemq.broker-url=$amqBroker
+  port=$(( $rcvport + 10 ))
+  docker run -d -e ENV='dev' -p ${port}:${port} --name ${nm}_snd${i}_c snd_i --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid --spring.activemq.broker-url=$amqBroker
 done

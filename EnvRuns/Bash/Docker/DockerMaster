@@ -1,5 +1,13 @@
 #!/bin/bash
 
+#environment specific config
+amqBroker=tcp://severusqa-submission1.epic.com:61616
+sqlUrl=jdbc:sqlserver://vista-client.epic.com
+sqlLogin=va
+sqlPwd=va
+intDest=http://vs-icx18-34/Interconnect-Department-of-Veterans-Affairs-CFB/api/epic/2015/EDI/HTTP/HL7V2
+intIndest=http://vs-icx18-9/Interconnect-2017-SU-Stage1-Primary-Base/api/epic/2015/EDI/HTTP/HL7V2
+
 #descriptive names for incoming params
 reConfig=$1
 rebuildI=$2
@@ -32,9 +40,9 @@ fi
 
 if [ $reConfig -gt 0 ] ; then
 	#Docker container SQL
-	cmd/DockerStartSql
+	cmd/DockerStartSql $amqBroker $sqlUrl $sqlLogin $sqlPwd
 	#Docker container all Interface Instances
-	./DockerInts
+	./DockerInts $amqBroker $intDest $intIndest
 else
 	cmd/DockerStartC
 fi

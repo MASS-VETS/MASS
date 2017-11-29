@@ -1,8 +1,10 @@
 #!/bin/bash
 #--- DOCKER CONTAINER: SQL
 
-#-- Epic Configuration
-amqBroker=tcp://severusqa-submission1.epic.com:61616
-sqlUrl=jdbc:sqlserver://vista-client.epic.com
+#descriptive names for incoming params
+amqBroker=$1
+sqlUrl=$2
+sqlLogin=$3
+sqlPwd=$4
 
-docker run -d -p 1433:1433 -p 5001:5001 --name sql_c sql_i --jms.inputQ=sqlQ --spring.datasource.url=$sqlUrl --spring.activemq.broker-url=$amqBroker --spring.datasource.password=va
+docker run -d -p 1433:1433 -p 5001:5001 --name sql_c sql_i --jms.inputQ=sqlQ --spring.datasource.url=$sqlUrl --spring.activemq.broker-url=$amqBroker --spring.datasource.username=$sqlLogin --spring.datasource.password=$sqlPwd
