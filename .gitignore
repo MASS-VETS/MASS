@@ -7,4 +7,5 @@ Code/*/.springBeans
 Code/*/.settings/
 Code/*/id_file
 Code/*/logs/
+EnvRuns/Bash/Docker/build/*/*.jar
 *.class
