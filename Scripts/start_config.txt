@@ -1,4 +1,4 @@
 receive-over-hapi-0.0.1.jar --jms.outputQ=transformQ --jms.databaseQ=databaseQ --interface.id=3E6C7FF1-32DF-4699-8D85-06F59809F956 --index.fieldList=MSH-10,PID-5,PID-3 --server.port=5100
-message-db-service-0.0.1.jar --jms.inputQ=databaseQ --spring.datasource.url=jdbc:sqlserver://vista-client.epic.com
-transform-service-0.0.1.jar --jms.inputQ=transformQ --jms.outputQ=sendQ --xslt.name=ORU_R01
-send-and-get-ack-0.0.1.jar --jms.inputQ=sendQ --jms.databaseQ=databaseQ --interface.id=DCFA837E-DF14-45E0-A440-38B2FDA1985B --index.fieldList=MSH-10,PID-5,PID-3 --destination.url=http://localhost:5105/hl7listener/incoming --maxattempts.epicsend=1
+message-db-service-0.0.1.jar --jms.inputQ=databaseQ --spring.datasource.url=jdbc:sqlserver://vista-client.epic.com --server.port=5101
+transform-service-0.0.1.jar --jms.inputQ=transformQ --jms.outputQ=sendQ --xslt.name=ORU_R01 --server.port=5102
+send-and-get-ack-0.0.1.jar --jms.inputQ=sendQ --jms.databaseQ=databaseQ --interface.id=DCFA837E-DF14-45E0-A440-38B2FDA1985B --index.fieldList=MSH-10,PID-5,PID-3 --destination.url=http://localhost:5105/hl7listener/incoming --maxattempts.epicsend=1 --server.port=5103
