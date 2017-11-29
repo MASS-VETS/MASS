@@ -1,0 +1,5 @@
+{"properties": [{
+  "name": "jms.inputQ",
+  "type": "java.lang.String",
+  "description": "A description for 'jms.inputQ'"
+}]}

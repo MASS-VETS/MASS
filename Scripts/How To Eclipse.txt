@@ -1,0 +1,16 @@
+Check out:
+1. You've checked out the code! Congrats!
+2. Open Eclipse. Use a workspace outside of the directory in which you checked out the code.
+3. Window -> Preferences
+	Navigate to: Java -> Code Style -> Formatter
+	Click: Import
+	Select Formatting.xml from the [Git Root Directory]/Scripts/ and import it.
+	This will ensure that your code follows the same formatting guidelines as everyone else.
+	When you edit code, make sure to hit Ctrl+Shift+F every now and then to make your code comform.
+4. Opening projects
+	File -> Open Projects from File System...
+	Import Source: [Git Root Directory]/Code/
+	Check the projects you want to add and click Finish
+
+Commit:
+You should only have to commit the src directory and the pom.xml file. Other files are created by Eclipse/Maven/Spring when you build/compile/package.

@@ -1,0 +1,4 @@
+#!/bin/bash
+docker stats $(docker ps --format '{{.Names}}')
+#--format not available until Docker 1.13.0
+#docker stats --format "table {{.Name}}\t{{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"

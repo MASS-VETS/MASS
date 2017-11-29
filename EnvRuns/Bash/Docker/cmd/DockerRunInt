@@ -1,0 +1,35 @@
+#!/bin/bash
+#descriptive names for incoming params
+amqBroker=$1
+nm=$2
+rcvport=$3
+inGuid=$4
+outGuid=$5
+desturl=$6
+numSenders=$7
+xslt=$8
+
+#--- DOCKER CONTAINER: Transform
+if [ -z $xslt ]; then
+  rcvo=${nm}SndQ
+  sndi=${nm}SndQ
+else
+  rcvo=${nm}XsltQ
+  sndi=${nm}SndQ
+  port=$(( $rcvport + 5 ))
+  docker run -d -p ${port}:${port} --name ${nm}_xslt_c xslt_i --jms.inputQ=$rcvo --jms.outputQ=$sndi --xslt.name=$xslt --spring.activemq.broker-url=$amqBroker
+fi
+
+#fire up the docker containers
+#--- DOCKER CONTAINER: Receiver
+docker run -d -e ENV='dev' -p ${rcvport}:${rcvport} --name ${nm}_rcv_c rcv_i --server.port=$rcvport --jms.databaseQ=sqlQ --jms.outputQ=$rcvo --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$inGuid --spring.activemq.broker-url=$amqBroker
+
+#--- DOCKER CONTAINER: Sender
+if [ -z $numSenders ]; then
+  numSenders=1
+fi
+for (( i=1; i<=$numSenders; i++ ))
+do
+  port=$(( $rcvport + 10 ))
+  docker run -d -e ENV='dev' -p ${port}:${port} --name ${nm}_snd${i}_c snd_i --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid --spring.activemq.broker-url=$amqBroker
+done

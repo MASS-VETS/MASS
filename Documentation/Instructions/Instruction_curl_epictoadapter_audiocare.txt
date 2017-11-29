@@ -1,0 +1,19 @@
+
+Post appointments file to Ensemble:
+$ cd C:\work\sprint7\datatransfer\epic\toadapter
+
+Clean the file saved in the adapter before next test cycle. Needed only during testing.
+$ DEL C:\work\sprint7\datatransfer\adapter\epictoensemble\*.csv
+
+$ curl --cacert adapter.pem --cert epic.p12 -F file=@"C:\work\sprint7\datatransfer\epic\toadapter\Appointments_Audiocare11162017.txt" https://localhost:8443/adapter/audiocare/epicappointments
+______________________________________________________________________________________________________
+
+Get responses from ensemble. Trigger the adapter and receive the file:
+$ cd C:\work\sprint7\datatransfer\epic\fromadapter
+
+Clean the file saved in the adapter before next test cycle. Needed only during testing.
+$ DEL C:\work\sprint7\datatransfer\adapter\ensembletoepic\*.txt
+
+Get the file
+$ curl --cacert adapter.pem --cert epic.p12 -O https://localhost:8443/adapter/audiocare/responses
+

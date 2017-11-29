@@ -1,0 +1,22 @@
+{"properties": [
+  {
+    "name": "inputQueue",
+    "type": "java.lang.String",
+    "description": "JMS queue from which messages should be transformed."
+  },
+  {
+    "name": "outputQueue",
+    "type": "java.lang.String",
+    "description": "JMS queue to which transformed messages should be sent."
+  },
+  {
+    "name": "errorQueue",
+    "type": "java.lang.String",
+    "description": "JMS queue to which error messages should be sent."
+  },
+  {
+    "name": "xslt.name",
+    "type": "java.lang.String",
+    "description": "A description for 'xslt.name'"
+  }
+]}
