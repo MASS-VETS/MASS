@@ -24,10 +24,11 @@ import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.util.Terser;
+import gov.va.mass.adapter.core.MicroserviceBase;
 
 @RestController
 @PropertySource("classpath:application.properties")
-public class ReceiveOverHapiService {
+public class ReceiveOverHapiService extends MicroserviceBase{
 	private static final Logger logger = LoggerFactory.getLogger(ReceiveOverHapiService.class);
 
 	int i = 0;
@@ -158,5 +159,11 @@ public class ReceiveOverHapiService {
 			e.printStackTrace();
 		}
 		return msgValues;
+	}
+
+	@Override
+	protected String serviceName()
+	{
+		return "ReceiveOverHapiService";
 	}
 }

@@ -108,6 +108,10 @@
 			<artifactId>hapi-structures-v251</artifactId>
 			<version>2.3</version>
 		</dependency>
+		<dependency>
+			<groupId>gov.va.mass.adapter</groupId>
+			<artifactId>MicroserviceCore</artifactId>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -117,4 +121,13 @@
 			</plugin>
 		</plugins>
 	</build>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>gov.va.mass.adapter</groupId>
+				<artifactId>MicroserviceCore</artifactId>
+				<version>0.0.1</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 </project>

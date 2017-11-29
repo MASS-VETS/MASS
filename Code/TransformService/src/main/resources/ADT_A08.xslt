@@ -5,7 +5,6 @@
   <xsl:variable name="v">
     <xsl:value-of select="namespace-uri(*)"/>
   </xsl:variable>
-
   <!--identity recursion that copies ENTIRE xml
       except where other templates below match-->
   <xsl:template match="/|node()|@*">

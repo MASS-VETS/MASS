@@ -28,6 +28,7 @@ import ca.uhn.hl7v2.hoh.sockets.CustomCertificateTlsSocketFactory;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.util.Terser;
+import gov.va.mass.adapter.core.MicroserviceBase;
 
 /*
  * Pick up messages from readytosend queue and send via HAPI
@@ -40,7 +41,7 @@ import ca.uhn.hl7v2.util.Terser;
  */
 @Component
 @PropertySource("classpath:application.properties")
-public class SendAndGetAckService {
+public class SendAndGetAckService extends MicroserviceBase{
 	@Value("${tls.keystore.location}")
 	private String KEYSTORE_LOCATION;
 
@@ -265,4 +266,10 @@ public class SendAndGetAckService {
 			
 			return (AckValue.equals("AA") || AckValue.equals("CA"));
 		}
+
+	@Override
+	protected String serviceName()
+	{
+		return "SendAndGetAckService";
+	}
 }
