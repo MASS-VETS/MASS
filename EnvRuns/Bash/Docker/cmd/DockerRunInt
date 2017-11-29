@@ -11,11 +11,11 @@ xslt=$8
 
 #--- DOCKER CONTAINER: Transform
 if [ -z $xslt ]; then
-  rcvo=$1SndQ
-  sndi=$1SndQ
+  rcvo=${nm}SndQ
+  sndi=${nm}SndQ
 else
-  rcvo=$1XsltQ
-  sndi=$1SndQ
+  rcvo=${nm}XsltQ
+  sndi=${nm}SndQ
   port=$(( $rcvport + 5 ))
   docker run -d -p ${port}:${port} --name ${nm}_xslt_c xslt_i --jms.inputQ=$rcvo --jms.outputQ=$sndi --xslt.name=$xslt --spring.activemq.broker-url=$amqBroker
 fi
