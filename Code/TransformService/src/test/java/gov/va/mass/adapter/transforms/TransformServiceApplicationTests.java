@@ -122,3 +122,4 @@ public class TransformServiceApplicationTests {
 		LOG.debug(output);
 		assertEquals(expected, output);
 	}
+}
