@@ -5,7 +5,7 @@ IF "%ENV%"=="" (
 echo starting all microservices
 cd "%~dp0JARs\"
 FOR /F "usebackq tokens=*" %%a IN ("%~dp0start_config.txt") DO (
-		call:start %%a
+	call:start %%a
 )
 cd "%~dp0"
 echo started.

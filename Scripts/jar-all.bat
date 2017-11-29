@@ -5,13 +5,13 @@ IF "%ENV%"=="" (
 IF NOT EXIST "%~dp0JARs\" (
 	MKDIR "%~dp0JARs\"
 )
-call:install ..\Code\MicroserviceCore || goto error
-rem call:move ..\Code\MicroserviceCore || goto error
-FOR /D %%a IN (..\Code\*) DO (
-	if not "%%a"=="..\Code\MicroserviceCore" (
-		call:compile %%a || goto error
-		call:move %%a || goto error
-	)
+FOR /F "usebackq tokens=*" %%a IN ("%~dp0build_core_list.txt") DO (
+	call:install ..\Code\%%a || goto error
+)
+
+FOR /F "usebackq tokens=*" %%a IN ("%~dp0build_list.txt") DO (
+	call:compile ..\Code\%%a || goto error
+	call:move ..\Code\%%a || goto error
 )
 goto:eof
 
