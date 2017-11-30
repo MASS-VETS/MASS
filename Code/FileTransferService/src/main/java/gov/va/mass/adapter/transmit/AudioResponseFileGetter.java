@@ -9,9 +9,12 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
@@ -22,7 +25,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
-
+import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
@@ -43,6 +46,15 @@ public class AudioResponseFileGetter {
 	@Value("${app.responses.file.storage}")
 	private String RESPONSES_FILE_STORAGE_FOLDER;
 
+	@Autowired
+	private JmsMessagingTemplate jmsMsgTemplate;
+	
+	@Value("${jms.databaseQ}")
+	private String databaseQueue;
+	
+	@Value("${interface.interfaceId}")
+	private String interfaceId;
+	
 	private TLSSpringTemplateProvider tlsTemplateProvider;
 
 	private static final Logger logger = LoggerFactory.getLogger(AudioResponseFileGetter.class);
@@ -62,6 +74,23 @@ public class AudioResponseFileGetter {
 
 	private void saveByteFile(byte[] file, String pathStr) {
 
+		//Provided that this executed log to the database that this happened.
+		// Get current date time for later.
+		String dateTime = String.format("%1$tF %1$tT", new Date());
+
+		// Create the HashMap for MapMessage JMS queue.
+		HashMap<String, Object> mmsg = new HashMap<String, Object>();
+
+		// Build the MapMessage
+		mmsg.put("messageContent", new String(file));
+		mmsg.put("fieldList", ""); //There are not fields to be stored for this interface.
+		mmsg.put("interfaceId", interfaceId);
+		mmsg.put("dateTime", dateTime);
+
+		// Send to the database
+		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
+		logger.info("Forwarded to queue = " + databaseQueue);
+		
 		try {
 			Path path = Paths.get(pathStr);
 			Files.write(path, file);
