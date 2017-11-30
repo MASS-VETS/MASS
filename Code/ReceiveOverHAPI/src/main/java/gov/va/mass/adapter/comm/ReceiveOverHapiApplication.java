@@ -10,10 +10,10 @@ import org.slf4j.LoggerFactory;
 @EnableJms
 public class ReceiveOverHapiApplication {
 
-	private static final Logger logger = LoggerFactory.getLogger(ReceiveOverHapiApplication.class);
+	//private static final Logger logger = LoggerFactory.getLogger(ReceiveOverHapiApplication.class);
 
 	public static void main(String[] args) {
-		logger.info("Current Adapter Environment: " + System.getenv("ENV"));
+		//logger.info("Current Adapter Environment: " + System.getenv("ENV"));
 		SpringApplication.run(ReceiveOverHapiApplication.class, args);
 	}
 }

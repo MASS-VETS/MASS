@@ -64,5 +64,9 @@ monitor:
   smtp:
     host: smtp.gmail.com
     port: 465
-    
+  alerts:
+    -
+      name: demogADTXsltQ
+      enqueuedMax: 74
+      timer: 1
 ---

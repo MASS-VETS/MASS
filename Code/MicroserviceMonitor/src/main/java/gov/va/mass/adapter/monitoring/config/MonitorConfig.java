@@ -26,11 +26,11 @@ public class MonitorConfig {
 	@NestedConfigurationProperty
 	private MicroserviceConfig messagedb = new MicroserviceConfig();
 	
-	public MicroserviceConfig getMessagedb() {
+	public MicroserviceConfig getMessageDB() {
 		return this.messagedb;
 	}
 	
-	public void setMessagedb(MicroserviceConfig messagedb) {
+	public void setMessageDB(MicroserviceConfig messagedb) {
 		this.messagedb = messagedb;
 	}
 	
@@ -76,5 +76,16 @@ public class MonitorConfig {
 	
 	public void setSMTP(SMTPConfig smtp) {
 		this.smtp = smtp;
+	}
+	
+	@NestedConfigurationProperty
+	private List<AlertConfig> alerts = new ArrayList<AlertConfig>();
+	
+	public List<AlertConfig> getAlerts() {
+		return this.alerts;
+	}
+	
+	public void setAlerts(List<AlertConfig> alerts) {
+		this.alerts = alerts;
 	}
 }
