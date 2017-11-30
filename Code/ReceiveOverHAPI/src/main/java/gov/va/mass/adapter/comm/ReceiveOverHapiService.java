@@ -29,7 +29,7 @@ import gov.va.mass.adapter.core.MicroserviceBase;
 @RestController
 @PropertySource("classpath:application.properties")
 public class ReceiveOverHapiService extends MicroserviceBase{
-	//private static final Logger logger = LoggerFactory.getLogger(ReceiveOverHapiService.class);
+	private static final Logger logger = LoggerFactory.getLogger(ReceiveOverHapiService.class);
 
 	int i = 0;
 
@@ -62,7 +62,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 
 	@PostMapping(path = "/receive", consumes = "application/hl7-v2", produces = "application/hl7-v2; charset=UTF-8")
 	public String receiveAndRouteMessage(@RequestBody String msg) {
-		//logger.info("In service: " + appname);
+		logger.info("In service: " + appname);
 		
 		//Get the current time for later.
 		String dateTime = String.format("%1$tF %1$tT",new Date());
@@ -80,7 +80,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 		//Check the Processing ID before we allow this message to go any further. If the processing ID doesn't match then NACK the message.
 		if (!msgValues.get("processingId").equals(processingId)) {
 			
-			//logger.info("Invalid Processing ID. Expected: \"" + processingId + "\" Received: \"" + msgValues.get("processingId") + "\"");
+			logger.info("Invalid Processing ID. Expected: \"" + processingId + "\" Received: \"" + msgValues.get("processingId") + "\"");
 			
 			try {
 				return message.generateACK(AcknowledgmentCode.CR, new HL7Exception(("Invalid Processing ID. Expected: " + processingId + " Received: " + msgValues.get("processingId")), ErrorCode.UNSUPPORTED_PROCESSING_ID)).encode();
@@ -92,7 +92,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 		
 		//Log the Processing ID for later reference.
 		MDC.put("MSGID", msgValues.get("controlId"));
-		//logger.info("Message received = " + msg);
+		logger.info("Message received = " + msg);
 		
 		//Create the database communication object with the appropriate values.
 		HashMap<String, Object> mmsg = new HashMap<String, Object>();
@@ -106,25 +106,17 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 		jmsMsgTemplate.convertAndSend(outputQueue, msg);
 
 		//Log the actions.
-		//logger.info("Msg Id " + msgValues.get("controlId") + " Message forwarded to queue = " + outputQueue);
-		//logger.info("Msg Id " + msgValues.get("controlId") + " Message forwarded to queue = " + databaseQueue);
+		logger.info("Msg Id " + msgValues.get("controlId") + " Message forwarded to queue = " + outputQueue);
+		logger.info("Msg Id " + msgValues.get("controlId") + " Message forwarded to queue = " + databaseQueue);
 		MDC.clear();
-		//logger.debug("Threadmapcontext cleared");
-		String ack = null;
+		logger.debug("Threadmapcontext cleared");
+		
 		try {
-			ack = message.generateACK().encode();
+			return message.generateACK().encode();
 		} catch (HL7Exception | IOException e) {
 			e.printStackTrace();
 			throw new InvalidMessageException(); // return HTTP 415 error if the HL7 is invalid.
 		}
-
-		//try explicitly clearing pointers to see if we get memory back
-		msg = null;
-		message = null;
-		msgValues = null;
-		mmsg = null;
-		
-		return ack;
 	}
 
 	//Create HAPI message from string to allow parsing.
@@ -139,7 +131,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 		try {
 			hapiMsg = p.parse(rawMessage);
 		} catch (HL7Exception e) {
-			//logger.error("Unable to parse message");
+			logger.error("Unable to parse message");
 			e.printStackTrace();
 		}
 		
@@ -150,10 +142,6 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		
-		//explicitly set to null to get back memory
-		context = null;
-		p = null;
 		
 		//Return the HAPI message.
 		return hapiMsg;
@@ -168,12 +156,9 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 			msgValues.put("controlId", terser.get("/MSH-10-1")); //Control ID
 			msgValues.put("processingId",terser.get("/MSH-11-1")); //Processing ID (PRD/DEV/TST)
 		} catch (HL7Exception e) {
-			//logger.error("Unable to get msg id from the message.");
+			logger.error("Unable to get msg id from the message.");
 			e.printStackTrace();
 		}
-		
-		//explicitly set to null for memory
-		terser = null;
 		
 		return msgValues;
 	}

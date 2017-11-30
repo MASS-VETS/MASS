@@ -40,7 +40,7 @@ public class MonitorService {
 	@Scheduled(cron = "${monitor.rate}")
 	public void showProperty() throws URISyntaxException {
 		
-		System.out.println("database url: " + config.getMessageDB().getUrl());
+		System.out.println("database url: " + config.getMessagedb().getUrl());
 		
 		// poll all the interfaces
 		for (InterfaceConfig intf : config.getInterfaces()) {
@@ -54,15 +54,15 @@ public class MonitorService {
 			if (transform != null && transform.getUrl() != null) {
 				System.out.println("  has transform? " + (!transform.getUrl().isEmpty()));
 				System.out.println("  transform url: " + transform.getUrl());
-				//stats = new PulseStats(restTemplate, transform.getUrl());
-				//log.info(stats.toString());
+				stats = new PulseStats(restTemplate, transform.getUrl());
+				log.info(stats.toString());
 			} else {
 				System.out.println("  has transform? false");
 			}
 
 			System.out.println("     sender url: " + intf.getSender().getUrl());
-			//stats = new PulseStats(restTemplate, intf.getSender().getUrl());
-			//log.info(stats.toString());
+			stats = new PulseStats(restTemplate, intf.getSender().getUrl());
+			log.info(stats.toString());
 		}
 		System.out.println();
 		

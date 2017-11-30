@@ -26,11 +26,11 @@ public class MonitorConfig {
 	@NestedConfigurationProperty
 	private MicroserviceConfig messagedb = new MicroserviceConfig();
 	
-	public MicroserviceConfig getMessageDB() {
+	public MicroserviceConfig getMessagedb() {
 		return this.messagedb;
 	}
 	
-	public void setMessageDB(MicroserviceConfig messagedb) {
+	public void setMessagedb(MicroserviceConfig messagedb) {
 		this.messagedb = messagedb;
 	}
 	
