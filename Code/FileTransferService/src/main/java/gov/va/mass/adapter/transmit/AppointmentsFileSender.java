@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -24,6 +25,8 @@ import java.security.cert.CertificateException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 
 import javax.net.ssl.SSLContext;
 import javax.xml.ws.Response;
@@ -63,6 +66,7 @@ import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.PropertySource;
@@ -78,6 +82,7 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.http.converter.ByteArrayHttpMessageConverter;
+import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -140,10 +145,19 @@ public class AppointmentsFileSender {
 
 	@Value("${destination.url.post}")
 	private String DESTINATION_URL_POST;
+	
+	@Value("${interface.interfaceId}")
+	private String interfaceId;
 
 	@Value("${app.appointments.file.storage}")
 	private String APPOINTMENTS_FILE_STORAGE_FOLDER;
 
+	@Autowired
+	private JmsMessagingTemplate jmsMsgTemplate;
+	
+	@Value("${jms.databaseQ}")
+	private String databaseQueue;
+	
 	private static final Logger logger = LoggerFactory.getLogger(AppointmentsFileSender.class);
 
 	private TLSSpringTemplateProvider tlsTemplateProvider;
@@ -183,9 +197,26 @@ public class AppointmentsFileSender {
 		byte[] bytes = file.getBytes();
 		Path path = Paths.get(localStorePath);
 		Files.write(path, bytes);
+		
+		//Provided that this executed log to the database that this happened.
+		// Get current date time for later.
+		String dateTime = String.format("%1$tF %1$tT", new Date());
+
+		// Create the HashMap for MapMessage JMS queue.
+		HashMap<String, Object> mmsg = new HashMap<String, Object>();
+
+		// Build the MapMessage
+		mmsg.put("messageContent", new String(bytes));
+		mmsg.put("fieldList", ""); //There are not fields to be stored for this interface.
+		mmsg.put("interfaceId", interfaceId);
+		mmsg.put("dateTime", dateTime);
+
+		// Send to the database
+		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
+		logger.info("Forwarded to queue = " + databaseQueue);
+		
 		logger.debug("Saving file to local " + file.getSize() + " " + path);
 
-		
 		File savedfile = new File(localStorePath); // TODO : Cleanup don't need another pointer savedfile.
 		logger.debug("length of saved file " + savedfile.length());
 		return savedfile; // TODO: return the inmemory file object instead of hte savedfile
@@ -268,6 +299,7 @@ public class AppointmentsFileSender {
 		try {
 			logger.debug("posting");
 			HttpResponse response = httpClient.execute(post);
+			
 			logger.debug(response.toString());
 		} catch (IOException e) {
 			logger.error(" Could not execute post method on httpclient " + e.toString());

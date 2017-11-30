@@ -4,12 +4,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>gov.va.mass.adapter.transmit</groupId>
-	<artifactId>audiocare</artifactId>
+	<artifactId>FileTransferService</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>audiocare</name>
-	<description>Post appointment file from EPIC to Ensemble and get response back.</description>
+	<name>FileTransferService</name>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
@@ -62,15 +61,13 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.3</version>
 		</dependency>
 
         <!-- Apache HttpClient Mime -->
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpmime</artifactId>
-            <version>4.5.3</version>
-        </dependency>
+            </dependency>
 
 
 
@@ -91,6 +88,10 @@
 			<dependency> <groupId>org.apache.httpcomponents</groupId> <artifactId>httpclient</artifactId> 
 			</dependency> <dependency> <groupId>org.springframework.boot</groupId> <artifactId>spring-boot-starter-test</artifactId> 
 			<scope>test</scope> </dependency> -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-activemq</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -114,4 +115,5 @@
 	</build>
 
 
+	<description>File Poster and Getter for passing through a request to external source.</description>
 </project>
