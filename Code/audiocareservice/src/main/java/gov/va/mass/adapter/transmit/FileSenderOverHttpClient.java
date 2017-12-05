@@ -34,6 +34,7 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
 import org.apache.http.conn.ssl.DefaultHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -63,7 +64,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+
 import org.springframework.context.annotation.PropertySource;
 
 import org.springframework.core.io.FileSystemResource;
@@ -124,7 +125,7 @@ import org.springframework.web.multipart.MultipartFile;
 // TODO : Make hostname verification an environment specific parameter
 @RestController
 @PropertySource("classpath:application.properties")
-public class AppointmentsFileSender {
+public class FileSenderOverHttpClient {
 
 	// Keystore properties here are used when connecting to ensemble
 
@@ -143,11 +144,10 @@ public class AppointmentsFileSender {
 	@Value("${app.appointments.file.storage}")
 	private String APPOINTMENTS_FILE_STORAGE_FOLDER;
 
-	private static final Logger logger = LoggerFactory.getLogger(AppointmentsFileSender.class);
+	private static final Logger logger = LoggerFactory.getLogger(FileSenderOverHttpClient.class);
 
-	private TLSSpringTemplateProvider tlsTemplateProvider;
 
-	@PostMapping("/adapter/audiocare/epicappointments")
+	@PostMapping("/adapter/audiocare/epicappointments/apache") //, consumes="text/csv")
 	public ResponseEntity<String> postAppointmentsFileToEnsembleHttpClientBased(
 			@RequestParam("file") MultipartFile uploadfile) {
 
@@ -231,13 +231,20 @@ public class AppointmentsFileSender {
 		// Prepare the HTTPClient.
 		HttpClientBuilder builder = HttpClientBuilder.create();
 
-		SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-				NoopHostnameVerifier.INSTANCE); // TODO: Expect hostname verification on the test and prod versions,
-												// parameterize
+		SSLConnectionSocketFactory sslConnectionFactory = null;
+		String env = System.getenv("ENV") ; 
+		logger.debug("ssl conn fact. creation " + env);
+		if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
+			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
+					BrowserCompatHostnameVerifier.INSTANCE); 
+		} else {
+			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
+					NoopHostnameVerifier.INSTANCE);
+		}
 
 		builder.setSSLSocketFactory(sslConnectionFactory);
 
-		// TODO : Need to disable the http socket factory? Or is th
+		// TODO : Need to disable the http socket factory? Or is this used after ssl is stripped.
 		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
 				.register("https", sslConnectionFactory) // .register("http", new PlainConnectionSocketFactory())
 				.build();
@@ -251,16 +258,18 @@ public class AppointmentsFileSender {
 
 		HttpPost post = new HttpPost(DESTINATION_URL_POST);
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.addBinaryBody("file", savedfile);
+		
+		builder.addBinaryBody("file", savedfile, ContentType.create("text/csv"), savedfile.getName());
 		builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE); // change mode
 
 		HttpEntity entity = builder.build();
 
 		post.setEntity(entity);
 		try {
-			logger.debug("posting");
+			logger.debug("Posting");
 			HttpResponse response = httpClient.execute(post);
-			logger.debug(response.toString());
+			logger.debug("Posted file of the type text/csv");
+			logger.debug("Response " + response.toString());
 		} catch (IOException e) {
 			logger.error(" Could not execute post method on httpclient " + e.toString());
 		}
@@ -269,7 +278,6 @@ public class AppointmentsFileSender {
 	private void prepareAndPost(File savedfile) {
 
 		SSLContext sslContext = configureSSLContext();
-
 		HttpClientBuilder builder = prepareHttpClientBuilder(sslContext);
 
 		try (CloseableHttpClient httpClient = builder.build()) {
@@ -279,8 +287,6 @@ public class AppointmentsFileSender {
 		}
 	}
 
-	public void setTemplateProvider(TLSSpringTemplateProvider tlsTemplateProvider) {
-		this.tlsTemplateProvider = tlsTemplateProvider;
-	}
+
 
 }

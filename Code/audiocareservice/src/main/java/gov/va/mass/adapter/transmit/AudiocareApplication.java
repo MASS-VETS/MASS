@@ -25,15 +25,15 @@ public class AudiocareApplication {
 		TLSSpringTemplateProvider templateProvider = springctxt.getBean(TLSSpringTemplateProvider.class);
 
 		//Initialize the file receiver (getter)
-		AudioResponseFileGetter filegetter = springctxt.getBean(AudioResponseFileGetter.class);
+		FileGetterOverRestTemplate filegetter = springctxt.getBean(FileGetterOverRestTemplate.class);
 		filegetter.setTemplateProvider (templateProvider);
 		
 		
 		
 		
 		//Initialize the  sender
-		AppointmentsFileSender filesender = springctxt.getBean(AppointmentsFileSender.class);
-		filesender.setTemplateProvider (templateProvider);
+		FileSenderOverHttpClient filesender = springctxt.getBean(FileSenderOverHttpClient.class);
+//		filesender.setTemplateProvider (templateProvider);
 
 
 		

@@ -20,6 +20,7 @@ import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -69,12 +70,15 @@ public class TLSSpringTemplateProvider {
 		HttpClientBuilder builder = HttpClientBuilder.create();
 		SSLConnectionSocketFactory sslConnectionFactory = null;
 		String env = System.getenv("ENV") ; 
+		logger.debug("ssl conn fact. creation " + env);
 		if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
 			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,  //TODO: SSLConnectionSocketFactory is deprecated.. need to substitute
 					SSLConnectionSocketFactory.STRICT_HOSTNAME_VERIFIER );  // TODO: Verify that that the default or the strict verifier should be used in prod
 		} else {
+			logger.debug("Allowing all hostname verifier");
 			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-					SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+					NoopHostnameVerifier.INSTANCE);
+					//SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 		}
 
 		builder.setSSLSocketFactory(sslConnectionFactory);
@@ -101,15 +105,21 @@ public class TLSSpringTemplateProvider {
 			requestFactory.setBufferRequestBody(false);  // to prevent buffering when downloading large files
 
 			restTemplate = new RestTemplate(requestFactory);
-						
 
 		} catch (IOException e) {
 			e.printStackTrace();
-//			logger.error("Unable to create " + e.toString());
 		}
 		return restTemplate;
 	}
 
+	public CloseableHttpClient getTLSHttpClient ( ) {
+		SSLContext sslContext = configureSSLContext();
+		HttpClientBuilder builder = prepareHttpClientBuilder(sslContext);
+		CloseableHttpClient httpClient = builder.build() ;
+		return httpClient;
+		
+	}
+	
 	
 	private SSLContext configureSSLContext() {
 		KeyStore keyStore = null;

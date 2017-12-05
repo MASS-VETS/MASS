@@ -63,7 +63,6 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.context.annotation.PropertySource;
 
 import org.springframework.core.io.FileSystemResource;
@@ -143,12 +142,12 @@ import org.springframework.web.multipart.MultipartFile;
 //@RestController
 // @Component
 @PropertySource("classpath:application.properties")
-public class AppointmentsFileSenderWithSpring {
+public class FileSenderOverRestTemplate {
 
 	@Value("${destination.url.post}")
 	private String DESTINATION_URL_POST;
 
-	private static final Logger logger = LoggerFactory.getLogger(AppointmentsFileSenderWithSpring.class);
+	private static final Logger logger = LoggerFactory.getLogger(FileSenderOverRestTemplate.class);
 
 	@Value("${app.appointments.folder}")
 	private String APPOINTMENTS_FOLDER; // = "C:\\work\\sprint7\\temp\\"; // TODO: Provide key_alias
@@ -213,9 +212,8 @@ public class AppointmentsFileSenderWithSpring {
 	//
 	// }
 
-	// Seems to be working, but receiver is unable to process the file
 
-	@PostMapping("/adapter/audiocare/epicappointments")
+	@PostMapping("/adapter/audiocare/epicappointments/spring")
 	public ResponseEntity<String> postAppointmentsFileToEnsembleHttpClientBased(
 			@RequestParam("file") MultipartFile file) {
 
