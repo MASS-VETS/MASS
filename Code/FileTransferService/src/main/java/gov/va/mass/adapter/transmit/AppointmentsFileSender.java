@@ -6,6 +6,7 @@ package gov.va.mass.adapter.transmit;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -23,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import javax.net.ssl.SSLContext;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.HttpClientConnectionManager;
@@ -163,8 +165,9 @@ public class AppointmentsFileSender {
 																														// file.getOriginalFilename();
 
 		byte[] bytes = file.getBytes();
-		Path path = Paths.get(localStorePath);
-		Files.write(path, bytes);
+		//These not needed - only for debugging purposes
+		//Path path = Paths.get(localStorePath);
+		//Files.write(path, bytes);
 		
 		//Provided that this executed log to the database that this happened.
 		// Get current date time for later.
@@ -185,13 +188,24 @@ public class AppointmentsFileSender {
 			logger.info("Forwarded to queue = " + databaseQueue);
 		}
 		
-		logger.debug("Saving file to local " + file.getSize() + " " + path);
-
-		File savedfile = new File(localStorePath); // TODO : Cleanup don't need another pointer savedfile.
-		logger.debug("length of saved file " + savedfile.length());
-		return savedfile; // TODO: return the inmemory file object instead of hte savedfile
-
+		//logger.debug("Saving file to local " + file.getSize() + " " + path);
+		//File savedfile = new File(localStorePath); // TODO : Cleanup don't need another pointer savedfile.
+		//logger.debug("length of saved file " + savedfile.length());
+		//return savedfile; // TODO: return the inmemory file object instead of the savedfile
+		File tempFile = stream2file(file.getInputStream());
+		logger.debug("length of saved file " + tempFile.length());
+		return tempFile;
 	}
+	
+	public static File stream2file (InputStream in) throws IOException {
+		final File tempFile = File.createTempFile("stream2file", ".tmp");
+		tempFile.deleteOnExit();
+		try (FileOutputStream out = new FileOutputStream(tempFile)) {
+			IOUtils.copy(in, out);
+		}
+		return tempFile;
+	}
+
 
 	// Create an SSL context with our private key store.
 	// We are only loading the key-material here, but if your server uses a
