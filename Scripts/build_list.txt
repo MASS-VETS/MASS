@@ -3,3 +3,4 @@ MessageDBService
 SendAndGetAck
 ReceiveOverHAPI
 MicroserviceMonitor
+FileTransferService
