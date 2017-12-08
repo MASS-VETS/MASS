@@ -1,18 +1,30 @@
 #!/bin/bash
 #--- Remove all Containers except container AMQ
-container=$(docker ps -q -a -f name=rcv)
+container=$(docker ps -q -a -f name=_rcv)
 if [ ${#container} -gt 0 ] ; then
 	docker rm -f $container
 fi
-container=$(docker ps -q -a -f name=snd)
+container=$(docker ps -q -a -f name=_snd)
 if [ ${#container} -gt 0 ] ; then
 	docker rm -f $container
 fi
-container=$(docker ps -q -a -f name=xslt)
+container=$(docker ps -q -a -f name=_xslt)
 if [ ${#container} -gt 0 ] ; then
 	docker rm -f $container
 fi
-container=$(docker ps -q -a -f name=sql)
+container=$(docker ps -q -a -f name=sql_)
+if [ ${#container} -gt 0 ] ; then
+	docker rm -f $container
+fi
+container=$(docker ps -q -a -f name=mon_)
+if [ ${#container} -gt 0 ] ; then
+	docker rm -f $container
+fi
+container=$(docker ps -q -a -f name=PCMM_)
+if [ ${#container} -gt 0 ] ; then
+	docker rm -f $container
+fi
+container=$(docker ps -q -a -f name=AC_)
 if [ ${#container} -gt 0 ] ; then
 	docker rm -f $container
 fi

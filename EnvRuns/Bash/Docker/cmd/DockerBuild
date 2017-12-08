@@ -9,4 +9,8 @@ cd ../dockerxslt
 docker build . -t xslt_i
 cd ../dockersnd
 docker build . -t snd_i
+cd ../dockermon
+docker build . -t mon_i
+cd ../dockerfxfer
+docker build . -t fxfer_i
 cd ../..

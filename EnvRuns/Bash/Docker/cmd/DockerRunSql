@@ -1,0 +1,10 @@
+#!/bin/bash
+#--- DOCKER CONTAINER: SQL
+
+#descriptive names for incoming params
+amqBroker=$1
+sqlUrl=$2
+sqlLogin=$3
+sqlPwd=$4
+
+docker run -d -p 1433:1433 -p 5001:5001 --memory="600m" --restart unless-stopped --name sql_c sql_i --jms.inputQ=sqlQ --spring.datasource.url=$sqlUrl --spring.activemq.broker-url=$amqBroker --spring.datasource.username=$sqlLogin --spring.datasource.password=$sqlPwd

@@ -1,18 +1,3 @@
 #!/bin/bash
-#--- Stop all Containers except ActiveMQ
-active=$(docker ps -q -f name=rcv)
-if [ ${#active} -gt 0 ] ; then
-	docker stop $active
-fi
-active=$(docker ps -q -f name=snd)
-if [ ${#active} -gt 0 ] ; then
-	docker stop $active
-fi
-active=$(docker ps -q -f name=xslt)
-if [ ${#active} -gt 0 ] ; then
-	docker stop $active
-fi
-active=$(docker ps -q -f name=sql)
-if [ ${#active} -gt 0 ] ; then
-	docker stop $active
-fi
+#--- Stop all Containers
+docker stop $(docker ps -a -q)

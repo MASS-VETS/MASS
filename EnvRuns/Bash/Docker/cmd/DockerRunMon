@@ -1,0 +1,4 @@
+#!/bin/bash
+#--- DOCKER CONTAINER: Monitor
+
+docker run -d --memory="400m" --restart unless-stopped --name mon_c mon_i

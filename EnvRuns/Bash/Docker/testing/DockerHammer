@@ -19,4 +19,4 @@ fi
 
 
 #--- DOCKER CONTAINER for a single interface running hammer
-docker run -d --name hammer${nm}_c hammer_i --destination.url=http://severusqa-submission1:${rcvport}/receive --message.type=${msgType} --message.count=${msgCnt} --message.rate=${msgRate}
+docker run -d --name hammer${nm}_c hammer_i  --memory="600m" --restart unless-stopped --destination.url=http://severusqa-submission1:${rcvport}/receive --message.type=${msgType} --message.count=${msgCnt} --message.rate=${msgRate}
