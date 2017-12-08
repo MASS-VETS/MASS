@@ -335,3 +335,7 @@ Insert into interfaces(ID,Name,Direction,PurgeDays) values ('FEC46370-0CB1-436B-
 --Errors Interface
 Insert into interfaces(ID,Name,Direction,PurgeDays) values ('C95808C1-8597-43E4-83DD-757CDF283574','Errors - Vista to Epic','Incoming',NULL)
 Insert into interfaces(ID,Name,Direction,PurgeDays) values ('8FA5C77E-DAB1-46F2-8642-14D69415AF89','Errors - Vista to Epic','Outgoing',NULL)
+
+--Audiocare
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('5A62680D-3759-40C5-8C9D-3299B82779C6','Audiocare to Epic','Incoming',NULL)
+Insert into interfaces(ID,Name,Direction,PurgeDays) values ('29F55FB8-BE79-431A-9D33-7598F26D6582','Epic to Audiocare','Outgoing',NULL)
