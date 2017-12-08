@@ -134,6 +134,9 @@ public class AppointmentsFileSender {
 
 	// Keystore properties here are used when connecting to ensemble
 
+	@Value("${keystore.enabled}")
+	private boolean TLS_ENABLED = false;
+
 	@Value("${keystore.location}")
 	private String KEYSTORE_LOCATION;// = "C:/work/1twowayssl/adapterkeys/adapterks.jks"
 
@@ -146,7 +149,7 @@ public class AppointmentsFileSender {
 	@Value("${destination.url.post}")
 	private String DESTINATION_URL_POST;
 	
-	@Value("${interface.interfaceId}")
+	@Value("${interface.id}")
 	private String interfaceId;
 
 	@Value("${app.appointments.file.storage}")
@@ -191,7 +194,7 @@ public class AppointmentsFileSender {
 		LocalDateTime curDateTime = LocalDateTime.now();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
 		String formatDateTime = curDateTime.format(formatter);
-		String localStorePath = APPOINTMENTS_FILE_STORAGE_FOLDER + "/AudioCareAppointments_" + formatDateTime + ".csv";// +
+		String localStorePath = APPOINTMENTS_FILE_STORAGE_FOLDER + "AudioCareAppointments_" + formatDateTime + ".csv";// +
 																														// file.getOriginalFilename();
 
 		byte[] bytes = file.getBytes();
@@ -212,8 +215,10 @@ public class AppointmentsFileSender {
 		mmsg.put("dateTime", dateTime);
 
 		// Send to the database
-		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
-		logger.info("Forwarded to queue = " + databaseQueue);
+		if(databaseQueue != null && !databaseQueue.isEmpty()) {
+			jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
+			logger.info("Forwarded to queue = " + databaseQueue);
+		}
 		
 		logger.debug("Saving file to local " + file.getSize() + " " + path);
 
@@ -232,26 +237,29 @@ public class AppointmentsFileSender {
 
 	private SSLContext configureSSLContext() {
 		KeyStore keyStore = null;
-
-		try {
-			keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
-			InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
-			keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());
-			logger.debug("Key store has " + keyStore.size() + " keys");
-		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			logger.error("Problem with keystore " + e.toString());
-		}
-
 		SSLContext sslContext = null;
-		try {
-			sslContext = SSLContexts.custom().loadKeyMaterial(keyStore, KEYSTORE_PASSWORD.toCharArray())
-					.loadTrustMaterial(new TrustSelfSignedStrategy()).setProtocol("TLSv1") // TODO: TLS version needs to
-																							// be uniform
-					.build();
-		} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
-			logger.error("Could not create SSLContext " + e.toString());
+		
+		// If TLS is enabled.
+		if (TLS_ENABLED) {
+			try {
+				keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+				InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
+				keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());
+				logger.debug("Key store has " + keyStore.size() + " keys");
+			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+				logger.error("Problem with keystore " + e.toString());
+			}
+			
+			try {
+				sslContext = SSLContexts.custom().loadKeyMaterial(keyStore, KEYSTORE_PASSWORD.toCharArray())
+						.loadTrustMaterial(new TrustSelfSignedStrategy()).setProtocol("TLSv1") // TODO: TLS version needs to
+																								// be uniform
+						.build();
+			} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
+				logger.error("Could not create SSLContext " + e.toString());
+			}
 		}
-
+		
 		return sslContext;
 	}
 
@@ -262,24 +270,32 @@ public class AppointmentsFileSender {
 	private HttpClientBuilder prepareHttpClientBuilder(SSLContext sslContext) {
 		// Prepare the HTTPClient.
 		HttpClientBuilder builder = HttpClientBuilder.create();
+		Registry<ConnectionSocketFactory> registry = null;
 
-		SSLConnectionSocketFactory sslConnectionFactory = null;
-		String env = System.getenv("ENV") ; 
-		logger.debug("ssl conn fact. creation " + env);
-		if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
-			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-					BrowserCompatHostnameVerifier.INSTANCE); 
-		} else {
-			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-					NoopHostnameVerifier.INSTANCE);
+		if (TLS_ENABLED) {
+			SSLConnectionSocketFactory sslConnectionFactory = null;
+			String env = System.getenv("ENV") ; 
+			logger.debug("ssl conn fact. creation " + env);
+			if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
+				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
+						BrowserCompatHostnameVerifier.INSTANCE); 
+			} else {
+				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
+						NoopHostnameVerifier.INSTANCE);
+			}
+	
+			builder.setSSLSocketFactory(sslConnectionFactory);
+	
+			// TODO : Need to disable the http socket factory? Or is this used after ssl is stripped.
+			registry = RegistryBuilder.<ConnectionSocketFactory>create()
+					.register("https", sslConnectionFactory) // .register("http", new PlainConnectionSocketFactory())
+					.build();
 		}
-
-		builder.setSSLSocketFactory(sslConnectionFactory);
-
-		// TODO : Need to disable the http socket factory? Or is this used after ssl is stripped.
-		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-				.register("https", sslConnectionFactory) // .register("http", new PlainConnectionSocketFactory())
-				.build();
+		else {
+			registry = RegistryBuilder.<ConnectionSocketFactory>create()
+					.register("http", new PlainConnectionSocketFactory()).build();
+		}
+		
 		HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
 		builder.setConnectionManager(ccm);
 		return builder;
@@ -297,7 +313,7 @@ public class AppointmentsFileSender {
 
 		post.setEntity(entity);
 		try {
-			logger.debug("posting");
+			logger.debug("--- attempting httppost " + DESTINATION_URL_POST);
 			HttpResponse response = httpClient.execute(post);
 			
 			logger.debug(response.toString());

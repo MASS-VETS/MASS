@@ -46,9 +46,12 @@ import org.springframework.web.client.RestTemplate;
 @Component
 @PropertySource("classpath:application.properties")
 public class TLSSpringTemplateProvider {
+	
+	@Value("${keystore.enabled}")
+	private boolean TLS_ENABLED = false;
 
 	@Value("${keystore.location}")
-	private String KEYSTORE_LOCATION;// = "C:/work/1twowayssl/adapterkeys/adapterks.jks"
+	private String KEYSTORE_LOCATION;// = "C:\Vista\flatfile\1twowayss\adapterkeys\adapterks.jks"
 
 	@Value("${keystore.password}")
 	private String KEYSTORE_PASSWORD;
@@ -68,23 +71,33 @@ public class TLSSpringTemplateProvider {
 	// TODO: Consider using PoolingHttpClientConnectionManager		
 	private HttpClientBuilder prepareHttpClientBuilder(SSLContext sslContext) {
 		HttpClientBuilder builder = HttpClientBuilder.create();
-		SSLConnectionSocketFactory sslConnectionFactory = null;
-		String env = System.getenv("ENV") ; 
-		logger.debug("ssl conn fact. creation " + env);
-		if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
-			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,  //TODO: SSLConnectionSocketFactory is deprecated.. need to substitute
-					SSLConnectionSocketFactory.STRICT_HOSTNAME_VERIFIER );  // TODO: Verify that that the default or the strict verifier should be used in prod
-		} else {
-			logger.debug("Allowing all hostname verifier");
-			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-					NoopHostnameVerifier.INSTANCE);
-					//SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+		Registry<ConnectionSocketFactory> registry = null;
+		
+		if (TLS_ENABLED) {
+			SSLConnectionSocketFactory sslConnectionFactory = null;
+			String env = System.getenv("ENV") ; 
+			logger.debug("ssl conn fact. creation " + env);
+			if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
+				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,  //TODO: SSLConnectionSocketFactory is deprecated.. need to substitute
+						SSLConnectionSocketFactory.STRICT_HOSTNAME_VERIFIER );  // TODO: Verify that that the default or the strict verifier should be used in prod
+			} else {
+				logger.debug("Allowing all hostname verifier");
+				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
+						NoopHostnameVerifier.INSTANCE);
+						//SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+			}
+	
+			builder.setSSLSocketFactory(sslConnectionFactory);
+		
+			registry = RegistryBuilder.<ConnectionSocketFactory>create()
+					.register("https", sslConnectionFactory)
+					.register("http", new PlainConnectionSocketFactory()).build();
+		}
+		else {
+			registry = RegistryBuilder.<ConnectionSocketFactory>create()
+					.register("http", new PlainConnectionSocketFactory()).build();
 		}
 
-		builder.setSSLSocketFactory(sslConnectionFactory);
-		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-				.register("https", sslConnectionFactory)
-				.register("http", new PlainConnectionSocketFactory()).build();
 		HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
 		builder.setConnectionManager(ccm).setConnectionManagerShared(true);
 		return builder;
@@ -123,24 +136,27 @@ public class TLSSpringTemplateProvider {
 	
 	private SSLContext configureSSLContext() {
 		KeyStore keyStore = null;
-
-		try {
-			keyStore = KeyStore.getInstance( KEYSTORE_TYPE);
-			InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
-			keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());  // kspassword.toCharArray( )
-			logger.debug("Key store has " + keyStore.size() + " keys");
-		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			logger.error("Problem with keystore " + e.toString());
-		}
-
 		SSLContext sslContext = null;
-		try {
-			sslContext = SSLContexts.custom().loadKeyMaterial(keyStore,KEYSTORE_PASSWORD.toCharArray()) // KEYSTORE_PASSWORD.toCharArray())
-					.loadTrustMaterial(new TrustSelfSignedStrategy()).setProtocol("TLSv1") // TODO: TLS version needs to
-																							// be uniform
-					.build();
-		} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
-			logger.error("Could not create SSLContext " + e.toString());
+
+		// If TLS is enabled.
+		if (TLS_ENABLED) {
+			try {
+				keyStore = KeyStore.getInstance( KEYSTORE_TYPE);
+				InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
+				keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());  // kspassword.toCharArray( )
+				logger.debug("Key store has " + keyStore.size() + " keys");
+			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+				logger.error("Problem with keystore " + e.toString());
+			}
+	
+			try {
+				sslContext = SSLContexts.custom().loadKeyMaterial(keyStore,KEYSTORE_PASSWORD.toCharArray()) // KEYSTORE_PASSWORD.toCharArray())
+						.loadTrustMaterial(new TrustSelfSignedStrategy()).setProtocol("TLSv1") // TODO: TLS version needs to
+																								// be uniform
+						.build();
+			} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
+				logger.error("Could not create SSLContext " + e.toString());
+			}
 		}
 
 		return sslContext;
