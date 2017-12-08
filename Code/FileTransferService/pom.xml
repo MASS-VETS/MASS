@@ -4,8 +4,8 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>gov.va.mass.adapter.transmit</groupId>
-	<artifactId>FileTransferService</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>file-transfer-service</artifactId>
+	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
 	<name>FileTransferService</name>

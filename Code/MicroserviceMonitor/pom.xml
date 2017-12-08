@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>gov.va.mass.adapter</groupId>
-	<artifactId>MonitorService</artifactId>
+	<artifactId>monitor-service</artifactId>
 	<version>0.0.1</version>
 	<packaging>jar</packaging>
 
