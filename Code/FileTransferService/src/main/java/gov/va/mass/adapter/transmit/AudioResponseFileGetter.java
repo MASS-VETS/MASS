@@ -52,7 +52,7 @@ public class AudioResponseFileGetter {
 	@Value("${jms.databaseQ}")
 	private String databaseQueue;
 	
-	@Value("${interface.interfaceId}")
+	@Value("${interface.id}")
 	private String interfaceId;
 	
 	private TLSSpringTemplateProvider tlsTemplateProvider;
@@ -66,6 +66,7 @@ public class AudioResponseFileGetter {
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_OCTET_STREAM));
 		HttpEntity<Object> reqEntity = new HttpEntity<Object>(headers);
 
+		logger.debug("--- attempting httpget " + DESTINATION_URL_GET);
 		ResponseEntity<byte[]> response = restTemplate.exchange(DESTINATION_URL_GET, HttpMethod.GET, reqEntity,
 				byte[].class);
 
@@ -88,8 +89,10 @@ public class AudioResponseFileGetter {
 		mmsg.put("dateTime", dateTime);
 
 		// Send to the database
-		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
-		logger.info("Forwarded to queue = " + databaseQueue);
+		if(databaseQueue != null && !databaseQueue.isEmpty()) {
+			jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
+			logger.info("Forwarded to queue = " + databaseQueue);
+		}
 		
 		try {
 			Path path = Paths.get(pathStr);
@@ -116,7 +119,9 @@ public class AudioResponseFileGetter {
 			LocalDateTime curDateTime = LocalDateTime.now();
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
 			String formatDateTime = curDateTime.format(formatter);
-			saveByteFile(httpresp.getBody(), RESPONSES_FILE_STORAGE_FOLDER   + "/AudioCareResponses_"+formatDateTime+".csv"); 
+			String fn = RESPONSES_FILE_STORAGE_FOLDER + "AudioCareResponses_" + formatDateTime + ".csv";
+			logger.debug("Saving file " + fn);
+			saveByteFile(httpresp.getBody(), fn); 
 		}
 		return httpresp;
 	}
