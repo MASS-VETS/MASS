@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--  Handles the following-->
+<!--  A08 which come in as HAPI A01-->
+<!--  A28 which come in as HAPI A05-->
+<!--  A40 which come in as HAPI A39-->
+
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:v="urn:hl7-org:v2xml">
 
@@ -13,14 +19,27 @@
     </xsl:copy>
   </xsl:template>
 
+  <!--  A08 which come in as HAPI A01-->
   <!--  Needed to add NK1,ZFY,ZEL at end of XML-->
   <xsl:template match="v:ADT_A01">
     <xsl:element name="ADT_A01" namespace="{$v}">
+      <xsl:call-template name="topLevel"/>
+    </xsl:element>  
+  </xsl:template>
+
+  <!--  A28 which come in as HAPI A05-->
+  <!--  Needed to add NK1,ZFY,ZEL at end of XML-->
+  <xsl:template match="v:ADT_A05">
+    <xsl:element name="ADT_A05" namespace="{$v}">
+      <xsl:call-template name="topLevel"/>
+    </xsl:element>  
+  </xsl:template>
+
+  <xsl:template name="topLevel">
       <xsl:apply-templates select="node()"/>
       <xsl:call-template name="addNK1"/>
       <xsl:call-template name="addZFY"/>
       <xsl:call-template name="addZEL"/>
-    </xsl:element>
   </xsl:template>
 
   <!--  rename entire ZCT segment to NK1-->
@@ -60,7 +79,6 @@
       <xsl:value-of select="v:ZCT/v:ZCT.4"/>
     </xsl:element>
   </xsl:template>
-  
   
   <xsl:template name="NK1.4">
     <xsl:element name="XAD.1" namespace="{$v}">
@@ -139,8 +157,9 @@
     </xsl:element>
   </xsl:template>
   
-  <!--  swap Message Type and Event from ADT^A08 to ADT^A31-->
-  <xsl:template match="v:MSH/v:MSH.9">
+  <!--  swap Message Type and Event from ADT^A08(hapi^A01) to ADT^A31(hapi^A01)-->
+  <!--  but DO NOT swap Message Type ADT^A28(hapi^A05) to ADT^A31(hapi^A01)-->
+  <xsl:template match="v:ADT_A01/v:MSH/v:MSH.9">
     <xsl:element name="MSH.9" namespace="{$v}">
       <xsl:element name="MSG.1" namespace="{$v}">ADT</xsl:element>
       <xsl:element name="MSG.2" namespace="{$v}">A31</xsl:element>
@@ -149,14 +168,18 @@
 
   <!--  delete all ZCT-->
   <xsl:template match="v:ADT_A01/v:ZCT"/>
-
+  <xsl:template match="v:ADT_A05/v:ZCT"/>
+  
   <!--  delete all ZEL-->
   <xsl:template match="v:ADT_A01/v:ZEL"/>
-
+  <xsl:template match="v:ADT_A05/v:ZEL"/>
+  
   <!--  delete all ZEN-->
   <xsl:template match="v:ADT_A01/v:ZEN"/>
+  <xsl:template match="v:ADT_A05/v:ZEN"/>
   
   <!--  delete all ZSP-->
   <xsl:template match="v:ADT_A01/v:ZSP"/>
+  <xsl:template match="v:ADT_A05/v:ZSP"/>
   
 </xsl:stylesheet>
