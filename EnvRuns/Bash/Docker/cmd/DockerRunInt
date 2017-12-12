@@ -9,6 +9,9 @@ desturl=$6
 numSenders=$7
 xslt=$8
 
+#javaOpts="-Xms300m -Xmx300m"
+#gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseParallelGC -XX:NewRatio=3 -XX:ParallelGCThreads=8 -XX:+UseCGroupMemoryLimitForHeap -XX:+ShrinkHeapInSteps"
+
 #--- DOCKER CONTAINER: Transform
 if [ -z $xslt ]; then
   rcvo=${nm}SndQ
@@ -17,12 +20,14 @@ else
   rcvo=${nm}XsltQ
   sndi=${nm}SndQ
   port=$(( $rcvport + 5 ))
-  docker run -d -p ${port}:${port} --name ${nm}_xslt_c xslt_i  --server.port=$port --jms.inputQ=$rcvo --jms.outputQ=$sndi --xslt.name=$xslt --spring.activemq.broker-url=$amqBroker
+  docker run -d -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm}_xslt_c xslt_i\
+  --server.port=$port --jms.inputQ=$rcvo --jms.outputQ=$sndi --xslt.name=$xslt --spring.activemq.broker-url=$amqBroker
 fi
 
 #fire up the docker containers
 #--- DOCKER CONTAINER: Receiver
-docker run -d -e ENV='dev' -p ${rcvport}:${rcvport} --name ${nm}_rcv_c rcv_i --server.port=$rcvport --jms.databaseQ=sqlQ --jms.outputQ=$rcvo --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$inGuid --spring.activemq.broker-url=$amqBroker
+docker run -d -e JAVA_OPTIONS=$javaOpts -e ENV='dev' -p ${rcvport}:${rcvport} --memory="400m" --restart unless-stopped --name ${nm}_rcv_c rcv_i\
+ --server.port=$rcvport --jms.databaseQ=sqlQ --jms.outputQ=$rcvo --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$inGuid --spring.activemq.broker-url=$amqBroker\
 
 #--- DOCKER CONTAINER: Sender
 if [ -z $numSenders ]; then
@@ -31,5 +36,6 @@ fi
 for (( i=1; i<=$numSenders; i++ ))
 do
   port=$(( $rcvport + 10 ))
-  docker run -d -e ENV='dev' -p ${port}:${port} --name ${nm}_snd${i}_c snd_i --server.port=$port --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid --spring.activemq.broker-url=$amqBroker
+  docker run -d -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm}_snd${i}_c snd_i\
+  --server.port=$port --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid --spring.activemq.broker-url=$amqBroker
 done

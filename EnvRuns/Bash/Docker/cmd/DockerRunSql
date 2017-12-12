@@ -7,4 +7,11 @@ sqlUrl=$2
 sqlLogin=$3
 sqlPwd=$4
 
-docker run -d -p 1433:1433 -p 5001:5001 --memory="600m" --restart unless-stopped --name sql_c sql_i --jms.inputQ=sqlQ --spring.datasource.url=$sqlUrl --spring.activemq.broker-url=$amqBroker --spring.datasource.username=$sqlLogin --spring.datasource.password=$sqlPwd
+#javaOpts="-Xms300m -Xmx300m"
+#gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseParallelGC -XX:NewRatio=3 -XX:ParallelGCThreads=8 -XX:+UseCGroupMemoryLimitForHeap -XX:+ShrinkHeapInSteps"
+#gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseG1GC"
+
+docker run -d -p 1433:1433 -p 5001:5001 --memory="600m" --restart unless-stopped\
+ -e JAVA_OPTIONS=$javaOpts -e GC_OPTIONS=$gcOpts\
+ --name sql_c sql_i\
+ --jms.inputQ=sqlQ --spring.datasource.url=$sqlUrl --spring.activemq.broker-url=$amqBroker --spring.datasource.username=$sqlLogin --spring.datasource.password=$sqlPwd

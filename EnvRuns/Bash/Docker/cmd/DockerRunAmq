@@ -1,4 +1,4 @@
 #!/bin/bash
 
 #--- DOCKER CONTAINER: ActiveMQ
-docker run -d -p 8161:8161 -p 61616:61616 --memory="400m" --restart unless-stopped --name amq_c amq_i
+docker run -d -p 8161:8161 -p 61616:61616 --memory="600m" --restart unless-stopped --name amq_c amq_i
