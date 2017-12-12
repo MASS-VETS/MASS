@@ -40,8 +40,8 @@ public class MockaudioensembleService {
 	@Value("${app.appointments.folder}")
 	private String ENSEMBLE_FROM_ADAPTER;
 
-	@RequestMapping(value = "/mockensemble/audiocare/responses", method = RequestMethod.GET ) //,
-
+	@RequestMapping(value = "/mockensemble/audiocare/responses", method = RequestMethod.GET , produces =  "text/csv") //,
+// working @RequestMapping(value = "/mockensemble/audiocare/responses", method = RequestMethod.GET 
 	public @ResponseBody HttpEntity<byte[]> getAudiocareResponseToLastAppointmentFile() throws IOException {
 
 		String respfile_path = System.getenv("RESPFILE");
@@ -79,8 +79,9 @@ public class MockaudioensembleService {
 	
 	
 	private void saveUploadedFiles(MultipartFile file) {
+		System.out.println ("Received file ofcontentType " + file.getContentType());
 		System.out.println ( "saving UploadedFile " + file.getOriginalFilename() + " file size " + file.getSize());
-
+		
 		// Get the file and save it somewhere
 		byte[] bytes;
 		try {
