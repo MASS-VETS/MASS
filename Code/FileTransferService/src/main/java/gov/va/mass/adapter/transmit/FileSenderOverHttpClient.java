@@ -95,9 +95,6 @@ public class FileSenderOverHttpClient {
 
 	@Value("${interface.id}")
 	private String interfaceId;
-
-	@Value("${app.appointments.file.storage}")
-	private String APPOINTMENTS_FILE_STORAGE_FOLDER;
 	
 	@Autowired
 	private JmsMessagingTemplate jmsMsgTemplate;

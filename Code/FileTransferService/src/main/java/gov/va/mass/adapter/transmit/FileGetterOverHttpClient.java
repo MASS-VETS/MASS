@@ -50,9 +50,6 @@ public class FileGetterOverHttpClient {
 	@Value("${destination.url.get}")
 	private String DESTINATION_URL_GET;
 
-	@Value("${app.responses.file.storage}")
-	private String RESPONSES_FILE_STORAGE_FOLDER;
-
 	@Autowired
 	private JmsMessagingTemplate jmsMsgTemplate;
 	
@@ -62,15 +59,6 @@ public class FileGetterOverHttpClient {
 	@Value("${interface.id}")
 	private String interfaceId;
 	
-	@Value("${keystore.location}")
-	private String KEYSTORE_LOCATION;
-
-	@Value("${keystore.password}")
-	private String KEYSTORE_PASSWORD;
-
-	@Value("${keystore.type}")
-	private String KEYSTORE_TYPE;
-
 	private TLSHttpClientProvider tlsHttpClientProvider;
 
 	private static final Logger logger = LoggerFactory.getLogger(FileGetterOverHttpClient.class);
@@ -143,14 +131,7 @@ public class FileGetterOverHttpClient {
 
 			System.out.println("Request Url: " + httpGet.getURI());
 			System.out.println("Response Code: " + responseCode);
-
-
-			LocalDateTime curDateTime = LocalDateTime.now();
-			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
-			String formatDateTime = curDateTime.format(formatter);
-			String localStorePath = RESPONSES_FILE_STORAGE_FOLDER + "AudioCareResponses_" + formatDateTime + ".csv";
-			logger.debug("Saving file " + localStorePath);
-
+															
 			InputStream is = entity.getContent();
 			File file = saveStreamFile(is); 
 			is.close();
