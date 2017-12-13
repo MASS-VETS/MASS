@@ -46,23 +46,25 @@ public class MonitorService {
 		for (InterfaceConfig intf : config.getInterfaces()) {
 			System.out.println("interface '" + intf.getName() + "'");
 			
-			System.out.println("   receiver url: " + intf.getReceiver().getUrl());
 			PulseStats stats = new PulseStats(restTemplate, intf.getReceiver().getUrl());
-			log.info(stats.toString());
+			log.info(stats.toString() + " url: " + intf.getReceiver().getUrl());
 
 			MicroserviceConfig transform = intf.getTransform();
 			if (transform != null && transform.getUrl() != null) {
-				System.out.println("  has transform? " + (!transform.getUrl().isEmpty()));
-				System.out.println("  transform url: " + transform.getUrl());
 				stats = new PulseStats(restTemplate, transform.getUrl());
-				log.info(stats.toString());
+				log.info(stats.toString() + " url: " + transform.getUrl());
 			} else {
-				System.out.println("  has transform? false");
+				System.out.println("     transform url: n/a");
 			}
 
-			System.out.println("     sender url: " + intf.getSender().getUrl());
-			stats = new PulseStats(restTemplate, intf.getSender().getUrl());
-			log.info(stats.toString());
+			MicroserviceConfig sender = intf.getSender();
+			if (sender != null && sender.getUrl() != null) {
+				stats = new PulseStats(restTemplate, sender.getUrl());
+				log.info(stats.toString() + " url: " + sender.getUrl());
+			} else {
+				System.out.println("     sender url: n/a");
+			}
+
 		}
 		System.out.println();
 		
