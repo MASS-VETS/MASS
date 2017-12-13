@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 
@@ -74,20 +75,14 @@ public class FileGetterOverHttpClient {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileGetterOverHttpClient.class);
 
-	private byte[] saveStreamFile(InputStream is, File file) {
+	private File saveStreamFile(InputStream is) {
 		
-		byte[] filebytes = null;
+		File tempFile = null;
 		
 		try {
-			filebytes = FileCopyUtils.copyToByteArray(file);
-			FileOutputStream fos = new FileOutputStream(file);
+			tempFile = stream2file(is);
+			byte[] filebytes = FileCopyUtils.copyToByteArray(tempFile);
 
-			int inByte;
-			while ((inByte = is.read()) != -1) {
-				fos.write(inByte);
-			}
-			fos.close();
-			
 			logger.debug("File saved of size " + filebytes.length);
 
 			// Send to the database
@@ -112,8 +107,18 @@ public class FileGetterOverHttpClient {
 			e.printStackTrace();
 		}
 
-		return filebytes;
+		return tempFile;
 	}
+	
+	public static File stream2file (InputStream in) throws IOException {
+		final File tempFile = File.createTempFile("stream2file", ".tmp");
+		tempFile.deleteOnExit();
+		try (FileOutputStream out = new FileOutputStream(tempFile)) {
+			IOUtils.copy(in, out);
+		}
+		return tempFile;
+	}
+	
 
 	@RequestMapping(value = "/adapter/audiocare/responses", method = RequestMethod.GET, produces = "text/csv")
 	public @ResponseBody HttpEntity<byte[]> getAudiocareResponseToLastAppointmentFile() throws IOException {
@@ -145,11 +150,11 @@ public class FileGetterOverHttpClient {
 			String formatDateTime = curDateTime.format(formatter);
 			String localStorePath = RESPONSES_FILE_STORAGE_FOLDER + "AudioCareResponses_" + formatDateTime + ".csv";
 			logger.debug("Saving file " + localStorePath);
-			File file = new File(localStorePath);
 
 			InputStream is = entity.getContent();
-			byte[] filebytes = saveStreamFile(is, file); 
+			File file = saveStreamFile(is); 
 			is.close();
+			byte[] filebytes = FileCopyUtils.copyToByteArray(file);
 						
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/octet_stream");
