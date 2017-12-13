@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import gov.va.mass.adapter.core.JmsMicroserviceBase;
-//import gov.va.mass.adapter.core.MicroserviceException;
+import gov.va.mass.adapter.core.MicroserviceException;
 
 @RestController
 @PropertySource("classpath:application.properties")
@@ -54,36 +54,32 @@ public class FileGetterOverHttpClient extends JmsMicroserviceBase {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileGetterOverHttpClient.class);
 
-	private File saveStreamFile(InputStream is) {
+	private File saveStreamFile(InputStream is) throws IOException {
 		
 		File tempFile = null;
 		
-		try {
-			tempFile = stream2file(is);
-			byte[] filebytes = FileCopyUtils.copyToByteArray(tempFile);
+		tempFile = stream2file(is);
+		byte[] filebytes = FileCopyUtils.copyToByteArray(tempFile);
 
-			logger.debug("File saved of size " + filebytes.length);
+		logger.debug("File saved of size " + filebytes.length);
 
-			// Send to the database
-			if(databaseQueue != null && !databaseQueue.isEmpty()) {
-				//Provided that this executed, log to the database that this happened.
-				// Get current date time for later.
-				String dateTime = String.format("%1$tF %1$tT", new Date());
-				
-				// Create the HashMap for MapMessage JMS queue.
-				HashMap<String, Object> mmsg = new HashMap<String, Object>();
-	
-				// Build the MapMessage
-				mmsg.put("messageContent", new String(filebytes));
-				mmsg.put("fieldList", ""); //There are not fields to be stored for this interface.
-				mmsg.put("interfaceId", interfaceId);
-				mmsg.put("dateTime", dateTime);
-	
-				jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
-				logger.info("Forwarded to queue = " + databaseQueue);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
+		// Send to the database
+		if(databaseQueue != null && !databaseQueue.isEmpty()) {
+			//Provided that this executed, log to the database that this happened.
+			// Get current date time for later.
+			String dateTime = String.format("%1$tF %1$tT", new Date());
+			
+			// Create the HashMap for MapMessage JMS queue.
+			HashMap<String, Object> mmsg = new HashMap<String, Object>();
+
+			// Build the MapMessage
+			mmsg.put("messageContent", new String(filebytes));
+			mmsg.put("fieldList", ""); //There are not fields to be stored for this interface.
+			mmsg.put("interfaceId", interfaceId);
+			mmsg.put("dateTime", dateTime);
+
+			jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
+			logger.info("Forwarded to queue = " + databaseQueue);
 		}
 
 		return tempFile;
@@ -100,9 +96,10 @@ public class FileGetterOverHttpClient extends JmsMicroserviceBase {
 	
 
 	@RequestMapping(value = "/adapter/audiocare/responses", method = RequestMethod.GET, produces = "text/csv")
-	public @ResponseBody HttpEntity<byte[]> getAudiocareResponseToLastAppointmentFile() throws IOException {
+	public @ResponseBody HttpEntity<byte[]> getAudiocareResponseToLastAppointmentFile() throws IOException, MicroserviceException {
 
 		logger.debug("Connecting to Ensemble to obtain Audiocare responses for the last file");
+		this.state.serviceCalled();
 
 		CloseableHttpClient httpClient = null;
 		HttpResponse response = null;
@@ -133,13 +130,19 @@ public class FileGetterOverHttpClient extends JmsMicroserviceBase {
 			headers.set("Content-Disposition", "attachment; filename=" + file.getName());
 			headers.setContentLength(file.length());
 			httpEntity = new HttpEntity<byte[]>(filebytes, headers);
-
+			this.state.serviceSucceeded();
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
+			this.state.serviceFailed();
+			this.enterErrorState(e.getMessage());	//throws MicroserviceException
 		} catch (UnsupportedOperationException e) {
 			e.printStackTrace();
+			this.state.serviceFailed();
+			this.enterErrorState(e.getMessage());	//throws MicroserviceException
 		} catch (IOException e) {
 			e.printStackTrace();
+			this.state.serviceFailed();
+			this.enterErrorState(e.getMessage());	//throws MicroserviceException
 		} finally {
 			if (httpGet != null) {
 				httpGet.releaseConnection();
