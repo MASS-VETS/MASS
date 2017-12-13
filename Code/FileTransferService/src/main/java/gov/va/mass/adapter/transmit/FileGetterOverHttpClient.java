@@ -11,6 +11,9 @@ import java.nio.file.Paths;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -20,12 +23,19 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 
+import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.util.FileCopyUtils;
+
+import org.springframework.jms.core.JmsMessagingTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -42,6 +52,15 @@ public class FileGetterOverHttpClient {
 	@Value("${app.responses.file.storage}")
 	private String RESPONSES_FILE_STORAGE_FOLDER;
 
+	@Autowired
+	private JmsMessagingTemplate jmsMsgTemplate;
+	
+	@Value("${jms.databaseQ}")
+	private String databaseQueue;
+	
+	@Value("${interface.id}")
+	private String interfaceId;
+	
 	@Value("${keystore.location}")
 	private String KEYSTORE_LOCATION;
 
@@ -55,16 +74,45 @@ public class FileGetterOverHttpClient {
 
 	private static final Logger logger = LoggerFactory.getLogger(FileGetterOverHttpClient.class);
 
-	private void saveByteFile(byte[] file, String pathStr) {
-
+	private byte[] saveStreamFile(InputStream is, File file) {
+		
+		byte[] filebytes = null;
+		
 		try {
-			Path path = Paths.get(pathStr);
-			Files.write(path, file);
-			logger.debug("File saved of size " + file.length);
+			filebytes = FileCopyUtils.copyToByteArray(file);
+			FileOutputStream fos = new FileOutputStream(file);
+
+			int inByte;
+			while ((inByte = is.read()) != -1) {
+				fos.write(inByte);
+			}
+			fos.close();
+			
+			logger.debug("File saved of size " + filebytes.length);
+
+			// Send to the database
+			if(databaseQueue != null && !databaseQueue.isEmpty()) {
+				//Provided that this executed, log to the database that this happened.
+				// Get current date time for later.
+				String dateTime = String.format("%1$tF %1$tT", new Date());
+				
+				// Create the HashMap for MapMessage JMS queue.
+				HashMap<String, Object> mmsg = new HashMap<String, Object>();
+	
+				// Build the MapMessage
+				mmsg.put("messageContent", new String(filebytes));
+				mmsg.put("fieldList", ""); //There are not fields to be stored for this interface.
+				mmsg.put("interfaceId", interfaceId);
+				mmsg.put("dateTime", dateTime);
+	
+				jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
+				logger.info("Forwarded to queue = " + databaseQueue);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
+		return filebytes;
 	}
 
 	@RequestMapping(value = "/adapter/audiocare/responses", method = RequestMethod.GET, produces = "text/csv")
@@ -91,29 +139,18 @@ public class FileGetterOverHttpClient {
 			System.out.println("Request Url: " + httpGet.getURI());
 			System.out.println("Response Code: " + responseCode);
 
-			InputStream is = entity.getContent();
 
 			LocalDateTime curDateTime = LocalDateTime.now();
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
 			String formatDateTime = curDateTime.format(formatter);
-			String localStorePath = RESPONSES_FILE_STORAGE_FOLDER + "/AudioCareResponses_" + formatDateTime + ".csv";
+			String localStorePath = RESPONSES_FILE_STORAGE_FOLDER + "AudioCareResponses_" + formatDateTime + ".csv";
+			logger.debug("Saving file " + localStorePath);
 			File file = new File(localStorePath);
-			FileOutputStream fos = new FileOutputStream(file);
 
-			int inByte;
-			while ((inByte = is.read()) != -1) {
-				fos.write(inByte);
-			}
-
+			InputStream is = entity.getContent();
+			byte[] filebytes = saveStreamFile(is, file); 
 			is.close();
-			fos.close();
-
-//			httpClient.close();
-			System.out.println("File download to adapter is complete");
-
-			byte[] filebytes = FileCopyUtils.copyToByteArray(file);
-			System.out.println(" Sending file to EPIC " + file.getAbsolutePath());
-
+						
 			HttpHeaders headers = new HttpHeaders();
 			headers.set("Content-Type", "application/octet_stream");
 			headers.set("Content-Disposition", "attachment; filename=" + file.getName());
@@ -127,7 +164,9 @@ public class FileGetterOverHttpClient {
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			httpGet.releaseConnection();
+			if (httpGet != null) {
+				httpGet.releaseConnection();
+			}
 		}
 
 		return httpEntity;
