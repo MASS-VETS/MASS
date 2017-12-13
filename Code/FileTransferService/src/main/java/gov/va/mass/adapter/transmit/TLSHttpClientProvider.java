@@ -127,24 +127,32 @@ public class TLSHttpClientProvider {
 	private HttpClientBuilder prepareHttpClientBuilder(SSLContext sslContext) {
 		// Prepare the HTTPClient.
 		HttpClientBuilder builder = HttpClientBuilder.create();
+		Registry<ConnectionSocketFactory> registry = null;
 
-		SSLConnectionSocketFactory sslConnectionFactory = null;
-		String env = System.getenv("ENV") ; 
-		logger.debug("ssl conn fact. creation " + env);
-		if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
-			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-					BrowserCompatHostnameVerifier.INSTANCE); 
-		} else {
-			sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-					NoopHostnameVerifier.INSTANCE);
+		if (TLS_ENABLED) {
+			SSLConnectionSocketFactory sslConnectionFactory = null;
+			String env = System.getenv("ENV") ; 
+			logger.debug("ssl conn fact. creation " + env);
+			if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
+				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
+						BrowserCompatHostnameVerifier.INSTANCE); 
+			} else {
+				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
+						NoopHostnameVerifier.INSTANCE);
+			}
+	
+			builder.setSSLSocketFactory(sslConnectionFactory);
+
+			// TODO : Need to disable the http socket factory? Or is this used after ssl is stripped.
+			registry = RegistryBuilder.<ConnectionSocketFactory>create()
+					.register("https", sslConnectionFactory)
+					.build();
 		}
-
-		builder.setSSLSocketFactory(sslConnectionFactory);
-
-		// TODO : Need to disable the http socket factory? Or is this used after ssl is stripped.
-		Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-				.register("https", sslConnectionFactory) // .register("http", new PlainConnectionSocketFactory())
-				.build();
+		else {
+			registry = RegistryBuilder.<ConnectionSocketFactory>create()
+					.register("http", new PlainConnectionSocketFactory()).build();
+		}
+		
 		HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
 		builder.setConnectionManager(ccm);
 //		PoolingHttpClientConnectionManager pcm = new PoolingHttpClientConnectionManager (registry);
