@@ -100,6 +100,11 @@
     		<version>1.3.2</version>
 		</dependency>
 		
+		<dependency>
+			<groupId>gov.va.mass.adapter</groupId>
+			<artifactId>MicroserviceCore</artifactId>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
@@ -121,6 +126,16 @@
         </resources>
          -->
 	</build>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>gov.va.mass.adapter</groupId>
+				<artifactId>MicroserviceCore</artifactId>
+				<version>0.0.1</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 
 	<description>File Poster and Getter for passing through a request to external source.</description>

@@ -5,35 +5,14 @@ package gov.va.mass.adapter.transmit;
  */
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
 
-import javax.net.ssl.SSLContext;
 import org.apache.commons.io.IOUtils;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.HttpClientConnectionManager;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.BrowserCompatHostnameVerifier;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
-
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
@@ -42,10 +21,6 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpPost;
-
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.conn.BasicHttpClientConnectionManager;
-import org.apache.http.ssl.SSLContexts;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,8 +43,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.web.multipart.MultipartFile;
-
-// TODO : In PROD, disable the save file method
 
 // TODO : Make hostname verification an environment specific parameter
 @RestController
@@ -113,7 +86,7 @@ public class FileSenderOverHttpClient {
 		logger.debug("Single file upload!");
 
 		if (uploadfile.isEmpty()) {
-			return new ResponseEntity("Please select a file.", HttpStatus.OK);
+			return new ResponseEntity<String>("Please select a file.", HttpStatus.OK);
 		}
 
 		try {
@@ -152,10 +125,6 @@ public class FileSenderOverHttpClient {
 			logger.info("Forwarded to queue = " + databaseQueue);
 		}
 		
-		//logger.debug("Saving file to local " + file.getSize() + " " + path);
-		//File savedfile = new File(localStorePath); // TODO : Cleanup don't need another pointer savedfile.
-		//logger.debug("length of saved file " + savedfile.length());
-		//return savedfile; // TODO: return the inmemory file object instead of the savedfile
 		File tempFile = stream2file(file.getInputStream());
 		logger.debug("length of saved file " + tempFile.length());
 		return tempFile;
@@ -171,80 +140,6 @@ public class FileSenderOverHttpClient {
 	}
 
 	
-	
-	
-	// Create an SSL context with our private key store.
-	// We are only loading the key-material here, but if your server uses a
-	// self-signed certificate,
-	// you will need to load the trust-material (a JKS key-store containing the
-	// server's public SSL
-	// certificate) as well.
-
-	private SSLContext configureSSLContext() {
-		KeyStore keyStore = null;
-		SSLContext sslContext = null;
-		
-		// If TLS is enabled.
-		if (TLS_ENABLED) {
-			try {
-				keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
-				InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
-				keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());
-				logger.debug("Key store has " + keyStore.size() + " keys");
-			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-				logger.error("Problem with keystore " + e.toString());
-			}
-			
-			try {
-				sslContext = SSLContexts.custom().loadKeyMaterial(keyStore, KEYSTORE_PASSWORD.toCharArray())
-						.loadTrustMaterial(new TrustSelfSignedStrategy()).setProtocol("TLSv1") // TODO: TLS version needs to
-																								// be uniform
-						.build();
-			} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
-				logger.error("Could not create SSLContext " + e.toString());
-			}
-		}
-		
-		return sslContext;
-	}
-	
-	
-	// TODO: sslconnectionfactory is deprecated
-	private HttpClientBuilder prepareHttpClientBuilder(SSLContext sslContext) {
-		// Prepare the HTTPClient.
-		HttpClientBuilder builder = HttpClientBuilder.create();
-		Registry<ConnectionSocketFactory> registry = null;
-
-		if (TLS_ENABLED) {
-			SSLConnectionSocketFactory sslConnectionFactory = null;
-			String env = System.getenv("ENV") ; 
-			logger.debug("ssl conn fact. creation " + env);
-			if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
-				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-						BrowserCompatHostnameVerifier.INSTANCE); 
-			} else {
-				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
-						NoopHostnameVerifier.INSTANCE);
-			}
-	
-			builder.setSSLSocketFactory(sslConnectionFactory);
-	
-			// TODO : Need to disable the http socket factory? Or is this used after ssl is stripped.
-			registry = RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("https", sslConnectionFactory) // .register("http", new PlainConnectionSocketFactory())
-					.build();
-		}
-		else {
-			registry = RegistryBuilder.<ConnectionSocketFactory>create()
-					.register("http", new PlainConnectionSocketFactory()).build();
-		}
-		
-		HttpClientConnectionManager ccm = new BasicHttpClientConnectionManager(registry);
-		builder.setConnectionManager(ccm);
-		return builder;
-	}
-
-		
 	private void finalPostFile(CloseableHttpClient httpClient, File savedfile) {
 
 		HttpPost httpPost = new HttpPost(DESTINATION_URL_POST);
@@ -270,19 +165,8 @@ public class FileSenderOverHttpClient {
 	
 
 	private void prepareAndPost(File savedfile) {
-
-		SSLContext sslContext = configureSSLContext();
-		HttpClientBuilder builder = prepareHttpClientBuilder(sslContext);
-
-		//TODO: Attempt 
-		//CloseableHttpClient httpClient = setTLSHttpClientProvider.getTLSHttpClient();
-		//finalPostFile(httpClient, savedfile);
-
-		try (CloseableHttpClient httpClient = builder.build()) {
-			finalPostFile(httpClient, savedfile);
-		} catch (IOException e) {
-			logger.error("Unable to create httpclient " + e.toString());
-		}
+		CloseableHttpClient httpClient = setTLSHttpClientProvider.getTLSHttpClient();
+		finalPostFile(httpClient, savedfile);
 	}
 
 	public void setTLSHttpClientProvider(TLSHttpClientProvider tlsHttpClientProvider) {

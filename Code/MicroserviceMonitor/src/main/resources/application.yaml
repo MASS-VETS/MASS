@@ -57,6 +57,30 @@ monitor:
         url: http://severusqa-submission1.epic.com:5610/
       transform: 
         url: http://severusqa-submission1.epic.com:5605/
+    - 
+      name: PCMMM Query Full
+      receiver: 
+        url: http://severusqa-submission1.epic.com:8433/
+    - 
+      name: PCMMM Query Delta
+      receiver: 
+        url: http://severusqa-submission1.epic.com:8434/
+    - 
+      name: PCMMM Query Status
+      receiver: 
+        url: http://severusqa-submission1.epic.com:8435/
+    - 
+      name: PCMMM Get File
+      receiver: 
+        url: http://severusqa-submission1.epic.com:8436/
+    - 
+      name: AudioCare Post
+      receiver: 
+        url: http://severusqa-submission1.epic.com:8533/
+    - 
+      name: AudioCare Get
+      receiver: 
+        url: http://severusqa-submission1.epic.com:8534/
   email:
     fromAddress: thecloud19791979@gmail.com
     toAddress: sleader@epic.com

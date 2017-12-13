@@ -5,13 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -30,22 +23,20 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 
-import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.util.FileCopyUtils;
 
 import org.springframework.jms.core.JmsMessagingTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
-
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+
+import gov.va.mass.adapter.core.JmsMicroserviceBase;
+//import gov.va.mass.adapter.core.MicroserviceException;
 
 @RestController
 @PropertySource("classpath:application.properties")
-public class FileGetterOverHttpClient {
+public class FileGetterOverHttpClient extends JmsMicroserviceBase {
 
 	@Value("${destination.url.get}")
 	private String DESTINATION_URL_GET;
@@ -163,4 +154,9 @@ public class FileGetterOverHttpClient {
 		this.tlsHttpClientProvider = tlsHttpClientProvider;
 	}
 
+	@Override
+	protected String serviceName() {
+		return "FileTransferService";
+	}
+	
 }

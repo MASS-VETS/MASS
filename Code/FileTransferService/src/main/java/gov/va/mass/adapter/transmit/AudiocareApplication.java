@@ -26,14 +26,9 @@ public class AudiocareApplication {
 		FileSenderOverHttpClient filesender = springctxt.getBean(FileSenderOverHttpClient.class);
 		filesender.setTLSHttpClientProvider(tlsHttpClientProvider);
 
-		// Initialize the sender
+		// Initialize the getter
 		FileGetterOverHttpClient filegetter = springctxt.getBean(FileGetterOverHttpClient.class);
 		filegetter.setTLSHttpClientProvider(tlsHttpClientProvider);
-
-		// AppointmentsFileSenderWithSpring filesender =
-		// springctxt.getBean(AppointmentsFileSender.class);
-		// filesender.setTemplateProvider (templateProvider);
-
 	}
 
 }
