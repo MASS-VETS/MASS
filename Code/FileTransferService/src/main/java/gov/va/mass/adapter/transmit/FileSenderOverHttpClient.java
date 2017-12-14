@@ -75,6 +75,7 @@ public class FileSenderOverHttpClient extends MicroserviceBase {
 			@RequestParam("file") MultipartFile uploadfile) {
 		
 		logger.debug("Single file upload!");
+		this.state.serviceCalled();
 		
 		if (uploadfile.isEmpty()) {
 			return new ResponseEntity<String>("Please select a file.", HttpStatus.OK);
@@ -84,9 +85,11 @@ public class FileSenderOverHttpClient extends MicroserviceBase {
 			File savedfile = saveUploadedFiles(uploadfile);
 			prepareAndPost(savedfile);
 		} catch (IOException e) {
+			this.state.serviceFailed();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 		
+		this.state.serviceSucceeded();
 		return new ResponseEntity<String>("Successfully uploaded file to Adapter and from Adapter to Ensemble- "
 				+ uploadfile.getOriginalFilename(), new HttpHeaders(), HttpStatus.OK);
 		
