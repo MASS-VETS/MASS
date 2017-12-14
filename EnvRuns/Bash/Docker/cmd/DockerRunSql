@@ -14,4 +14,5 @@ sqlPwd=$4
 docker run -d -p 1433:1433 -p 5001:5001 --memory="600m" --restart unless-stopped\
  -e JAVA_OPTIONS=$javaOpts -e GC_OPTIONS=$gcOpts\
  --name sql_c sql_i\
+ --server.port=5001\
  --jms.inputQ=sqlQ --spring.datasource.url=$sqlUrl --spring.activemq.broker-url=$amqBroker --spring.datasource.username=$sqlLogin --spring.datasource.password=$sqlPwd

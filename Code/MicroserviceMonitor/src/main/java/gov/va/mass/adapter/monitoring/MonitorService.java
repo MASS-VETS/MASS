@@ -40,13 +40,14 @@ public class MonitorService {
 	@Scheduled(cron = "${monitor.rate}")
 	public void showProperty() throws URISyntaxException {
 		
-		System.out.println("database url: " + config.getMessagedb().getUrl());
+		PulseStats stats = new PulseStats(restTemplate, config.getMessagedb().getUrl());
+		log.info(stats.toString() + " url: " + config.getMessagedb().getUrl());
 		
 		// poll all the interfaces
 		for (InterfaceConfig intf : config.getInterfaces()) {
 			System.out.println("interface '" + intf.getName() + "'");
 			
-			PulseStats stats = new PulseStats(restTemplate, intf.getReceiver().getUrl());
+			stats = new PulseStats(restTemplate, intf.getReceiver().getUrl());
 			log.info(stats.toString() + " url: " + intf.getReceiver().getUrl());
 
 			MicroserviceConfig transform = intf.getTransform();
@@ -69,8 +70,8 @@ public class MonitorService {
 		System.out.println();
 		
 		// poll activemq
-		BrokerStats stats = new BrokerStats(restTemplate, config.getJms().getUri());
-		for (QueueStats q : stats.queues) {
+		BrokerStats bstats = new BrokerStats(restTemplate, config.getJms().getUri());
+		for (QueueStats q : bstats.queues) {
 			log.info(q.toString());
 			checkQueueAlert(q, config);
 		}
