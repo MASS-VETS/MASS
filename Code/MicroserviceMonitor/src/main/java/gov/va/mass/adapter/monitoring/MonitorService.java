@@ -23,10 +23,11 @@ import gov.va.mass.adapter.monitoring.stats.QueueStats;
 public class MonitorService {
 	static final Logger log = LoggerFactory.getLogger(MonitorService.class);
 	
-	private AlertSpamPreventor spamPreventor = new AlertSpamPreventor();
-	
 	@Autowired
 	private MonitorConfig config;
+	
+	@Autowired
+	private AlertSpamPreventor spamPreventor;
 	
 	@Autowired
 	RestTemplate restTemplate;

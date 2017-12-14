@@ -1,17 +1,19 @@
 package gov.va.mass.adapter.monitoring;
 
 import java.util.Hashtable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import gov.va.mass.adapter.monitoring.config.MonitorConfig;
 
 @Component
 public class AlertSpamPreventor {
 	
-	@Autowired
 	private MonitorConfig config;
 	
 	private Hashtable<String, Long> lastSentTime = new Hashtable<String, Long>();
+	
+	public AlertSpamPreventor(MonitorConfig config) {
+		this.config = config;
+	}
 	
 	public boolean shouldSendEmail(AlertType type, String forEntity) {
 		String key = type.name() + "." + forEntity;

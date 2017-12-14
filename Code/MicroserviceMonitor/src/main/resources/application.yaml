@@ -81,7 +81,7 @@ monitor:
         url: http://severusqa-submission1.epic.com:8533/adapter/filetransferservice/sender/
   email:
     fromAddress: thecloud19791979@gmail.com
-    toAddress: sleader@epic.com
+    toAddress: avolkano@epic.com
     password: seanwashere
   smtp:
     host: smtp.gmail.com
@@ -118,14 +118,6 @@ monitor:
     -
       name: schedSndQ
       queueMax: 20
-      consumerMin: 1
-    -
-      name: sqlQ
-      queueMax: 20
-      consumerMin: 1
-    -
-      name: avoQ
-      queueMax: 2
       consumerMin: 1
   timeBetweenAlerts: 10
 ---
