@@ -13,7 +13,7 @@ import gov.va.mass.adapter.monitoring.config.MicroserviceConfig;
 import gov.va.mass.adapter.monitoring.config.MonitorConfig;
 import gov.va.mass.adapter.monitoring.email.EmailTemplate;
 import gov.va.mass.adapter.monitoring.stats.BrokerStats;
-import gov.va.mass.adapter.monitoring.stats.PulseStats;
+import gov.va.mass.adapter.monitoring.stats.MicroserviceStats;
 import gov.va.mass.adapter.monitoring.stats.QueueStats;
 
 /**
@@ -23,10 +23,7 @@ import gov.va.mass.adapter.monitoring.stats.QueueStats;
 public class MonitorService {
 	static final Logger log = LoggerFactory.getLogger(MonitorService.class);
 	
-	private long lastQueueMaxTime;
-	private long lastConsumerMaxTime;
-	private long lastEnqueuedMaxTime;
-	private long lastDequeuedMaxTime;
+	private AlertSpamPreventor spamPreventor = new AlertSpamPreventor();
 	
 	@Autowired
 	private MonitorConfig config;
@@ -40,69 +37,125 @@ public class MonitorService {
 	@Scheduled(cron = "${monitor.rate}")
 	public void showProperty() throws URISyntaxException {
 		
-		PulseStats stats = new PulseStats(restTemplate, config.getMessagedb().getUrl());
+		MicroserviceStats stats = new MicroserviceStats(restTemplate, config.getMessagedb().getUrl());
 		log.info(stats.toString() + " url: " + config.getMessagedb().getUrl());
+		checkAlertsForMicroService(stats, "MessageDB");
 		
 		// poll all the interfaces
 		for (InterfaceConfig intf : config.getInterfaces()) {
-			System.out.println("interface '" + intf.getName() + "'");
+			log.info("interface '" + intf.getName() + "'");
 			
-			stats = new PulseStats(restTemplate, intf.getReceiver().getUrl());
+			stats = new MicroserviceStats(restTemplate, intf.getReceiver().getUrl());
 			log.info(stats.toString() + " url: " + intf.getReceiver().getUrl());
-
+			checkAlertsForMicroService(stats, intf.getName() + " Receiver");
+			
 			MicroserviceConfig transform = intf.getTransform();
 			if (transform != null && transform.getUrl() != null) {
-				stats = new PulseStats(restTemplate, transform.getUrl());
+				stats = new MicroserviceStats(restTemplate, transform.getUrl());
 				log.info(stats.toString() + " url: " + transform.getUrl());
-			} else {
-				System.out.println("     transform url: n/a");
+				checkAlertsForMicroService(stats, intf.getName() + " Transform");
 			}
-
+			
 			MicroserviceConfig sender = intf.getSender();
 			if (sender != null && sender.getUrl() != null) {
-				stats = new PulseStats(restTemplate, sender.getUrl());
+				stats = new MicroserviceStats(restTemplate, sender.getUrl());
 				log.info(stats.toString() + " url: " + sender.getUrl());
-			} else {
-				System.out.println("     sender url: n/a");
+				checkAlertsForMicroService(stats, intf.getName() + " Sender");
 			}
-
+			
 		}
-		System.out.println();
 		
 		// poll activemq
 		BrokerStats bstats = new BrokerStats(restTemplate, config.getJms().getUri());
+		checkAlertsForBroker(bstats);
 		for (QueueStats q : bstats.queues) {
 			log.info(q.toString());
-			checkQueueAlert(q, config);
+			checkAlertsForQueue(q);
 		}
-		System.out.println();
-		
 	}
 	
-	private void checkQueueAlert(QueueStats q, MonitorConfig config)
-	{
-		for (AlertConfig alert : config.getAlerts() ) {
-			if (!(q.name.equals(alert.getName()))) continue;
-         	if ((alert.getQueueMax() != null)&&(q.queueSize > alert.getQueueMax())) {
-         		if ((System.currentTimeMillis() - lastQueueMaxTime) < (alert.getTimer() * 60000)) break;
-				emailTemplate.SendMail(config.getEmail().getToAddress(), "Queue Size Alert", "Queue " + q.name + " has a queue size greater than " + alert.getQueueMax() + ".");
-				lastQueueMaxTime = System.currentTimeMillis();
+	private void checkAlertsForBroker(BrokerStats s) {
+		String emailAddress = config.getEmail().getToAddress();
+		if (!s.successfullyPolled) {
+			if (spamPreventor.shouldSendEmail(AlertType.ServiceDown, "JMS Broker")) {
+				emailTemplate.SendMail(emailAddress, "Service Down Alert",
+						getEmailText(AlertType.ServiceDown, "JMS Broker"));
 			}
-			if ((alert.getConsumerMax() != null)&&(q.consumerCount > alert.getConsumerMax())) {
-				if ((System.currentTimeMillis() - lastConsumerMaxTime) < (alert.getTimer() * 60000)) break;
-				emailTemplate.SendMail(config.getEmail().getToAddress(), "Consumer Count Alert", "Queue " + q.name + " has a consumer count greater than " + alert.getConsumerMax() + ".");
-				lastConsumerMaxTime = System.currentTimeMillis();
+		}
+	}
+	
+	private void checkAlertsForMicroService(MicroserviceStats s, String name) {
+		String emailAddress = config.getEmail().getToAddress();
+		if (!s.isAlive && spamPreventor.shouldSendEmail(AlertType.ServiceDown, name)) {
+			emailTemplate.SendMail(emailAddress, "Service Down Alert",
+					getEmailText(AlertType.ServiceDown, name));
+		}
+		if (s.runState.equalsIgnoreCase("ErrorCondition")
+				&& spamPreventor.shouldSendEmail(AlertType.ServiceStoppedItself, name)) {
+			emailTemplate.SendMail(emailAddress, "Service Error Alert",
+					getEmailText(AlertType.ServiceStoppedItself, name, s.errorMessage));
+		}
+	}
+	
+	private void checkAlertsForQueue(QueueStats q) {
+		String emailAddress = config.getEmail().getToAddress();
+		boolean found = false;
+		for (AlertConfig alert : config.getAlerts()) {
+			if (!(q.name.equals(alert.getName())))
+				continue;
+			found = true;
+			// check to see if messages are backed up
+			if (greaterThanThreshold(q.queueSize, alert.getQueueMax())
+					&& spamPreventor.shouldSendEmail(AlertType.QueueSizeThresholdReached, "Q" + q.name)) {
+				emailTemplate.SendMail(emailAddress, "Queue Depth Alert",
+						getEmailText(AlertType.QueueSizeThresholdReached, q.name, q.queueSize, alert.getQueueMax()));
 			}
-			if ((alert.getEnqueuedMax() != null)&&(q.enqueuedCount > alert.getEnqueuedMax())) {
-				if ((System.currentTimeMillis() - lastEnqueuedMaxTime) < (alert.getTimer() * 60000)) break;
-				emailTemplate.SendMail(config.getEmail().getToAddress(), "Enqueued Count Alert", "Queue " + q.name + " has an enqueued count greater than " + alert.getEnqueuedMax() + ".");
-				lastEnqueuedMaxTime = System.currentTimeMillis();
+			// check to make sure someone is listening to this queue
+			if (lessThanThreshold(q.consumerCount, alert.getConsumerMin())
+					&& spamPreventor.shouldSendEmail(AlertType.NotEnoughConsumersOnQueue, "Q" + q.name)) {
+				emailTemplate.SendMail(emailAddress, "Consumer Count Alert",
+						getEmailText(AlertType.NotEnoughConsumersOnQueue, q.name, alert.getConsumerMin(), q.consumerCount));
 			}
-			if ((alert.getDequeuedMax() != null)&&(q.dequeuedCount > alert.getDequeuedMax())) {
-				if ((System.currentTimeMillis() - lastDequeuedMaxTime) < (alert.getTimer() * 60000)) break;
-				emailTemplate.SendMail(config.getEmail().getToAddress(), "Dequeued Count Alert", "Queue " + q.name + " has a dequeued count greater than " + alert.getDequeuedMax() + ".");
-				lastDequeuedMaxTime = System.currentTimeMillis();
-			}
-		} 
+		}
+		if (!found && spamPreventor.shouldSendEmail(AlertType.UnmonitoredQueue, "Q" + q.name)) {
+			emailTemplate.SendMail(emailAddress, "Unmonitored Queue Alert",
+					getEmailText(AlertType.UnmonitoredQueue, q.name));
+		}
+	}
+	
+	private String getEmailText(AlertType type, String entity, Object... args) {
+		switch (type) {
+		case NotEnoughConsumersOnQueue:
+			return String.format(
+					"Queue %s requires at least %d consumer(s), but only has %d.", entity, args[0], args[1]);
+		case QueueSizeThresholdReached:
+			return String.format(
+					"Queue %s depth is %d. Threshold: %d.", entity, args[0], args[1]);
+		case ServiceDown:
+			return String.format(
+					"Service %s is not responding.", entity);
+		case ServiceStoppedItself:
+			return String.format(
+					"Service %s has stopped and is waiting for error resolution.\n\nError:\n%s", args[0]);
+		case UnmonitoredQueue:
+			return String.format(
+					"Queue %s was not configured in the monitor.", entity);
+		default:
+			return "An unknown error has occurred within the adapter.";
+		}
+	}
+	
+	private boolean greaterThanThreshold(int value, Integer threshold) {
+		if (threshold == null) {
+			return false;
+		}
+		return value > threshold;
+	}
+	
+	private boolean lessThanThreshold(int value, Integer threshold) {
+		if (threshold == null) {
+			return false;
+		}
+		return value < threshold;
 	}
 }

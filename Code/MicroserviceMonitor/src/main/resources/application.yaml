@@ -58,26 +58,6 @@ monitor:
       transform: 
         url: http://severusqa-submission1.epic.com:5605/
     - 
-      name: PCMMM Query Full
-      receiver: 
-        url: http://severusqa-submission1.epic.com:8433/
-    - 
-      name: PCMMM Query Delta
-      receiver: 
-        url: http://severusqa-submission1.epic.com:8434/
-    - 
-      name: PCMMM Query Status
-      receiver: 
-        url: http://severusqa-submission1.epic.com:8435/
-    - 
-      name: PCMMM Get File
-      receiver: 
-        url: http://severusqa-submission1.epic.com:8436/
-    - 
-      name: AudioCare Post
-      receiver: 
-        url: http://severusqa-submission1.epic.com:8533/
-    - 
       name: AudioCare Get
       receiver: 
         url: http://severusqa-submission1.epic.com:8534/
@@ -90,7 +70,44 @@ monitor:
     port: 465
   alerts:
     -
+      name: demogADTSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
       name: demogADTXsltQ
-      enqueuedMax: 74
-      timer: 1
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: demogORUSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: demogORUXsltQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: errorSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: inschedSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: orderSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: schedSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: sqlQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: avoQ
+      queueMax: 2
+      consumerMin: 1
+  timeBetweenAlerts: 10
 ---

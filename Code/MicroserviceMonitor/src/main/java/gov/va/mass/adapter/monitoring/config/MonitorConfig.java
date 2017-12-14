@@ -88,4 +88,14 @@ public class MonitorConfig {
 	public void setAlerts(List<AlertConfig> alerts) {
 		this.alerts = alerts;
 	}
+	
+	private Integer timeBetweenAlerts;
+	
+	public Integer getTimeBetweenAlerts() {
+		return this.timeBetweenAlerts;
+	}
+	
+	public void setTimeBetweenAlerts(Integer timeBetweenAlerts) {
+		this.timeBetweenAlerts = timeBetweenAlerts;
+	}
 }
