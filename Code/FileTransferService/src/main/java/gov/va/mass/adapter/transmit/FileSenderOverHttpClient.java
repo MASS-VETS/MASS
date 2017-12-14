@@ -167,7 +167,7 @@ public class FileSenderOverHttpClient extends MicroserviceBase {
 	
 	@Override
 	protected String serviceName() {
-		return "FileGetterService";
+		return "FileSenderService";
 	}
 	
 }
