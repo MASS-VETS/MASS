@@ -28,7 +28,9 @@ import ca.uhn.hl7v2.hoh.sockets.CustomCertificateTlsSocketFactory;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.util.Terser;
+import gov.va.mass.adapter.core.JmsMicroserviceBase;
 import gov.va.mass.adapter.core.MicroserviceBase;
+import gov.va.mass.adapter.core.MicroserviceException;
 
 /*
  * Pick up messages from readytosend queue and send via HAPI
@@ -41,7 +43,7 @@ import gov.va.mass.adapter.core.MicroserviceBase;
  */
 @Component
 @PropertySource("classpath:application.properties")
-public class SendAndGetAckService extends MicroserviceBase{
+public class SendAndGetAckService extends JmsMicroserviceBase{
 	@Value("${tls.keystore.location}")
 	private String KEYSTORE_LOCATION;
 
@@ -83,7 +85,7 @@ public class SendAndGetAckService extends MicroserviceBase{
 	private static final Logger logger = LoggerFactory.getLogger(SendAndGetAckService.class);
 
 	@JmsListener(destination = "${jms.inputQ}")
-	public void sendMessagesFromReadyQueue(String msgtxt) throws MalformedURLException {
+	public void sendMessagesFromReadyQueue(String msgtxt) throws MalformedURLException, MicroserviceException {
 
 		// Log message and save to database before sending.
 		logger.info("Received from Q: " + msgtxt);
@@ -101,7 +103,7 @@ public class SendAndGetAckService extends MicroserviceBase{
 
 	// Function to send messages using the HAPI Specification.
 	// RETURNS: True if message ACK'd.
-	private boolean sendOverHAPI(String msgtxt) throws MalformedURLException {
+	private boolean sendOverHAPI(String msgtxt) throws MalformedURLException, MicroserviceException {
 		boolean acked = false;
 
 		// Initialize variables and destination URL.
@@ -142,8 +144,8 @@ public class SendAndGetAckService extends MicroserviceBase{
 				// If we are at the maximum number of attempts then log that to the error queue.
 				if (sendattemptcounter == MAX_SEND_ATTEMPTS) {
 					logger.info("MAX attempts to send to exceeded.");
-					writeMessageToErrorQueue(); // TODO : Close / Sleep the service here.
-					break;
+					this.state.serviceFailed();
+					throw this.enterErrorState("Exception during sending shutting down the service.");
 				} else {
 					logger.info(
 							"Wait for a certain period, before reattempting to send. Or push this on a hold queue");
@@ -153,9 +155,8 @@ public class SendAndGetAckService extends MicroserviceBase{
 				try {
 					Thread.sleep(SEND_ATTEMPT_INTERVAL);
 				} catch (InterruptedException e1) {
-					// TODO: what would cause this?
-					// what is the best response to this situation? Shut down the service if this
-					// happens it would only happen if there was a major system error.
+					this.state.serviceFailed();
+					throw this.enterErrorState("Interrupted exception shutting down the service.");
 				}
 			}
 		} while (sendattemptcounter < MAX_SEND_ATTEMPTS); // Loop
@@ -179,11 +180,6 @@ public class SendAndGetAckService extends MicroserviceBase{
 		// Send to the database
 		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
 		logger.info("Forwarded to queue = " + databaseQueue);
-	}
-
-	// TODO : complete this function.
-	private void writeMessageToErrorQueue() {
-		logger.info("At this point will be marking this message as unable to send.");
 	}
 
 	// Function to add to MDC.

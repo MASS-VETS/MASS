@@ -86,6 +86,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 				return message.generateACK(AcknowledgmentCode.CR, new HL7Exception(("Invalid Processing ID. Expected: " + processingId + " Received: " + msgValues.get("processingId")), ErrorCode.UNSUPPORTED_PROCESSING_ID)).encode();
 			} catch (HL7Exception | IOException e) {
 				e.printStackTrace();
+				this.state.serviceFailed();
 				throw new InvalidMessageException(); // return HTTP 415 error if the HL7 is invalid.
 			}
 		}
@@ -115,6 +116,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 			return message.generateACK().encode();
 		} catch (HL7Exception | IOException e) {
 			e.printStackTrace();
+			this.state.serviceFailed();
 			throw new InvalidMessageException(); // return HTTP 415 error if the HL7 is invalid.
 		}
 	}
