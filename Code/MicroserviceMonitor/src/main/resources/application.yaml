@@ -81,7 +81,7 @@ monitor:
         url: http://severusqa-submission1.epic.com:8533/adapter/filetransferservice/sender/
   email:
     fromAddress: thecloud19791979@gmail.com
-    toAddress: avolkano@epic.com
+    toAddress: sleader@epic.com
     password: seanwashere
   smtp:
     host: smtp.gmail.com
