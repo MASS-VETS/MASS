@@ -16,11 +16,11 @@ FOR /F "usebackq tokens=*" %%a IN ("%~dp0build_list.txt") DO (
 goto:eof
 
 :install
-call mvn clean install -f "%~dp0%~1\pom.xml" || exit /B 1
+call %MVN_PATH%mvn clean install -f "%~dp0%~1\pom.xml" || exit /B 1
 goto:eof
 
 :compile
-call mvn package -f "%~dp0%~1\pom.xml" || exit /B 1
+call %MVN_PATH%mvn package -f "%~dp0%~1\pom.xml" || exit /B 1
 goto:eof
 
 :move

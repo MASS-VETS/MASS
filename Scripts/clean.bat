@@ -4,8 +4,11 @@ cd "%~dp0JARs\"
 del *.jar
 del id_file
 rmdir /s /q logs
+cd "%~dp0"
+echo cleaning ..\Code\*
 FOR /D %%a IN (..\Code\*) DO (
-	call:clean %%a
+	echo %%a
+	rmdir /S /Q "%~dp0%%a\target"
 )
 cd "%~dp0"
 echo done.
@@ -13,7 +16,5 @@ goto:eof
 
 :clean
 echo %~1
-cd "%~dp0%~1\target"
-del *.jar
-del *.jar.original
+rmdir /S /Q "%~dp0%~1\target"
 goto:eof

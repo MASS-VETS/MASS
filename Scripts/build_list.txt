@@ -1,6 +1,6 @@
+MicroserviceMonitor
+FileTransferService
 TransformService
 MessageDBService
 SendAndGetAck
 ReceiveOverHAPI
-MicroserviceMonitor
-FileTransferService
