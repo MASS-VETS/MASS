@@ -1,6 +1,7 @@
 #!/bin/bash
 #descriptive names for incoming params
 amqBroker=$1
+useSSL=$2
 
 #javaOpts="-Xms300m -Xmx300m"
 javaOpts="-Xms75m"
@@ -10,8 +11,6 @@ javaOpts="-XX:NativeMemoryTracking=summary"
 #this just crashes the process with 'too many errors'
 #gcOpts="-XX:NativeMemoryTracking=summary"
 
-#turn SSL on here
-useKeyStore=false
 
 
 intNm="PCMM"
@@ -21,26 +20,26 @@ intGuid=FDD64944-665D-4AAD-9C8A-BAADC496AF2C
 port=8433
 nm=${intNm}_query_full_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_full --keystore.enabled=$useKeyStore
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_full --keystore.enabled=$useSSL
 
 #--- DOCKER CONTAINER: PCMM Query Delta
 port=8434
 nm=${intNm}_query_delta_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_delta --keystore.enabled=$useKeyStore
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_delta --keystore.enabled=$useSSL
 
 #--- DOCKER CONTAINER: PCMM Query Status
 port=8435
 nm=${intNm}_query_status_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_status --keystore.enabled=$useKeyStore
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_status --keystore.enabled=$useSSL
 
 #--- DOCKER CONTAINER: PCMM Get File
 port=8436
 nm=${intNm}_get_file_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_file --keystore.enabled=$useKeyStore
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_file --keystore.enabled=$useSSL
 
 
 
@@ -57,5 +56,5 @@ nm=${intNm}_get_post_c
 docker run -e ENV='dev' -e MALLOC_ARENA_MAX=4 -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
  --destination.url.get=http://epic31921.dhcp.epic.com:5105/AC_get\
- --destination.url.post=http://epic31921.dhcp.epic.com:5105/AC_post --keystore.enabled=$useKeyStore
+ --destination.url.post=http://epic31921.dhcp.epic.com:5105/AC_post --keystore.enabled=$useSSL
 

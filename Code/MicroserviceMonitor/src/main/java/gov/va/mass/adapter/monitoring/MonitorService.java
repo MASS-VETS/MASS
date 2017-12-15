@@ -4,6 +4,7 @@ import java.net.URISyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -35,42 +36,43 @@ public class MonitorService {
 	@Autowired
 	EmailTemplate emailTemplate;
 	
+	@Value("${start.wait}")
+	private long startWaitSecs;
+
+	@Value("${docker.server}")
+	private String dockerServer;
+
+	private long beganAt = now();
+		
 	@Scheduled(cron = "${monitor.rate}")
 	public void showProperty() throws URISyntaxException {
-		
-		MicroserviceStats stats = new MicroserviceStats(restTemplate, config.getMessagedb().getUrl());
-		log.info(stats.toString() + " url: " + config.getMessagedb().getUrl());
-		checkAlertsForMicroService(stats, "MessageDB");
-		
+
+		//wait to allow all microservices time to start before hitting them for info
+		if (now() - beganAt < startWaitSecs)
+		{
+			log.info("Waiting " + startWaitSecs + " seconds so that monitored microservices may have time to start...");
+			return;
+		}
+
+		MicroserviceStats stats = new MicroserviceStats(restTemplate, serverUrl(config.getMessagedb().getUrl()));
+		log.info("Message db");
+		log.info("   " + stats.toString() + " url: " + serverUrl(config.getMessagedb().getUrl()));
+		checkAlertsForMicroServiceStats(stats, "MessageDB");
+				
 		// poll all the interfaces
 		for (InterfaceConfig intf : config.getInterfaces()) {
-			log.info("interface '" + intf.getName() + "'");
-			
-			stats = new MicroserviceStats(restTemplate, intf.getReceiver().getUrl());
-			log.info(stats.toString() + " url: " + intf.getReceiver().getUrl());
-			checkAlertsForMicroService(stats, intf.getName() + " Receiver");
-			
-			MicroserviceConfig transform = intf.getTransform();
-			if (transform != null && transform.getUrl() != null) {
-				stats = new MicroserviceStats(restTemplate, transform.getUrl());
-				log.info(stats.toString() + " url: " + transform.getUrl());
-				checkAlertsForMicroService(stats, intf.getName() + " Transform");
-			}
-			
-			MicroserviceConfig sender = intf.getSender();
-			if (sender != null && sender.getUrl() != null) {
-				stats = new MicroserviceStats(restTemplate, sender.getUrl());
-				log.info(stats.toString() + " url: " + sender.getUrl());
-				checkAlertsForMicroService(stats, intf.getName() + " Sender");
-			}
-			
+			log.info("Interface '" + intf.getName() + "'");
+			checkAlertsForMicroService(intf, intf.getReceiver(), "Receiver");
+			checkAlertsForMicroService(intf, intf.getTransform(), "Transform");
+			checkAlertsForMicroService(intf, intf.getSender(), "Sender");
 		}
 		
 		// poll activemq
-		BrokerStats bstats = new BrokerStats(restTemplate, config.getJms().getUri());
+		BrokerStats bstats = new BrokerStats(restTemplate, serverUrl(config.getJms().getUri()));
+		log.info("ActiveMQ");
 		checkAlertsForBroker(bstats);
 		for (QueueStats q : bstats.queues) {
-			log.info(q.toString());
+			log.info("   " + q.toString());
 			checkAlertsForQueue(q);
 		}
 	}
@@ -85,7 +87,17 @@ public class MonitorService {
 		}
 	}
 	
-	private void checkAlertsForMicroService(MicroserviceStats s, String name) {
+	private void checkAlertsForMicroService(InterfaceConfig intf, MicroserviceConfig msConfig, String msName) throws URISyntaxException {
+		String url = msConfig.getUrl();
+		if (url != null) {
+			String serverUrl = serverUrl(url);
+			MicroserviceStats stats = new MicroserviceStats(restTemplate, serverUrl);
+			log.info("   " + stats.toString() + " url: " + serverUrl);
+			checkAlertsForMicroServiceStats(stats, intf.getName() + " Transform");
+		}
+	}
+	
+	private void checkAlertsForMicroServiceStats(MicroserviceStats s, String name) {
 		String emailAddress = config.getEmail().getToAddress();
 		if (!s.isAlive && spamPreventor.shouldSendEmail(AlertType.ServiceDown, name)) {
 			emailTemplate.SendMail(emailAddress, "Service Down Alert",
@@ -97,6 +109,8 @@ public class MonitorService {
 					getEmailText(AlertType.ServiceStoppedItself, name, s.errorMessage));
 		}
 	}
+	
+	
 	
 	private void checkAlertsForQueue(QueueStats q) {
 		String emailAddress = config.getEmail().getToAddress();
@@ -158,5 +172,13 @@ public class MonitorService {
 			return false;
 		}
 		return value < threshold;
+	}
+	
+	private String serverUrl(String url) {
+		return this.dockerServer + ":" + url + "/";	
+	}
+		
+	protected long now() {
+		return System.currentTimeMillis() / 1000;
 	}
 }

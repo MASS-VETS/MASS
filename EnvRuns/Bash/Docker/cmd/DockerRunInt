@@ -1,13 +1,14 @@
 #!/bin/bash
 #descriptive names for incoming params
 amqBroker=$1
-nm=$2
-rcvport=$3
-inGuid=$4
-outGuid=$5
-desturl=$6
-numSenders=$7
-xslt=$8
+useSSL=$2
+nm=$3
+rcvport=$4
+inGuid=$5
+outGuid=$6
+desturl=$7
+numSenders=$8
+xslt=$9
 
 #javaOpts="-Xms300m -Xmx300m"
 #gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseParallelGC -XX:NewRatio=3 -XX:ParallelGCThreads=8 -XX:+UseCGroupMemoryLimitForHeap -XX:+ShrinkHeapInSteps"
@@ -37,5 +38,6 @@ for (( i=1; i<=$numSenders; i++ ))
 do
   port=$(( $rcvport + 10 ))
   docker run -d -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm}_snd${i}_c snd_i\
-  --server.port=$port --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid --spring.activemq.broker-url=$amqBroker
+  --server.port=$port --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid --spring.activemq.broker-url=$amqBroker\
+  --tls.enabled=$useSSL
 done

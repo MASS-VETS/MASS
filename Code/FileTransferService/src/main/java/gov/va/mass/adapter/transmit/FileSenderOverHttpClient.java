@@ -83,7 +83,10 @@ public class FileSenderOverHttpClient extends MicroserviceBase {
 		
 		try {
 			File savedfile = saveUploadedFiles(uploadfile);
-			prepareAndPost(savedfile);
+			if (!prepareAndPost(savedfile)) {
+				this.state.serviceFailed();
+				return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
+			}
 		} catch (IOException e) {
 			this.state.serviceFailed();
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -133,7 +136,7 @@ public class FileSenderOverHttpClient extends MicroserviceBase {
 		return tempFile;
 	}
 	
-	private void finalPostFile(CloseableHttpClient httpClient, File savedfile) {
+	private boolean finalPostFile(CloseableHttpClient httpClient, File savedfile) {
 		
 		HttpPost httpPost = new HttpPost(DESTINATION_URL_POST);
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
@@ -149,16 +152,23 @@ public class FileSenderOverHttpClient extends MicroserviceBase {
 			HttpResponse response = httpClient.execute(httpPost);
 			logger.debug("Posted file of the type text/csv");
 			logger.debug("Response " + response.toString());
+			return true;
 		} catch (IOException e) {
 			logger.error(" Could not execute post method on httpclient " + e.toString());
+			return false;
 		} finally {
 			httpPost.releaseConnection();
 		}
 	}
 	
-	private void prepareAndPost(File savedfile) {
+	private boolean prepareAndPost(File savedfile) {
 		CloseableHttpClient httpClient = setTLSHttpClientProvider.getTLSHttpClient();
-		finalPostFile(httpClient, savedfile);
+		if (httpClient == null) {
+			return false;
+		}
+		else {
+			return finalPostFile(httpClient, savedfile);
+		}
 	}
 	
 	public void setTLSHttpClientProvider(TLSHttpClientProvider tlsHttpClientProvider) {

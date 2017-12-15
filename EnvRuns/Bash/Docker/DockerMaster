@@ -2,11 +2,15 @@
 
 #environment specific config
 amqBroker=tcp://severusqa-submission1.epic.com:61616
+monServer=http://severusqa-submission1.epic.com
 sqlUrl=jdbc:sqlserver://vista-client.epic.com
 sqlLogin=va
 sqlPwd=va
 intDest=http://vs-icx18-34/Interconnect-Department-of-Veterans-Affairs-CFB/api/epic/2015/EDI/HTTP/HL7V2
 intIndest=http://vs-icx18-9/Interconnect-2017-SU-Stage1-Primary-Base/api/epic/2015/EDI/HTTP/HL7V2
+
+#set to false to allow http instead of https
+useSSL=false
 
 #descriptive names for incoming params
 reConfig=$1
@@ -52,10 +56,10 @@ fi
 if [ $reConfig -gt 0 ] ; then
 	#Docker container SQL
 	cmd/DockerRunSql $amqBroker $sqlUrl $sqlLogin $sqlPwd
-	cmd/DockerRunMon
-	cmd/DockerRunFileXfer $amqBroker
+	cmd/DockerRunMon $monServer
+	cmd/DockerRunFileXfer $amqBroker $useSSL
 	#Docker container all Interface Instances
-	./DockerInts $amqBroker $intDest $intIndest
+	./DockerInts $amqBroker $useSSL $intDest $intIndest
 else
 	cmd/DockerStartC
 fi

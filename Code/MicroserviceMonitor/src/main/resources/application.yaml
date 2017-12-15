@@ -11,74 +11,74 @@ spring:
 monitor:
   rate: " */5 * * * * * " 
   jms: 
-    uri: http://severusqa-submission1.epic.com:8161/api/jolokia/read/
+    uri: 8161/api/jolokia/read
     username: admin
     password: admin
   messagedb:
-    url: http://severusqa-submission1.epic.com:5001/
+    url: 5001
   interfaces:
     - 
       name: Scheduling INCOMING
       receiver: 
-        url: http://severusqa-submission1.epic.com:5100/
+        url: 5100
       sender: 
-        url: http://severusqa-submission1.epic.com:5110/
+        url: 5110
     - 
       name: Errors
       receiver: 
-        url: http://severusqa-submission1.epic.com:5200/
+        url: 5200
       sender: 
-        url: http://severusqa-submission1.epic.com:5210/
+        url: 5210
     - 
       name: Orders
       receiver: 
-        url: http://severusqa-submission1.epic.com:5300/
+        url: 5300
       sender: 
-        url: http://severusqa-submission1.epic.com:5310/
+        url: 5310
     - 
       name: Scheduling
       receiver: 
-        url: http://severusqa-submission1.epic.com:5400/
+        url: 5400
       sender: 
-        url: http://severusqa-submission1.epic.com:5410/
+        url: 5410
     - 
       name: Demographics ADT
       receiver: 
-        url: http://severusqa-submission1.epic.com:5500/
+        url: 5500
       sender: 
-        url: http://severusqa-submission1.epic.com:5510/
+        url: 5510
       transform: 
-        url: http://severusqa-submission1.epic.com:5505/
+        url: 5505
     - 
       name: Demographics ORU
       receiver: 
-        url: http://severusqa-submission1.epic.com:5600/
+        url: 5600
       sender: 
-        url: http://severusqa-submission1.epic.com:5610/
+        url: 5610
       transform: 
-        url: http://severusqa-submission1.epic.com:5605/
+        url: 5605
     - 
       name: PCMM Query Full
       receiver: 
-        url: http://severusqa-submission1.epic.com:8433/adapter/filetransferservice/getter/
+        url: 8433/adapter/filetransferservice/getter
     - 
       name: PCMM Query Delta
       receiver: 
-        url: http://severusqa-submission1.epic.com:8434/adapter/filetransferservice/getter/
+        url: 8434/adapter/filetransferservice/getter
     - 
       name: PCMM Query Status
       receiver: 
-        url: http://severusqa-submission1.epic.com:8435/adapter/filetransferservice/getter/
+        url: 8435/adapter/filetransferservice/getter
     - 
       name: PCMM Get File
       receiver: 
-        url: http://severusqa-submission1.epic.com:8436/adapter/filetransferservice/getter/
+        url: 8436/adapter/filetransferservice/getter
     - 
       name: AudioCare
       receiver: 
-        url: http://severusqa-submission1.epic.com:8533/adapter/filetransferservice/getter/
+        url: 8533/adapter/filetransferservice/getter
       sender: 
-        url: http://severusqa-submission1.epic.com:8533/adapter/filetransferservice/sender/
+        url: 8533/adapter/filetransferservice/sender
   email:
     fromAddress: thecloud19791979@gmail.com
     toAddress: sleader@epic.com

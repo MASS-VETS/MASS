@@ -9,6 +9,7 @@ import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 public class RestJsonHelper {
@@ -18,7 +19,7 @@ public class RestJsonHelper {
 		String responseString = "";
 		try {
 			responseString = restTemplate.getForObject(uri, String.class);
-		} catch (HttpClientErrorException | HttpServerErrorException e) {
+		} catch (HttpClientErrorException | HttpServerErrorException | ResourceAccessException e) {
 			JsonObjectBuilder builder = Json.createObjectBuilder();
 			return builder.build(); // leave it empty. Caller should account for this by checking!
 		}

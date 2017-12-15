@@ -75,7 +75,15 @@ public class TLSHttpClientProvider {
 
 	public CloseableHttpClient getTLSHttpClient ( ) {
 		if (httpClient == null ) {
-			SSLContext sslContext = configureSSLContext();
+			SSLContext sslContext = null;
+			// If TLS is enabled.
+			if (TLS_ENABLED) {
+				sslContext = configureSSLContext();
+				if (sslContext == null) {
+					return null;
+				}
+			}
+
 			HttpClientBuilder builder = prepareHttpClientBuilder(sslContext);
 			httpClient = builder.build() ;
 		}
@@ -96,25 +104,22 @@ public class TLSHttpClientProvider {
 		KeyStore keyStore = null;
 		SSLContext sslContext = null;
 
-		// If TLS is enabled.
-		if (TLS_ENABLED) {
-			try {
-				keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
-				InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
-				keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());
-				logger.debug("Key store has " + keyStore.size() + " keys");
-			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-				logger.error("Problem with keystore " + e.toString());
-			}
-	
-			try {
-				sslContext = SSLContexts.custom().loadKeyMaterial(keyStore, KEYSTORE_PASSWORD.toCharArray())
-						.loadTrustMaterial(new TrustSelfSignedStrategy()).setProtocol("TLSv1") // TODO: TLS version needs to
-																								// be uniform
-						.build();
-			} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
-				logger.error("Could not create SSLContext " + e.toString());
-			}
+		try {
+			keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+			InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
+			keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());
+			logger.debug("Key store has " + keyStore.size() + " keys");
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			logger.error("Problem with keystore " + e.toString());
+		}
+
+		try {
+			sslContext = SSLContexts.custom().loadKeyMaterial(keyStore, KEYSTORE_PASSWORD.toCharArray())
+					.loadTrustMaterial(new TrustSelfSignedStrategy()).setProtocol("TLSv1") // TODO: TLS version needs to
+																							// be uniform
+					.build();
+		} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
+			logger.error("Could not create SSLContext " + e.toString());
 		}
 		
 		return sslContext;
