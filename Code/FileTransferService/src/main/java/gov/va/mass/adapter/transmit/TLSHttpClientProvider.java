@@ -53,7 +53,7 @@ import org.springframework.web.client.RestTemplate;
 public class TLSHttpClientProvider {
 
 	@Value("${keystore.enabled}")
-	private boolean TLS_ENABLED = false;
+	private boolean TLS_ENABLED = true;
 
 	@Value("${keystore.location}")
 	private String KEYSTORE_LOCATION;// = "C:/work/1twowayssl/adapterkeys/adapterks.jks"
