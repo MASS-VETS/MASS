@@ -10,9 +10,8 @@ javaOpts="-XX:NativeMemoryTracking=summary"
 #this just crashes the process with 'too many errors'
 #gcOpts="-XX:NativeMemoryTracking=summary"
 
-
-
-
+#turn SSL on here
+useKeyStore=false
 
 
 intNm="PCMM"
@@ -22,32 +21,26 @@ intGuid=FDD64944-665D-4AAD-9C8A-BAADC496AF2C
 port=8433
 nm=${intNm}_query_full_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_full\
- --app.responses.file.storage="\nfs\3day\dps\\"
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_full --keystore.enabled=$useKeyStore
 
 #--- DOCKER CONTAINER: PCMM Query Delta
 port=8434
 nm=${intNm}_query_delta_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_delta\
- --app.responses.file.storage="\nfs\3day\dps\\"
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_delta --keystore.enabled=$useKeyStore
 
 #--- DOCKER CONTAINER: PCMM Query Status
 port=8435
 nm=${intNm}_query_status_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_status\
- --app.responses.file.storage="\nfs\3day\dps\\"
- $gcOpts
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_status --keystore.enabled=$useKeyStore
 
 #--- DOCKER CONTAINER: PCMM Get File
 port=8436
 nm=${intNm}_get_file_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_file\
- --app.responses.file.storage="\nfs\3day\dps\\"
- $gcOpts
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_file --keystore.enabled=$useKeyStore
 
 
 
@@ -57,30 +50,12 @@ docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory
 
 intNm="AC"
 
-#--- DOCKER CONTAINER: AudioCare Post
+#--- DOCKER CONTAINER: AudioCare Get and Post
 port=8533
 intGuid=29F55FB8-BE79-431A-9D33-7598F26D6582
-nm=${intNm}_post_c
-docker run -e ENV='dev' -e MALLOC_ARENA_MAX=4 -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/AC_post\
- --app.responses.file.storage="\nfs\3day\dps\\"
-# --app.appointments.file.storage=C:/vista/flatfile/files/epictoensemble\
-
-#--- DOCKER CONTAINER: AudioCare Get
-port=8534
-intGuid=5A62680D-3759-40C5-8C9D-3299B82779C6
-nm=${intNm}_get_c
+nm=${intNm}_get_post_c
 docker run -e ENV='dev' -e MALLOC_ARENA_MAX=4 -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
  --destination.url.get=http://epic31921.dhcp.epic.com:5105/AC_get\
- --app.responses.file.storage="\nfs\3day\dps\\"
-# --app.responses.file.storage=C:/vista/flatfile/files/ensembletoepic\
-
-
-
-
-
-
-
+ --destination.url.post=http://epic31921.dhcp.epic.com:5105/AC_post --keystore.enabled=$useKeyStore
 
