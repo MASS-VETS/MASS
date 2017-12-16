@@ -27,8 +27,14 @@ fi
 
 #fire up the docker containers
 #--- DOCKER CONTAINER: Receiver
-docker run -d -e JAVA_OPTIONS=$javaOpts -e ENV='dev' -p ${rcvport}:${rcvport} --memory="400m" --restart unless-stopped --name ${nm}_rcv_c rcv_i\
- --server.port=$rcvport --jms.databaseQ=sqlQ --jms.outputQ=$rcvo --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$inGuid --spring.activemq.broker-url=$amqBroker\
+docker run  -v /net_home/daves/ssl/Adapter:/keystore\
+  -d -e JAVA_OPTIONS=$javaOpts -e ENV='dev' -p ${rcvport}:${rcvport} --memory="400m" --restart unless-stopped --name ${nm}_rcv_c rcv_i\
+  --server.port=$rcvport --jms.databaseQ=sqlQ --jms.outputQ=$rcvo --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$inGuid --spring.activemq.broker-url=$amqBroker\
+  --server.ssl.key-store=/keystore/keystore2.jks\
+  --server.ssl.key-store-password=booger\
+  --server.ssl.key-password=booger\
+  --server.ssl.keyStoreType=JKS\
+  --server.ssl.client-auth=need
 
 #--- DOCKER CONTAINER: Sender
 if [ -z $numSenders ]; then
@@ -37,7 +43,10 @@ fi
 for (( i=1; i<=$numSenders; i++ ))
 do
   port=$(( $rcvport + 10 ))
-  docker run -d -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm}_snd${i}_c snd_i\
+  docker run -d -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+  -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm}_snd${i}_c snd_i\
   --server.port=$port --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid --spring.activemq.broker-url=$amqBroker\
   --tls.enabled=$useSSL
+  --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
+  --keystore.location=/keystore/keystore2.jks\
 done

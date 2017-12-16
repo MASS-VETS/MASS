@@ -19,27 +19,39 @@ intGuid=FDD64944-665D-4AAD-9C8A-BAADC496AF2C
 #--- DOCKER CONTAINER: PCMM Query Full
 port=8433
 nm=${intNm}_query_full_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_full --keystore.enabled=$useSSL
+docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+ -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i\
+ --server.port=$port --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_full\
+ --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
+ --keystore.location=/keystore/keystore.jks\
 
 #--- DOCKER CONTAINER: PCMM Query Delta
 port=8434
 nm=${intNm}_query_delta_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_delta --keystore.enabled=$useSSL
+docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+ -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_delta\
+ --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
+ --keystore.location=/keystore/keystore.jks\
 
 #--- DOCKER CONTAINER: PCMM Query Status
 port=8435
 nm=${intNm}_query_status_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_status --keystore.enabled=$useSSL
+docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+ -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_status\
+ --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
+ --keystore.location=/keystore/keystore.jks\
 
 #--- DOCKER CONTAINER: PCMM Get File
 port=8436
 nm=${intNm}_get_file_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
+docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+ -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_file --keystore.enabled=$useSSL
+ --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_file\
+ --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
+ --keystore.location=/keystore/keystore.jks\
 
 
 
@@ -53,8 +65,16 @@ intNm="AC"
 port=8533
 intGuid=29F55FB8-BE79-431A-9D33-7598F26D6582
 nm=${intNm}_get_post_c
-docker run -e ENV='dev' -e MALLOC_ARENA_MAX=4 -e JAVA_OPTIONS=$javaOpts -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
+docker run -e ENV='dev' -e MALLOC_ARENA_MAX=4 -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+ -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/AC_get\
- --destination.url.post=http://epic31921.dhcp.epic.com:5105/AC_post --keystore.enabled=$useSSL
+ --destination.url.get=https://epic31921.dhcp.epic.com:5105/AC_get\
+ --destination.url.post=https://epic31921.dhcp.epic.com:5105/AC_post\
+ --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
+ --keystore.location=/keystore/keystore2.jks\
+ --server.ssl.key-store=/keystore/keystore2.jks\
+ --server.ssl.key-store-password=booger\
+ --server.ssl.key-password=booger\
+ --server.ssl.keyStoreType=JKS\
+ --server.ssl.client-auth=need
 
