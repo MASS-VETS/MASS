@@ -28,6 +28,7 @@ import ca.uhn.hl7v2.hoh.sockets.CustomCertificateTlsSocketFactory;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.util.Terser;
+import ca.uhn.hl7v2.validation.impl.NoValidation;
 import gov.va.mass.adapter.core.JmsMicroserviceBase;
 import gov.va.mass.adapter.core.MicroserviceBase;
 import gov.va.mass.adapter.core.MicroserviceException;
@@ -187,6 +188,7 @@ public class SendAndGetAckService extends JmsMicroserviceBase{
 
 		// Initialize the context.
 		HapiContext context = new DefaultHapiContext();
+		context.setValidationContext(new NoValidation());
 		Parser p = context.getGenericParser();
 		Message hapiMsg = null;
 		String sendingApplication = null;
@@ -232,6 +234,7 @@ public class SendAndGetAckService extends JmsMicroserviceBase{
 		
 			//Initialize parser and variables.
 			HapiContext context = new DefaultHapiContext();
+			context.setValidationContext(new NoValidation());
 			Parser p = context.getGenericParser();
 			Message msg = null;
 			
