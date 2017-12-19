@@ -1,7 +1,28 @@
 #!/bin/bash
 #descriptive names for incoming params
 amqBroker=$1
-useSSL=$2
+configFile=$2
+
+#environment specific config
+#sets all cfg* variables
+source $configFile
+
+if [ $cfgUseSSL -gt 0 ] ; then
+	serverSslOpts[1]="--server.ssl.key-store=/keystore/${cfgKeystoreName}"
+	serverSslOpts[2]="--server.ssl.key-store-password=${cfgKeystorePwd}"
+	serverSslOpts[3]="--server.ssl.key-password=${cfgServerSslKeyPwd}"
+	serverSslOpts[4]="--server.ssl.keyStoreType=JKS"
+	serverSslOpts[5]="--server.ssl.client-auth=need"
+	clientSslOpts[1]="--keystore.enabled=true"
+	clientSslOpts[2]="--keystore.password=$cfgKeystorePwd"
+	clientSslOpts[3]="--keystore.type=JKS" 
+	clientSslOpts[4]="--keystore.location=/keystore/$cfgKeystoreName"
+else
+	serverSslOpts=""
+	clientSslOpts[1]="--keystore.enabled=false"
+fi
+
+
 
 #javaOpts="-Xms300m -Xmx300m"
 javaOpts="-Xms75m"
@@ -19,41 +40,35 @@ intGuid=FDD64944-665D-4AAD-9C8A-BAADC496AF2C
 #--- DOCKER CONTAINER: PCMM Query Full
 port=8433
 nm=${intNm}_query_full_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
  -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i\
- --server.port=$port --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_full\
- --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
- --keystore.location=/keystore/keystore.jks\
+ --server.port=$port --destination.url.get=$cfgPcmmQueryFullDestGet\
+ ${clientSslOpts[*]}
 
 #--- DOCKER CONTAINER: PCMM Query Delta
 port=8434
 nm=${intNm}_query_delta_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
  -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_delta\
- --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
- --keystore.location=/keystore/keystore.jks\
-
+ --destination.url.get=$cfgPcmmQueryDeltaDestGet\
+ ${clientSslOpts[*]}
+ 
 #--- DOCKER CONTAINER: PCMM Query Status
 port=8435
 nm=${intNm}_query_status_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
  -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_status\
- --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
- --keystore.location=/keystore/keystore.jks\
+ --destination.url.get=$cfgPcmmQueryStatusDestGet\
+ ${clientSslOpts[*]}
 
-#--- DOCKER CONTAINER: PCMM Get File
+ #--- DOCKER CONTAINER: PCMM Get File
 port=8436
 nm=${intNm}_get_file_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
  -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=http://epic31921.dhcp.epic.com:5105/PCMM_file\
- --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
- --keystore.location=/keystore/keystore.jks\
-
-
+ --destination.url.get=$cfgPcmmFileGetDestGet\
+ ${clientSslOpts[*]}
 
 
 
@@ -65,16 +80,12 @@ intNm="AC"
 port=8533
 intGuid=29F55FB8-BE79-431A-9D33-7598F26D6582
 nm=${intNm}_get_post_c
-docker run -e ENV='dev' -e MALLOC_ARENA_MAX=4 -e JAVA_OPTIONS=$javaOpts -v /net_home/daves/ssl/Adapter:/keystore\
+docker run -e ENV='dev' -e MALLOC_ARENA_MAX=4 -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
  -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=https://epic31921.dhcp.epic.com:5105/AC_get\
- --destination.url.post=https://epic31921.dhcp.epic.com:5105/AC_post\
- --keystore.enabled=true --keystore.password=booger --keystore.type=JKS\
- --keystore.location=/keystore/keystore2.jks\
- --server.ssl.key-store=/keystore/keystore2.jks\
- --server.ssl.key-store-password=booger\
- --server.ssl.key-password=booger\
- --server.ssl.keyStoreType=JKS\
- --server.ssl.client-auth=need
+ --destination.url.get=$cfgAcDestGet\
+ --destination.url.post=$cfgAcDestPost\
+ ${clientSslOpts[*]}\
+ ${serverSslOpts[*]}
+ 
 
