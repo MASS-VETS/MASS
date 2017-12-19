@@ -24,6 +24,7 @@ import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.parser.Parser;
 import ca.uhn.hl7v2.util.Terser;
+import ca.uhn.hl7v2.validation.impl.NoValidation;
 import gov.va.mass.adapter.core.MicroserviceBase;
 
 @RestController
@@ -126,6 +127,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 		
 		//Initialize parser and variables.
 		HapiContext context = new DefaultHapiContext();
+		context.setValidationContext(new NoValidation());
 		Parser p = context.getGenericParser();
 		Message hapiMsg = null;
 		

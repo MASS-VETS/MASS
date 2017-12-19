@@ -101,8 +101,17 @@ public class MonitorService {
 		return sslTlsClient;
 	}
 	
+	private long beganAt = now();
+	
 	@Scheduled(cron = "${monitor.rate}")
 	public void monitor() throws URISyntaxException {
+		
+		// wait to allow all microservices time to start before hitting them for info
+		if (now() - beganAt < config.getStartWait()) {
+			log.info(
+					"Waiting " + config.getStartWait() + " seconds so that monitored microservices may have time to start...");
+			return;
+		}
 		checkMicroService(config.getMessagedb(), "MessageDB");
 		for (InterfaceConfig intf : config.getInterfaces()) {
 			log.info("interface '" + intf.getName() + "'");
@@ -117,10 +126,11 @@ public class MonitorService {
 		if (microService == null) {
 			return;
 		}
-		String url = microService.getUrl();
+		String url = microService.fullUri(config.getServer());
 		if (url == null || url.isEmpty()) {
 			return;
 		}
+		
 		CloseableHttpClient client;
 		if (microService.getUseSsl()) {
 			client = getSslTlsClient();
@@ -129,6 +139,7 @@ public class MonitorService {
 		}
 		MicroserviceStats stats = new MicroserviceStats(client, url);
 		log.info(stats.toString() + " url: " + url);
+		
 		String emailAddress = config.getEmail().getToAddress();
 		if (!stats.isAlive && spamPreventor.shouldSendEmail(AlertType.ServiceDown, name)) {
 			emailTemplate.SendMail(emailAddress, "Service Down Alert",
@@ -142,7 +153,7 @@ public class MonitorService {
 	}
 	
 	private void checkBroker() throws URISyntaxException {
-		BrokerStats stats = new BrokerStats(getBrokerClient(), config.getJms().getUri());
+		BrokerStats stats = new BrokerStats(getBrokerClient(), config.getJms().fullUri(config.getServer()));
 		String emailAddress = config.getEmail().getToAddress();
 		if (!stats.successfullyPolled) {
 			if (spamPreventor.shouldSendEmail(AlertType.ServiceDown, "JMS Broker")) {
@@ -216,5 +227,9 @@ public class MonitorService {
 			return false;
 		}
 		return value < threshold;
+	}
+	
+	protected long now() {
+		return System.currentTimeMillis() / 1000;
 	}
 }

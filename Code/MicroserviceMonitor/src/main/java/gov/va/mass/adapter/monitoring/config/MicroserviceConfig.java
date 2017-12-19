@@ -5,14 +5,24 @@ package gov.va.mass.adapter.monitoring.config;
  */
 public class MicroserviceConfig {
 	
-	private String url;
+	private int port;
 	
-	public String getUrl() {
-		return this.url;
+	public int getPort() {
+		return this.port;
 	}
 	
-	public void setUrl(String url) {
-		this.url = url;
+	public void setPort(int port) {
+		this.port = port;
+	}
+	
+	private String path;
+	
+	public String getPath() {
+		return this.path;
+	}
+	
+	public void setPath(String path) {
+		this.path = path;
 	}
 	
 	private Boolean useSsl = false;
@@ -23,5 +33,9 @@ public class MicroserviceConfig {
 	
 	public void setUseSsl(Boolean useSsl) {
 		this.useSsl = useSsl;
+	}
+	
+	public String fullUri(String server) {
+		return (useSsl ? "https" : "http") + "://" + server + ":" + this.port + (this.path == null ? "" : this.path) + "/";
 	}
 }

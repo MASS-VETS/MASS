@@ -13,6 +13,26 @@ import org.springframework.stereotype.Component;
 @Component
 public class MonitorConfig {
 	
+	private String server;
+	
+	public String getServer() {
+		return this.server;
+	}
+	
+	public void setServer(String server) {
+		this.server = server;
+	}
+	
+	private long startWait;
+	
+	public long getStartWait() {
+		return this.startWait;
+	}
+	
+	public void setStartWait(long startWait) {
+		this.startWait = startWait;
+	}
+	
 	private String rate;
 	
 	public String getRate() {

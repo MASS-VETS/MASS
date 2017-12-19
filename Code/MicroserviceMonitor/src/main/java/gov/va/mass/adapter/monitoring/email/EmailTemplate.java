@@ -29,7 +29,7 @@ public class EmailTemplate {
 	}
 	
 	public void SendMail(String toEmail, String subject, String text) {
-		log.info("Sending e-mail to " + toEmail);
+		log.info("      Sending e-mail to " + toEmail + " for " + subject);
 		Session session = Session.getInstance(_props,
 				new javax.mail.Authenticator() {
 					@Override
