@@ -1,0 +1,67 @@
+#!/bin/bash
+#descriptive names for incoming params
+amqBroker=$1
+configFile=$2
+nm=$3
+rcvport=$4
+inGuid=$5
+outGuid=$6
+desturl=$7
+numSenders=$8
+xslt=$9
+
+
+#environment specific config
+#sets all cfg* variables
+source $configFile
+
+if [ $cfgUseSSL -gt 0 ] ; then
+	serverSslOpts[1]="--server.ssl.key-store=/keystore/${cfgKeystoreName}"
+	serverSslOpts[2]="--server.ssl.key-store-password=${cfgKeystorePwd}"
+	serverSslOpts[3]="--server.ssl.key-password=${cfgServerSslKeyPwd}"
+	serverSslOpts[4]="--server.ssl.keyStoreType=JKS"
+	serverSslOpts[5]="--server.ssl.client-auth=need"
+	clientSslOpts[1]="--keystore.enabled=true"
+	clientSslOpts[2]="--keystore.password=$cfgKeystorePwd"
+	clientSslOpts[3]="--keystore.type=JKS" 
+	clientSslOpts[4]="--keystore.location=/keystore/$cfgKeystoreName"
+else
+	serverSslOpts=""
+	clientSslOpts[1]="--keystore.enabled=false"
+fi
+
+
+#javaOpts="-Xms300m -Xmx300m"
+#gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseParallelGC -XX:NewRatio=3 -XX:ParallelGCThreads=8 -XX:+UseCGroupMemoryLimitForHeap -XX:+ShrinkHeapInSteps"
+
+#--- DOCKER CONTAINER: Transform
+if [ -z $xslt ]; then
+  rcvo=${nm}SndQ
+  sndi=${nm}SndQ
+else
+  rcvo=${nm}XsltQ
+  sndi=${nm}SndQ
+  port=$(( $rcvport + 5 ))
+  docker run -d -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm}_xslt_c xslt_i\
+  --server.port=$port --jms.inputQ=$rcvo --jms.outputQ=$sndi --xslt.name=$xslt --spring.activemq.broker-url=$amqBroker
+fi
+
+#fire up the docker containers
+#--- DOCKER CONTAINER: Receiver
+docker run  -v ${cfgHostKeystorePath}:/keystore\
+  -d -e JAVA_OPTIONS=$javaOpts -e ENV='dev' -p ${rcvport}:${rcvport} --memory="400m" --restart unless-stopped --name ${nm}_rcv_c rcv_i\
+  --server.port=$rcvport --jms.databaseQ=sqlQ --jms.outputQ=$rcvo --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$inGuid --spring.activemq.broker-url=$amqBroker\
+  ${serverSslOpts[*]}
+
+#--- DOCKER CONTAINER: Sender
+if [ -z $numSenders ]; then
+  numSenders=1
+fi
+for (( i=1; i<=$numSenders; i++ ))
+do
+  port=$(( $rcvport + 10 ))
+  docker run -d -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
+  -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm}_snd${i}_c snd_i\
+  --server.port=$port --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid --spring.activemq.broker-url=$amqBroker\
+  ${clientSslOpts[*]}
+done

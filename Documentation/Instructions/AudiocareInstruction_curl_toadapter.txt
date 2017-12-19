@@ -1,0 +1,31 @@
+This uses apache in the url to indicate use of httpclient and spring when using resttemplate.
+The Spring Restcontroller classes are currently disabled. Uncomment @RestController to work on
+the get/post using spring's resttemplate.
+
+
+Post appointments file to Ensemble:
+$ cd C:\work\sprint7\datatransfer\epic\toadapter
+
+Clean the file saved in the adapter before next test cycle. Needed only during testing.
+$ DEL C:\work\sprint7\datatransfer\adapter\epictoensemble\*.csv
+
+Working
+$ curl --cacert adapter.pem --cert epic.p12 -F file=@"C:\work\sprint7\datatransfer\epic\toadapter\Appointments_Audiocare11162017.csv" https://localhost:8443/adapter/audiocare/epicappointments/apache
+
+Not yet working : Specifying content type from epic to adapter
+Will need to create a multipart request with CURL.  
+$ curl --cacert adapter.pem --cert epic.p12 -H "Content-Type:text/csv" -F file=@"C:\work\sprint7\datatransfer\epic\toadapter\Appointments_Audiocare11162017.csv" https://localhost:8443/adapter/audiocare/epicappointments/apache
+
+______________________________________________________________________________________________________
+
+Get responses from ensemble. Trigger the adapter and receive the file:
+$ cd C:\work\sprint7\datatransfer\epic\fromadapter
+
+Clean the file saved in the adapter before next test cycle. Needed only during testing.
+$ DEL C:\work\sprint7\datatransfer\adapter\ensembletoepic\*.txt
+
+Get the file
+$ curl --cacert adapter.pem --cert epic.p12 -O https://localhost:8443/adapter/audiocare/responses/spring
+
+Works : Get the response file with content type text/csv using httpclient
+$ curl --cacert adapter.pem --cert epic.p12 -H "Accept:text/csv" -O https://localhost:8443/adapter/audiocare/responses/apache

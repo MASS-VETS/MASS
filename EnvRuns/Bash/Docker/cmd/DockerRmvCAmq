@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#--- DOCKER CONTAINER: ActiveMQ
+#--- Remove the existing ActiveMQ container
+container=$(docker ps -q -a -f name=amq_)
+if [ ${#container} -gt 0 ] ; then
+	docker rm -f $container
+fi

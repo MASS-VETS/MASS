@@ -1,0 +1,9 @@
+#!/bin/bash
+#--- DOCKER CONTAINER: Monitor
+
+#descriptive names for incoming params
+monServer=$1
+
+docker run -d --memory="400m" --restart unless-stopped --name mon_c mon_i\
+ --start.wait=120 --docker.server=$monServer
+ 

@@ -1,0 +1,11 @@
+Scripts/JARs/
+Scripts/stop-all.ahk
+Code/*/target/
+Code/*/.project
+Code/*/.classpath
+Code/*/.springBeans
+Code/*/.settings/
+Code/*/id_file
+Code/*/logs/
+EnvRuns/Bash/Docker/build/*/*.jar
+*.class

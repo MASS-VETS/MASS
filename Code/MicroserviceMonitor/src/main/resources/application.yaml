@@ -1,0 +1,123 @@
+spring:
+  profiles: dev
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
+    in-memory: false
+    pool:
+      enabled: false
+
+monitor:
+  rate: " */5 * * * * * " 
+  jms: 
+    uri: 8161/api/jolokia/read
+    username: admin
+    password: admin
+  messagedb:
+    url: 5001
+  interfaces:
+    - 
+      name: Scheduling INCOMING
+      receiver: 
+        url: 5100
+      sender: 
+        url: 5110
+    - 
+      name: Errors
+      receiver: 
+        url: 5200
+      sender: 
+        url: 5210
+    - 
+      name: Orders
+      receiver: 
+        url: 5300
+      sender: 
+        url: 5310
+    - 
+      name: Scheduling
+      receiver: 
+        url: 5400
+      sender: 
+        url: 5410
+    - 
+      name: Demographics ADT
+      receiver: 
+        url: 5500
+      sender: 
+        url: 5510
+      transform: 
+        url: 5505
+    - 
+      name: Demographics ORU
+      receiver: 
+        url: 5600
+      sender: 
+        url: 5610
+      transform: 
+        url: 5605
+    - 
+      name: PCMM Query Full
+      receiver: 
+        url: 8433/adapter/filetransferservice/getter
+    - 
+      name: PCMM Query Delta
+      receiver: 
+        url: 8434/adapter/filetransferservice/getter
+    - 
+      name: PCMM Query Status
+      receiver: 
+        url: 8435/adapter/filetransferservice/getter
+    - 
+      name: PCMM Get File
+      receiver: 
+        url: 8436/adapter/filetransferservice/getter
+    - 
+      name: AudioCare
+      receiver: 
+        url: 8533/adapter/filetransferservice/getter
+      sender: 
+        url: 8533/adapter/filetransferservice/sender
+  email:
+    fromAddress: thecloud19791979@gmail.com
+    toAddress: sleader@epic.com
+    password: seanwashere
+  smtp:
+    host: smtp.gmail.com
+    port: 465
+  alerts:
+    -
+      name: demogADTSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: demogADTXsltQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: demogORUSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: demogORUXsltQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: errorSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: inschedSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: orderSndQ
+      queueMax: 20
+      consumerMin: 1
+    -
+      name: schedSndQ
+      queueMax: 20
+      consumerMin: 1
+  timeBetweenAlerts: 10
+---
