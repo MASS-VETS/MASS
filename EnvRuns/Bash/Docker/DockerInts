@@ -3,29 +3,40 @@
 #descriptive names for incoming params
 amqBroker=$1
 configFile=$2
-dest=$3
-indest=$4
+
+#environment specific config
+#sets all cfg* variables
+source $configFile
+
+
+cfgIntInsched=${indest}/559507
+cfgIntError=${dest}/334999
+cfgIntOrder=${dest}/334375
+cfgIntSched=${dest}/334501
+cfgIntDemogADT=${dest}/334701
+cfgIntDemogORU=${dest}/334701
+
 
 #------Scheduling INCOMING
-cmd/DockerRunInt $amqBroker $configFile insched 5100 3E6C7FF1-32DF-4699-8D85-06F59809F956 DCFA837E-DF14-45E0-A440-38B2FDA1985B ${indest}/559507 1
+cmd/DockerRunInt $amqBroker $configFile insched 5100 3E6C7FF1-32DF-4699-8D85-06F59809F956 DCFA837E-DF14-45E0-A440-38B2FDA1985B ${cfgIntInsched} 1
 
 #------Errors
-cmd/DockerRunInt $amqBroker $configFile error 5200 C95808C1-8597-43E4-83DD-757CDF283574 8FA5C77E-DAB1-46F2-8642-14D69415AF89 ${dest}/334999 1
+cmd/DockerRunInt $amqBroker $configFile error 5200 C95808C1-8597-43E4-83DD-757CDF283574 8FA5C77E-DAB1-46F2-8642-14D69415AF89 ${cfgIntError} 1
 
 #------Orders
-cmd/DockerRunInt $amqBroker $configFile order 5300 4C92FB81-769E-44E4-B0FE-9AEAB04A84DD FEC46370-0CB1-436B-BFF1-2898E5C4F8D6 ${dest}/334375 1
+cmd/DockerRunInt $amqBroker $configFile order 5300 4C92FB81-769E-44E4-B0FE-9AEAB04A84DD FEC46370-0CB1-436B-BFF1-2898E5C4F8D6 ${cfgIntOrder} 1
 
 #------Scheduling
-cmd/DockerRunInt $amqBroker $configFile sched 5400 74B57C05-A581-4E79-8423-FE863D72FE49 332A8690-D087-4E8F-871E-0B71A2D44E3F ${dest}/334501 1
+cmd/DockerRunInt $amqBroker $configFile sched 5400 74B57C05-A581-4E79-8423-FE863D72FE49 332A8690-D087-4E8F-871E-0B71A2D44E3F ${cfgIntSched} 1
 
 #------Demographics ADT
-cmd/DockerRunInt $amqBroker $configFile demogADT 5500 633C6F74-946C-4C71-B1EA-2129E5B37952 58004C37-1846-41DA-B002-26BF92304C7D ${dest}/334701 1 ADT_A08
+cmd/DockerRunInt $amqBroker $configFile demogADT 5500 633C6F74-946C-4C71-B1EA-2129E5B37952 58004C37-1846-41DA-B002-26BF92304C7D ${cfgIntDemogADT} 1 ADT_A08
 
 #------Demographics ORU
-cmd/DockerRunInt $amqBroker $configFile demogORU 5600 633C6F74-946C-4C71-B1EA-2129E5B37952 58004C37-1846-41DA-B002-26BF92304C7D ${dest}/334701 1 ORU_R01
+cmd/DockerRunInt $amqBroker $configFile demogORU 5600 633C6F74-946C-4C71-B1EA-2129E5B37952 58004C37-1846-41DA-B002-26BF92304C7D ${cfgIntDemogORU} 1 ORU_R01
 
 #------Demographics ADT
-#cmd/DockerRunInt $amqBroker $configFile demogADT2 5700 633C6F74-946C-4C71-B1EA-2129E5B37952 58004C37-1846-41DA-B002-26BF92304C7D ${dest}/334701 1 ADT_A08
+#cmd/DockerRunInt $amqBroker $configFile demogADT2 5700 633C6F74-946C-4C71-B1EA-2129E5B37952 58004C37-1846-41DA-B002-26BF92304C7D ${cfgIntDemogADT} 1 ADT_A08
 
 #------Demographics ORU
-#cmd/DockerRunInt $amqBroker $configFile demogORU2 5800 633C6F74-946C-4C71-B1EA-2129E5B37952 58004C37-1846-41DA-B002-26BF92304C7D ${dest}/334701 1 ORU_R01
+#cmd/DockerRunInt $amqBroker $configFile demogORU2 5800 633C6F74-946C-4C71-B1EA-2129E5B37952 58004C37-1846-41DA-B002-26BF92304C7D ${cfgIntDemogORU} 1 ORU_R01

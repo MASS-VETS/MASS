@@ -43,7 +43,8 @@ nm=${intNm}_query_full_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
  -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i\
  --server.port=$port --destination.url.get=$cfgPcmmQueryFullDestGet\
- ${clientSslOpts[*]}
+ ${clientSslOpts[*]}\
+  ${serverSslOpts[*]}
 
 #--- DOCKER CONTAINER: PCMM Query Delta
 port=8434
@@ -51,7 +52,8 @@ nm=${intNm}_query_delta_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
  -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --destination.url.get=$cfgPcmmQueryDeltaDestGet\
- ${clientSslOpts[*]}
+ ${clientSslOpts[*]}\
+  ${serverSslOpts[*]}
  
 #--- DOCKER CONTAINER: PCMM Query Status
 port=8435
@@ -59,7 +61,8 @@ nm=${intNm}_query_status_c
 docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
  -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --destination.url.get=$cfgPcmmQueryStatusDestGet\
- ${clientSslOpts[*]}
+ ${clientSslOpts[*]}\
+  ${serverSslOpts[*]}
 
  #--- DOCKER CONTAINER: PCMM Get File
 port=8436
@@ -68,8 +71,8 @@ docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/key
  -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
  --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
  --destination.url.get=$cfgPcmmFileGetDestGet\
- ${clientSslOpts[*]}
-
+ ${clientSslOpts[*]}\
+ ${serverSslOpts[*]}
 
 
 
