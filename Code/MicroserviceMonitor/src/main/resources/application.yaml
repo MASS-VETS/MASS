@@ -9,7 +9,11 @@ spring:
       enabled: false
 
 monitor:
-  rate: " */5 * * * * * " 
+  rate: " */5 * * * * * "
+  ssl:
+    keyStoreType: jks
+    keyStore: 
+    keyStorePassword: 
   jms: 
     uri: http://severusqa-submission1.epic.com:8161/api/jolokia/read/
     username: admin
@@ -20,31 +24,36 @@ monitor:
     - 
       name: Scheduling INCOMING
       receiver: 
-        url: http://severusqa-submission1.epic.com:5100/
+        url: https://severusqa-submission1.epic.com:5100/
+        useSsl: true
       sender: 
         url: http://severusqa-submission1.epic.com:5110/
     - 
       name: Errors
       receiver: 
-        url: http://severusqa-submission1.epic.com:5200/
+        url: https://severusqa-submission1.epic.com:5200/
+        useSsl: true
       sender: 
         url: http://severusqa-submission1.epic.com:5210/
     - 
       name: Orders
       receiver: 
-        url: http://severusqa-submission1.epic.com:5300/
+        url: https://severusqa-submission1.epic.com:5300/
+        useSsl: true
       sender: 
         url: http://severusqa-submission1.epic.com:5310/
     - 
       name: Scheduling
       receiver: 
-        url: http://severusqa-submission1.epic.com:5400/
+        url: https://severusqa-submission1.epic.com:5400/
+        useSsl: true
       sender: 
         url: http://severusqa-submission1.epic.com:5410/
     - 
       name: Demographics ADT
       receiver: 
-        url: http://severusqa-submission1.epic.com:5500/
+        url: https://severusqa-submission1.epic.com:5500/
+        useSsl: true
       sender: 
         url: http://severusqa-submission1.epic.com:5510/
       transform: 
@@ -52,7 +61,8 @@ monitor:
     - 
       name: Demographics ORU
       receiver: 
-        url: http://severusqa-submission1.epic.com:5600/
+        url: https://severusqa-submission1.epic.com:5600/
+        useSsl: true
       sender: 
         url: http://severusqa-submission1.epic.com:5610/
       transform: 
@@ -60,25 +70,31 @@ monitor:
     - 
       name: PCMM Query Full
       receiver: 
-        url: http://severusqa-submission1.epic.com:8433/adapter/filetransferservice/getter/
+        url: https://severusqa-submission1.epic.com:8433/adapter/filetransferservice/getter/
+        useSsl: true
     - 
       name: PCMM Query Delta
       receiver: 
-        url: http://severusqa-submission1.epic.com:8434/adapter/filetransferservice/getter/
+        url: https://severusqa-submission1.epic.com:8434/adapter/filetransferservice/getter/
+        useSsl: true
     - 
       name: PCMM Query Status
       receiver: 
-        url: http://severusqa-submission1.epic.com:8435/adapter/filetransferservice/getter/
+        url: https://severusqa-submission1.epic.com:8435/adapter/filetransferservice/getter/
+        useSsl: true
     - 
       name: PCMM Get File
       receiver: 
-        url: http://severusqa-submission1.epic.com:8436/adapter/filetransferservice/getter/
+        url: https://severusqa-submission1.epic.com:8436/adapter/filetransferservice/getter/
+        useSsl: true
     - 
       name: AudioCare
       receiver: 
-        url: http://severusqa-submission1.epic.com:8533/adapter/filetransferservice/getter/
+        url: https://severusqa-submission1.epic.com:8533/adapter/filetransferservice/getter/
+        useSsl: true
       sender: 
-        url: http://severusqa-submission1.epic.com:8533/adapter/filetransferservice/sender/
+        url: https://severusqa-submission1.epic.com:8533/adapter/filetransferservice/sender/
+        useSsl: true
   email:
     fromAddress: thecloud19791979@gmail.com
     toAddress: sleader@epic.com
@@ -87,6 +103,10 @@ monitor:
     host: smtp.gmail.com
     port: 465
   alerts:
+    -
+      name: sqlQ
+      queueMax: 20
+      consumerMin: 1
     -
       name: demogADTSndQ
       queueMax: 20

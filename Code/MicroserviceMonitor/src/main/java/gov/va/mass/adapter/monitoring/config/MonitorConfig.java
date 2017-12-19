@@ -24,6 +24,17 @@ public class MonitorConfig {
 	}
 	
 	@NestedConfigurationProperty
+	private SslConfig ssl;
+	
+	public SslConfig getSsl() {
+		return this.ssl;
+	}
+	
+	public void setSsl(SslConfig ssl) {
+		this.ssl = ssl;
+	}
+	
+	@NestedConfigurationProperty
 	private MicroserviceConfig messagedb = new MicroserviceConfig();
 	
 	public MicroserviceConfig getMessagedb() {

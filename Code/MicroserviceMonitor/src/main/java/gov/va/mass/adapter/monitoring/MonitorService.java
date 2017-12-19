@@ -1,16 +1,35 @@
 package gov.va.mass.adapter.monitoring;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import javax.net.ssl.SSLContext;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.ssl.SSLContextBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
 import gov.va.mass.adapter.monitoring.config.AlertConfig;
 import gov.va.mass.adapter.monitoring.config.InterfaceConfig;
 import gov.va.mass.adapter.monitoring.config.MicroserviceConfig;
 import gov.va.mass.adapter.monitoring.config.MonitorConfig;
+import gov.va.mass.adapter.monitoring.config.SslConfig;
 import gov.va.mass.adapter.monitoring.email.EmailTemplate;
 import gov.va.mass.adapter.monitoring.stats.BrokerStats;
 import gov.va.mass.adapter.monitoring.stats.MicroserviceStats;
@@ -30,71 +49,110 @@ public class MonitorService {
 	private AlertSpamPreventor spamPreventor;
 	
 	@Autowired
-	RestTemplate restTemplate;
-	
-	@Autowired
 	EmailTemplate emailTemplate;
 	
+	CloseableHttpClient simpleClient;
+	CloseableHttpClient brokerClient;
+	CloseableHttpClient sslTlsClient;
+	
+	private CloseableHttpClient getSimpleClient() {
+		if (simpleClient == null) {
+			simpleClient = HttpClientBuilder.create().build();
+		}
+		return simpleClient;
+	}
+	
+	private CloseableHttpClient getBrokerClient() {
+		if (brokerClient == null) {
+			String username = config.getJms().getUsername();
+			String password = config.getJms().getPassword();
+			if (!username.isEmpty() && !password.isEmpty()) {
+				CredentialsProvider provider = new BasicCredentialsProvider();
+				UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+				provider.setCredentials(AuthScope.ANY, credentials);
+				brokerClient = HttpClientBuilder.create().setDefaultCredentialsProvider(provider).build();
+			} else {
+				brokerClient = getSimpleClient();
+			}
+		}
+		return brokerClient;
+	}
+	
+	private CloseableHttpClient getSslTlsClient() {
+		if (sslTlsClient == null) {
+			SslConfig ssl = config.getSsl();
+			try {
+				KeyStore keyStore = KeyStore.getInstance(ssl.getKeyStoreType());
+				InputStream keyStoreInput = new FileInputStream(ssl.getKeyStore());
+				keyStore.load(keyStoreInput, ssl.getKeyStorePassword().toCharArray());
+				SSLContext sslContext = new SSLContextBuilder()
+						.loadKeyMaterial(keyStore, ssl.getKeyStorePassword().toCharArray())
+						.loadTrustMaterial(new TrustSelfSignedStrategy())
+						.build();
+				SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(sslContext);
+				sslTlsClient = HttpClientBuilder.create().setSSLSocketFactory(sslConnectionFactory).build();
+			} catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException
+					| KeyManagementException
+					| UnrecoverableKeyException e) {
+				e.printStackTrace();
+				sslTlsClient = getSimpleClient();
+			}
+		}
+		return sslTlsClient;
+	}
+	
 	@Scheduled(cron = "${monitor.rate}")
-	public void showProperty() throws URISyntaxException {
-		
-		MicroserviceStats stats = new MicroserviceStats(restTemplate, config.getMessagedb().getUrl());
-		log.info(stats.toString() + " url: " + config.getMessagedb().getUrl());
-		checkAlertsForMicroService(stats, "MessageDB");
-		
-		// poll all the interfaces
+	public void monitor() throws URISyntaxException {
+		checkMicroService(config.getMessagedb(), "MessageDB");
 		for (InterfaceConfig intf : config.getInterfaces()) {
 			log.info("interface '" + intf.getName() + "'");
-			
-			stats = new MicroserviceStats(restTemplate, intf.getReceiver().getUrl());
-			log.info(stats.toString() + " url: " + intf.getReceiver().getUrl());
-			checkAlertsForMicroService(stats, intf.getName() + " Receiver");
-			
-			MicroserviceConfig transform = intf.getTransform();
-			if (transform != null && transform.getUrl() != null) {
-				stats = new MicroserviceStats(restTemplate, transform.getUrl());
-				log.info(stats.toString() + " url: " + transform.getUrl());
-				checkAlertsForMicroService(stats, intf.getName() + " Transform");
-			}
-			
-			MicroserviceConfig sender = intf.getSender();
-			if (sender != null && sender.getUrl() != null) {
-				stats = new MicroserviceStats(restTemplate, sender.getUrl());
-				log.info(stats.toString() + " url: " + sender.getUrl());
-				checkAlertsForMicroService(stats, intf.getName() + " Sender");
-			}
-			
+			checkMicroService(intf.getReceiver(), intf.getName() + " Reciever");
+			checkMicroService(intf.getTransform(), intf.getName() + " Transform");
+			checkMicroService(intf.getSender(), intf.getName() + " Sender");
 		}
-		
-		// poll activemq
-		BrokerStats bstats = new BrokerStats(restTemplate, config.getJms().getUri());
-		checkAlertsForBroker(bstats);
-		for (QueueStats q : bstats.queues) {
-			log.info(q.toString());
-			checkAlertsForQueue(q);
+		checkBroker();
+	}
+	
+	private void checkMicroService(MicroserviceConfig microService, String name) throws URISyntaxException {
+		if (microService == null) {
+			return;
+		}
+		String url = microService.getUrl();
+		if (url == null || url.isEmpty()) {
+			return;
+		}
+		CloseableHttpClient client;
+		if (microService.getUseSsl()) {
+			client = getSslTlsClient();
+		} else {
+			client = getSimpleClient();
+		}
+		MicroserviceStats stats = new MicroserviceStats(client, url);
+		log.info(stats.toString() + " url: " + url);
+		String emailAddress = config.getEmail().getToAddress();
+		if (!stats.isAlive && spamPreventor.shouldSendEmail(AlertType.ServiceDown, name)) {
+			emailTemplate.SendMail(emailAddress, "Service Down Alert",
+					getEmailText(AlertType.ServiceDown, name));
+		}
+		if (stats.runState.equalsIgnoreCase("ErrorCondition")
+				&& spamPreventor.shouldSendEmail(AlertType.ServiceStoppedItself, name)) {
+			emailTemplate.SendMail(emailAddress, "Service Error Alert",
+					getEmailText(AlertType.ServiceStoppedItself, name, stats.errorMessage));
 		}
 	}
 	
-	private void checkAlertsForBroker(BrokerStats s) {
+	private void checkBroker() throws URISyntaxException {
+		BrokerStats stats = new BrokerStats(getBrokerClient(), config.getJms().getUri());
 		String emailAddress = config.getEmail().getToAddress();
-		if (!s.successfullyPolled) {
+		if (!stats.successfullyPolled) {
 			if (spamPreventor.shouldSendEmail(AlertType.ServiceDown, "JMS Broker")) {
 				emailTemplate.SendMail(emailAddress, "Service Down Alert",
 						getEmailText(AlertType.ServiceDown, "JMS Broker"));
 			}
 		}
-	}
-	
-	private void checkAlertsForMicroService(MicroserviceStats s, String name) {
-		String emailAddress = config.getEmail().getToAddress();
-		if (!s.isAlive && spamPreventor.shouldSendEmail(AlertType.ServiceDown, name)) {
-			emailTemplate.SendMail(emailAddress, "Service Down Alert",
-					getEmailText(AlertType.ServiceDown, name));
-		}
-		if (s.runState.equalsIgnoreCase("ErrorCondition")
-				&& spamPreventor.shouldSendEmail(AlertType.ServiceStoppedItself, name)) {
-			emailTemplate.SendMail(emailAddress, "Service Error Alert",
-					getEmailText(AlertType.ServiceStoppedItself, name, s.errorMessage));
+		for (QueueStats q : stats.queues) {
+			log.info(q.toString());
+			checkAlertsForQueue(q);
 		}
 	}
 	

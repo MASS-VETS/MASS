@@ -14,4 +14,14 @@ public class MicroserviceConfig {
 	public void setUrl(String url) {
 		this.url = url;
 	}
+	
+	private Boolean useSsl = false;
+	
+	public Boolean getUseSsl() {
+		return this.useSsl;
+	}
+	
+	public void setUseSsl(Boolean useSsl) {
+		this.useSsl = useSsl;
+	}
 }
