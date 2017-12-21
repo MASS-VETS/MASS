@@ -4,6 +4,9 @@ import java.util.Hashtable;
 import org.springframework.stereotype.Component;
 import gov.va.mass.adapter.monitoring.config.MonitorConfig;
 
+/**
+ * @author avolkano
+ */
 @Component
 public class AlertSpamPreventor {
 	
@@ -15,7 +18,7 @@ public class AlertSpamPreventor {
 		this.config = config;
 	}
 	
-	public boolean shouldSendEmail(AlertType type, String forEntity) {
+	public boolean shouldAlert(AlertType type, String forEntity) {
 		String key = type.name() + "." + forEntity;
 		long timeBetween = config.getTimeBetweenAlerts() * 60000;
 		

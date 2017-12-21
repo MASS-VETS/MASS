@@ -44,14 +44,25 @@ public class MonitorConfig {
 	}
 	
 	@NestedConfigurationProperty
-	private SslConfig ssl;
+	private SslConfig keyStore;
 	
-	public SslConfig getSsl() {
-		return this.ssl;
+	public SslConfig getKeyStore() {
+		return this.keyStore;
 	}
 	
-	public void setSsl(SslConfig ssl) {
-		this.ssl = ssl;
+	public void setKeyStore(SslConfig keyStore) {
+		this.keyStore = keyStore;
+	}
+	
+	@NestedConfigurationProperty
+	private SslConfig trustStore;
+	
+	public SslConfig getTrustStore() {
+		return this.trustStore;
+	}
+	
+	public void setTrustStore(SslConfig trustStore) {
+		this.trustStore = trustStore;
 	}
 	
 	@NestedConfigurationProperty

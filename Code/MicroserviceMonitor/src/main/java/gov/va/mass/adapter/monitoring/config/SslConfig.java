@@ -1,5 +1,11 @@
 package gov.va.mass.adapter.monitoring.config;
 
+import java.security.KeyStore;
+import gov.va.mass.adapter.core.HttpClientProvider;
+
+/**
+ * @author avolkano
+ */
 public class SslConfig {
 	
 	private String keyStore;
@@ -30,5 +36,9 @@ public class SslConfig {
 	
 	public void setKeyStoreType(String keyStoreType) {
 		this.keyStoreType = keyStoreType;
+	}
+	
+	public KeyStore createKeystore(HttpClientProvider clients) {
+		return clients.createKeystore(keyStoreType, keyStore, keyStorePassword);
 	}
 }

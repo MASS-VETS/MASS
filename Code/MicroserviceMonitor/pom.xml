@@ -80,8 +80,23 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
 		</dependency>
+		
+		<dependency>
+			<groupId>gov.va.mass.adapter</groupId>
+			<artifactId>MicroserviceCore</artifactId>
+		</dependency>
+		
 	</dependencies>
-
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>gov.va.mass.adapter</groupId>
+				<artifactId>MicroserviceCore</artifactId>
+				<version>0.0.1</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<build>
 		<plugins>
 			<plugin>

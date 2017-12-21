@@ -13,6 +13,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
+/**
+ * @author avolkano
+ */
 public class RestJsonHelper {
 	
 	public static JsonObject getObjectAtPath(CloseableHttpClient client, String baseUri, String path) {

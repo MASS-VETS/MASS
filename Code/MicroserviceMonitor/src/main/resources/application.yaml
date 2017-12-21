@@ -12,10 +12,14 @@ monitor:
   startWait: 0
   server: severusqa-submission1.epic.com
   rate: " */5 * * * * * "
-  ssl:
+  keyStore: 
     keyStoreType: jks
-    keyStore: 
-    keyStorePassword: 
+    keyStore: D:\\dev\\VA\\Certs\\epic24212.jks
+    keyStorePassword: thepassword
+  trustStore: 
+    keyStoreType: jks
+    keyStore: D:\\dev\\VA\\Certs\\epic24212.jks
+    keyStorePassword: thepassword
   jms: 
     port: 8161
     path: /api/jolokia/read
@@ -106,7 +110,7 @@ monitor:
         useSsl: true
   email:
     fromAddress: thecloud19791979@gmail.com
-    toAddress: sleader@epic.com
+    toAddress: avolkano@epic.com
     password: seanwashere
   smtp:
     host: smtp.gmail.com
@@ -147,6 +151,6 @@ monitor:
     -
       name: schedSndQ
       queueMax: 20
-      consumerMin: 1
+      consumerMin: 2
   timeBetweenAlerts: 10
 ---

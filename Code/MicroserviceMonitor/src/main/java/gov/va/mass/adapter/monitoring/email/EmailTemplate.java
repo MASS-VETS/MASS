@@ -11,6 +11,9 @@ import javax.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author sleader
+ */
 public class EmailTemplate {
 	static final Logger log = LoggerFactory.getLogger(EmailTemplate.class);
 	public String address;
@@ -29,7 +32,8 @@ public class EmailTemplate {
 	}
 	
 	public void SendMail(String toEmail, String subject, String text) {
-		log.info("      Sending e-mail to " + toEmail + " for " + subject);
+		log.info("Sending e-mail to " + toEmail + " for " + subject);
+		log.info(text);
 		Session session = Session.getInstance(_props,
 				new javax.mail.Authenticator() {
 					@Override
@@ -49,7 +53,7 @@ public class EmailTemplate {
 			Transport.send(message);
 			
 		} catch (MessagingException e) {
-			throw new RuntimeException(e);
+			e.printStackTrace();
 		}
 	}
 }

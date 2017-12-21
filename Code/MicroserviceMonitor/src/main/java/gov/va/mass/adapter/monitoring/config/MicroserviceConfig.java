@@ -5,13 +5,13 @@ package gov.va.mass.adapter.monitoring.config;
  */
 public class MicroserviceConfig {
 	
-	private int port;
+	private Integer port;
 	
-	public int getPort() {
+	public Integer getPort() {
 		return this.port;
 	}
 	
-	public void setPort(int port) {
+	public void setPort(Integer port) {
 		this.port = port;
 	}
 	
@@ -36,6 +36,9 @@ public class MicroserviceConfig {
 	}
 	
 	public String fullUri(String server) {
+		if (this.port == null) {
+			return null;
+		}
 		return (useSsl ? "https" : "http") + "://" + server + ":" + this.port + (this.path == null ? "" : this.path) + "/";
 	}
 }
