@@ -44,16 +44,16 @@ import gov.va.mass.adapter.core.MicroserviceException;
 @Component
 @PropertySource("classpath:application.properties")
 public class SendAndGetAckService extends JmsMicroserviceBase{
-	@Value("${tls.keystore.location}")
+	@Value("${keystore.location}")
 	private String KEYSTORE_LOCATION;
 
-	@Value("${tls.keystore.password}")
+	@Value("${keystore.password}")
 	private String KEYSTORE_PASSWORD;
 
-	@Value("${tls.keystore.type}")
+	@Value("${keystore.type}")
 	private String KEYSTORE_TYPE;
 
-	@Value("${tls.enabled}")
+	@Value("${keystore.enabled}")
 	private boolean TLS_ENABLED = true;
 
 	@Value("${destination.url}")
