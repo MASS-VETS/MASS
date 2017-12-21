@@ -1,0 +1,27 @@
+#!/bin/bash
+
+#SSL setup
+#called by DockerRunFileXfer and DockerInts
+if [ $cfgUseSSL -gt 0 ] ; then
+	serverSslOpts[1]="--server.ssl.enabled=true"
+	serverSslOpts[2]="--server.ssl.client-auth=need"
+	
+	serverSslOpts[3]="--server.ssl.key-store=/keystore/${cfgKeystoreName}"
+	serverSslOpts[4]="--server.ssl.key-store-password=${cfgKeystorePwd}"
+	serverSslOpts[5]="--server.ssl.key-password=${cfgKeyPwd}"
+	serverSslOpts[6]="--server.ssl.key-store-type=JKS"
+	
+	#serverSslOpts[7]="--server.ssl.trust-store=/keystore/${cfgTruststoreName}"
+	#serverSslOpts[8]="--server.ssl.trust-store-password=${cfgTruststorePwd}"
+	#serverSslOpts[9]="--server.ssl.trust-password=${cfgTrustPwd}"
+	#serverSslOpts[10]="--server.ssl.trust-store-type=JKS"
+	
+	clientSslOpts[1]="--keystore.enabled=true"
+	clientSslOpts[2]="--keystore.password=${cfgKeystorePwd}"
+	clientSslOpts[4]="--keystore.location=/keystore/${cfgKeystoreName}"
+	clientSslOpts[3]="--keystore.type=JKS"
+else
+	serverSslOpts[1]="--server.ssl.enabled=false"
+	clientSslOpts[1]="--keystore.enabled=false"
+fi
+

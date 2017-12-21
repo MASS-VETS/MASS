@@ -1,16 +1,9 @@
 #!/bin/bash
 
-#environment specific config
-amqBroker=tcp://severusqa-submission1.epic.com:61616
-sqlUrl=jdbc:sqlserver://vista-client.epic.com
-sqlLogin=va
-sqlPwd=va
-intDest=http://vs-icx18-34/Interconnect-Department-of-Veterans-Affairs-CFB/api/epic/2015/EDI/HTTP/HL7V2
-intIndest=http://vs-icx18-9/Interconnect-2017-SU-Stage1-Primary-Base/api/epic/2015/EDI/HTTP/HL7V2
-
 #descriptive names for incoming params
 reConfig=$1
 rebuildI=$2
+configFile=$3
 
 if [ ${#reConfig} -eq 0 ] ; then
 	reConfig=0
@@ -18,6 +11,14 @@ fi
 if [ ${#rebuildI} -eq 0 ] ; then
 	rebuildI=0
 fi
+if [ ${#configFile} -eq 0 ] ; then
+	configFile=Docker.cfg
+fi
+
+#environment specific config
+#sets all cfg* variables
+source $configFile
+
 
 #Stop all Docker Containers
 cmd/DockerStopC
@@ -51,11 +52,11 @@ fi
 
 if [ $reConfig -gt 0 ] ; then
 	#Docker container SQL
-	cmd/DockerRunSql $amqBroker $sqlUrl $sqlLogin $sqlPwd
-	cmd/DockerRunMon
-	cmd/DockerRunFileXfer $amqBroker
+	cmd/DockerRunSql $cfgAmqBroker $cfgSqlUrl $cfgSqlLogin $cfgSqlPwd
+	cmd/DockerRunMon $cfgMonServer
+	cmd/DockerRunFileXfer $cfgAmqBroker $configFile
 	#Docker container all Interface Instances
-	./DockerInts $amqBroker $intDest $intIndest
+	./DockerInts $cfgAmqBroker $configFile
 else
 	cmd/DockerStartC
 fi
