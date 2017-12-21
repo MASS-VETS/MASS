@@ -10,15 +10,15 @@ spring:
 
 monitor:
   startWait: 0
-  server: severusqa-submission1.epic.com
+  server: localhost
   rate: " */5 * * * * * "
   keyStore: 
     keyStoreType: jks
-    keyStore: D:\\dev\\VA\\Certs\\epic24212.jks
+    keyStore: path-to-your-jks
     keyStorePassword: thepassword
   trustStore: 
     keyStoreType: jks
-    keyStore: D:\\dev\\VA\\Certs\\epic24212.jks
+    keyStore: cacerts-path
     keyStorePassword: thepassword
   jms: 
     port: 8161
