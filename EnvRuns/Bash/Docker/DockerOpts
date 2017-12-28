@@ -1,0 +1,85 @@
+#!/bin/bash
+
+#SSL setup
+#called by DockerRunFileXfer and DockerInts
+if [ $cfgUseSSL -gt 0 ] ; then
+	serverSslOpts[1]="--server.ssl.enabled=false"
+	serverSslOpts[2]="--server.ssl.client-auth=need"
+	
+	serverSslOpts[3]="--server.ssl.key-store=/keystore/${cfgKeystoreName}"
+	serverSslOpts[4]="--server.ssl.key-store-password=${cfgKeystorePwd}"
+	serverSslOpts[5]="--server.ssl.key-password=${cfgKeyPwd}"
+	serverSslOpts[6]="--server.ssl.key-store-type=JKS"
+	
+	serverSslOpts[7]="--server.ssl.trust-store=/keystore/${cfgTruststoreName}"
+	serverSslOpts[8]="--server.ssl.trust-store-password=${cfgTruststorePwd}"
+	serverSslOpts[9]="--server.ssl.trust-password=${cfgTrustPwd}"
+	serverSslOpts[10]="--server.ssl.trust-store-type=JKS"
+	
+	clientSslOpts[1]="--keystore.enabled=true"
+	clientSslOpts[2]="--keystore.password=${cfgKeystorePwd}"
+	clientSslOpts[4]="--keystore.location=/keystore/${cfgKeystoreName}"
+	clientSslOpts[3]="--keystore.type=JKS"
+else
+	serverSslOpts[1]="--server.ssl.enabled=false"
+	clientSslOpts[1]="--keystore.enabled=false"
+fi
+
+#command line arguments PRIOR to container name
+containOpts[1]="-v ${cfgHostKeystorePath}:/keystore"
+containOpts[2]="-v ${cfgHostMdcLogPath}:/logs"
+containOpts[3]="-v ${cfgHostAmqPath}:/data"
+containOpts[4]="-e ENV=dev"
+containOpts[5]="--restart unless-stopped"
+containOpts[6]="--memory=400m"
+#containOpts[7]="-e LOG4J_SIMPLELOG_LOG_FILE=/logs/app-${nm}.log"
+#containOpts[7]="-e LOG4J_CONFIGURATION_FILE=/logs/log4j2-spring.xml"
+
+#command line arguments AFTER container name
+miscOpts[1]="--spring.activemq.broker-url=$cfgAmqBroker"
+miscOpts[2]="--logging.file=/logs/app-${nm}.log"
+#miscOpts[2]="--log4j2.configurationFile=/logs/log4j2.xml"
+#miscOpts[2]="--org.slf4j.simpleLogger.logFile=/logs/appdpu.log"
+#miscOpts[3]="--logging.level.=OFF"
+miscOpts[3]="--logging.level.root=ERROR"
+miscOpts[4]="--logging.level.gov.va.mass.adapter.comm=INFO"
+miscOpts[5]="--logging.level.gov.va.mass.adapter.comm.ReceiveOverHapiService=TRACE"
+miscOpts[6]="--logging.level.gov.va.mass.adapter.comm.SendAndGetAckService=INFO"
+miscOpts[7]="--logging.level.gov.va.mass.adapter.storage=INFO"
+miscOpts[8]="--logging.level.gov.va.mass.adapter.monitoring=ERROR"
+miscOpts[9]="--logging.level.gov.va.mass.adapter.transforms=ERROR"
+miscOpts[10]="--logging.level.gov.va.mass.adapter.transmit=INFO"
+miscOpts[11]="--logging.level.org.apache.commons.logging=TRACE"
+miscOpts[12]="--server.tomcat.max-threads=400"
+
+
+#miscOpts[12]="--name=PropertiesConfig"
+#miscOpts[13]="--property.filename=logs"
+#miscOpts[14]="--appenders=console,file"
+ 
+#miscOpts[15]="--appender.console.type=Console"
+#miscOpts[16]="--appender.console.name=STDOUT"
+#miscOpts[17]="--appender.console.layout.type=PatternLayout"
+#miscOpts[18]="--appender.console.layout.pattern=[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+ 
+#miscOpts[19]="--appender.file.type=File"
+#miscOpts[20]="--appender.file.name=LOGFILE"
+#miscOpts[21]="--appender.file.fileName=${filename}/propertieslogs.log"
+#miscOpts[22]="--appender.file.layout.type=PatternLayout"
+#miscOpts[23]="--appender.file.layout.pattern=[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+ 
+#miscOpts[24]="--loggers=file"
+#miscOpts[25]="--logger.file.name=guru.springframework.blog.log4j2properties"
+#miscOpts[26]="--logger.file.level=debug"
+#miscOpts[27]="--logger.file.appenderRefs=file"
+#miscOpts[28]="--logger.file.appenderRef.file.ref=LOGFILE"
+ 
+#miscOpts[29]="--rootLogger.level=debug"
+#miscOpts[30]="--rootLogger.appenderRefs=stdout"
+#miscOpts[31]="--rootLogger.appenderRef.stdout.ref=STDOUT"
+
+
+#miscOpts[13]="--debug"
+
+# "trace", "debug", "info", "warn", "error" or "off". 
+#miscOpts[3]="--logging.enabled=/logs/app.log"

@@ -1,9 +1,22 @@
 #!/bin/bash
+nm="mon"
+
 #--- DOCKER CONTAINER: Monitor
 
 #descriptive names for incoming params
-monServer=$1
+configFile=$1
+monServer=$2
 
-docker run -d --memory="400m" --restart unless-stopped --name mon_c mon_i\
- --start.wait=120 --docker.server=$monServer
+
+#environment specific config
+#sets all cfg* variables
+source $configFile
+source DockerOpts
+
+
+docker run -d\
+ ${containOpts[*]}\
+ --name ${nm}_c mon_i\
+ --start.wait=120 --docker.server=$monServer\
+ ${miscOpts[*]}
  

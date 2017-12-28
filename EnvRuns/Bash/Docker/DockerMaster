@@ -44,7 +44,7 @@ if [ $rebuildI -gt 0 ] ; then
 	#Build docker images
 	cmd/DockerBuild
 	#reRun Docker container ActiveMQ (losing all queue entries)
-	cmd/DockerRunAmq
+	cmd/DockerRunAmq $configFile
 else
 	#restart Docker container ActiveMQ
 	cmd/DockerStartCAmq
@@ -52,11 +52,11 @@ fi
 
 if [ $reConfig -gt 0 ] ; then
 	#Docker container SQL
-	cmd/DockerRunSql $cfgAmqBroker $cfgSqlUrl $cfgSqlLogin $cfgSqlPwd
-	cmd/DockerRunMon $cfgMonServer
-	cmd/DockerRunFileXfer $cfgAmqBroker $configFile
+	cmd/DockerRunSql $configFile $cfgSqlUrl $cfgSqlLogin $cfgSqlPwd
+	cmd/DockerRunMon $configFile $cfgMonServer
+	cmd/DockerRunFileXfer $configFile
 	#Docker container all Interface Instances
-	./DockerInts $cfgAmqBroker $configFile
+	./DockerInts $configFile
 else
 	cmd/DockerStartC
 fi

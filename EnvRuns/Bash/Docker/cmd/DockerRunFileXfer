@@ -1,19 +1,18 @@
 #!/bin/bash
 #descriptive names for incoming params
-amqBroker=$1
-configFile=$2
+configFile=$1
+
+
 
 #environment specific config
 #sets all cfg* variables
 source $configFile
-
-#SSL config if enabled
-source DockerSsl
+source DockerOpts
 
 
 #javaOpts="-Xms300m -Xmx300m"
-javaOpts="-Xms75m"
-javaOpts="-XX:NativeMemoryTracking=summary"
+#javaOpts="-Xms75m"
+#javaOpts="-Dlog4j2.configuration=/logs/log4j2-spring.xml"
 #gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseParallelGC -XX:NewRatio=3 -XX:ParallelGCThreads=8 -XX:+UseCGroupMemoryLimitForHeap -XX:-ShrinkHeapInSteps\
 # -XX:MetaspaceSize=200m -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=25"
 #this just crashes the process with 'too many errors'
@@ -21,61 +20,68 @@ javaOpts="-XX:NativeMemoryTracking=summary"
 
 
 
-intNm="PCMM"
+nm="PCMM"
 intGuid=FDD64944-665D-4AAD-9C8A-BAADC496AF2C
 
 #--- DOCKER CONTAINER: PCMM Query Full
 port=8433
-nm=${intNm}_query_full_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i\
+intNm=${nm}_query_full_c
+docker run -d\
+ ${containOpts[*]}\
+ -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
  --server.port=$port --destination.url.get=$cfgPcmmQueryFullDestGet\
  ${clientSslOpts[*]}\
-  ${serverSslOpts[*]}
+ ${serverSslOpts[*]}\
+ ${miscOpts[*]}
 
 #--- DOCKER CONTAINER: PCMM Query Delta
 port=8434
-nm=${intNm}_query_delta_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=$cfgPcmmQueryDeltaDestGet\
+intNm=${nm}_query_delta_c
+docker run -d\
+ ${containOpts[*]}\
+ -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
+ --server.port=$port --destination.url.get=$cfgPcmmQueryDeltaDestGet\
  ${clientSslOpts[*]}\
-  ${serverSslOpts[*]}
- 
+ ${serverSslOpts[*]}\
+ ${miscOpts[*]}
+
 #--- DOCKER CONTAINER: PCMM Query Status
 port=8435
-nm=${intNm}_query_status_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=$cfgPcmmQueryStatusDestGet\
+intNm=${nm}_query_status_c
+docker run -d\
+ ${containOpts[*]}\
+ -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
+ --server.port=$port --destination.url.get=$cfgPcmmQueryStatusDestGet\
  ${clientSslOpts[*]}\
-  ${serverSslOpts[*]}
+ ${serverSslOpts[*]}\
+ ${miscOpts[*]}
 
- #--- DOCKER CONTAINER: PCMM Get File
+#--- DOCKER CONTAINER: PCMM Get File
 port=8436
-nm=${intNm}_get_file_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=$cfgPcmmFileGetDestGet\
+intNm=${nm}_get_file_c
+docker run -d\
+ ${containOpts[*]}\
+ -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
+ --server.port=$port --jms.databaseQ=sqlQ --interface.id=$intGuid --destination.url.get=$cfgPcmmFileGetDestGet\
  ${clientSslOpts[*]}\
- ${serverSslOpts[*]}
+ ${serverSslOpts[*]}\
+ ${miscOpts[*]}
 
 
 
 
-intNm="AC"
+
+nm="AC"
 
 #--- DOCKER CONTAINER: AudioCare Get and Post
 port=8533
 intGuid=29F55FB8-BE79-431A-9D33-7598F26D6582
-nm=${intNm}_get_post_c
-docker run -e ENV='dev' -e MALLOC_ARENA_MAX=4 -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=$cfgAcDestGet\
- --destination.url.post=$cfgAcDestPost\
+intNm=${nm}_get_post_c
+docker run -d\
+ ${containOpts[*]}\
+ -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
+ --server.port=$port --jms.databaseQ=sqlQ --interface.id=$intGuid --destination.url.get=$cfgAcDestGet --destination.url.post=$cfgAcDestPost\
  ${clientSslOpts[*]}\
- ${serverSslOpts[*]}
- 
+ ${serverSslOpts[*]}\
+ ${miscOpts[*]}
 
