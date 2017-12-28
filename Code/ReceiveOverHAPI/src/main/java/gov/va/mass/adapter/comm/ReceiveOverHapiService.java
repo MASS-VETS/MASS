@@ -63,7 +63,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 
 	@PostMapping(path = "/receive", consumes = "application/hl7-v2", produces = "application/hl7-v2; charset=UTF-8")
 	public String receiveAndRouteMessage(@RequestBody String msg) {
-		logger.info("In service: " + appname);
+		logger.debug("In service: {}", appname);
 		
 		//Get the current time for later.
 		String dateTime = String.format("%1$tF %1$tT",new Date());
@@ -81,7 +81,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 		//Check the Processing ID before we allow this message to go any further. If the processing ID doesn't match then NACK the message.
 		if (!msgValues.get("processingId").equals(processingId)) {
 			
-			logger.info("Invalid Processing ID. Expected: \"" + processingId + "\" Received: \"" + msgValues.get("processingId") + "\"");
+			logger.info("Invalid Processing ID. Expected: \"{}\" Received: \"{}\"", processingId, msgValues.get("processingId"));
 			
 			try {
 				return message.generateACK(AcknowledgmentCode.CR, new HL7Exception(("Invalid Processing ID. Expected: " + processingId + " Received: " + msgValues.get("processingId")), ErrorCode.UNSUPPORTED_PROCESSING_ID)).encode();
@@ -91,11 +91,7 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 				throw new InvalidMessageException(); // return HTTP 415 error if the HL7 is invalid.
 			}
 		}
-		
-		//Log the Processing ID for later reference.
-		MDC.put("MSGID", msgValues.get("controlId"));
-		logger.info("Message received = " + msg);
-		
+
 		//Create the database communication object with the appropriate values.
 		HashMap<String, Object> mmsg = new HashMap<String, Object>();
 		mmsg.put("messageContent", msg);
@@ -106,11 +102,15 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 		//Put the message on the respective JMS queues.
 		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
 		jmsMsgTemplate.convertAndSend(outputQueue, msg);
-
+		
+		//Log the Processing ID for later reference.
+		MDC.put("MSGID", msgValues.get("controlId"));
+		logger.info("Message received = {}", msg);
 		//Log the actions.
-		logger.info("Msg Id " + msgValues.get("controlId") + " Message forwarded to queue = " + outputQueue);
-		logger.info("Msg Id " + msgValues.get("controlId") + " Message forwarded to queue = " + databaseQueue);
+		logger.info("Msg Id {} Message forwarded to queue = {}", msgValues.get("controlId"), outputQueue);
+		logger.info("Msg Id {} Message forwarded to queue = {}", msgValues.get("controlId"), databaseQueue);
 		MDC.clear();
+		
 		logger.debug("Threadmapcontext cleared");
 		
 		try {
