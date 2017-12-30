@@ -52,8 +52,8 @@ fi
 
 if [ $reConfig -gt 0 ] ; then
 	#Docker container SQL
-	cmd/DockerRunSql $configFile $cfgSqlUrl $cfgSqlLogin $cfgSqlPwd
-	cmd/DockerRunMon $configFile $cfgMonServer
+	cmd/DockerRunSql $configFile
+	cmd/DockerRunMon $configFile
 	cmd/DockerRunFileXfer $configFile
 	#Docker container all Interface Instances
 	./DockerInts $configFile

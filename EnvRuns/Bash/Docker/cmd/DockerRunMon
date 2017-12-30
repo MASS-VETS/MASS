@@ -5,7 +5,6 @@ nm="mon"
 
 #descriptive names for incoming params
 configFile=$1
-monServer=$2
 
 
 #environment specific config
@@ -17,6 +16,6 @@ source DockerOpts
 docker run -d\
  ${containOpts[*]}\
  --name ${nm}_c mon_i\
- --start.wait=120 --docker.server=$monServer\
+ --start.wait=120 --docker.server=$cfgMonServer\
  ${miscOpts[*]}
  

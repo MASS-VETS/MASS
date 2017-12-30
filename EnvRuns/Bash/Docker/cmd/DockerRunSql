@@ -4,9 +4,6 @@ nm="sql"
 
 #descriptive names for incoming params
 configFile=$1
-sqlUrl=$2
-sqlLogin=$3
-sqlPwd=$4
 
 
 #environment specific config
@@ -25,5 +22,5 @@ docker run -d\
  -e JAVA_OPTIONS=$javaOpts -e GC_OPTIONS=$gcOpts\
  --name ${nm}_c sql_i\
  --server.port=5001\
- --jms.inputQ=sqlQ --spring.datasource.url=$sqlUrl --spring.datasource.username=$sqlLogin --spring.datasource.password=$sqlPwd\
+ --jms.inputQ=sqlQ --spring.datasource.url=$cfgSqlUrl --spring.datasource.username=$cfgSqlLogin --spring.datasource.password=$cfgSqlPwd --database.pingonstartup=true\
  ${miscOpts[*]}
