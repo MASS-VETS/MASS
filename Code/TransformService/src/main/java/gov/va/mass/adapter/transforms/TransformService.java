@@ -61,7 +61,7 @@ public class TransformService extends JmsMicroserviceBase {
 			// Get the actual transform
 			Source xsltSource = xsltSource(xsltName);
 			if (xsltSource == null) {
-				LOG.error("No transform found '" + xsltName + "'");
+				LOG.error("No transform found '{}'", xsltName);
 				throw this.enterErrorState("No transform found '" + xsltName + "'");
 			}
 			
@@ -72,7 +72,7 @@ public class TransformService extends JmsMicroserviceBase {
 			
 			// ...transform the XML...
 			String transMessage = transformXmlMessage(xmlMessage, xsltSource);
-			LOG.info("Message transformed using '" + xsltName + "'");
+			LOG.info("Message transformed using '{}'", xsltName);
 			
 			// ...And turn it back into pipe-based to return it.
 			hapiMessage = xmlParser.parse(transMessage);
@@ -83,14 +83,14 @@ public class TransformService extends JmsMicroserviceBase {
 			
 			return JmsResponse.forQueue(transPipeMessage, outputQueue);
 		} catch (HL7Exception e) {
-			LOG.error("HL7 Exception in TransformService", e);
+			LOG.error("HL7 Exception in TransformService.", e);
 			
 			throw this.enterErrorState(e.getMessage());
 		} finally {
 			try {
 				context.close();
 			} catch (IOException e) {
-				LOG.error("Could not close HapiContext", e);
+				LOG.error("Could not close HapiContext.", e);
 			}
 		}
 	}
@@ -136,7 +136,7 @@ public class TransformService extends JmsMicroserviceBase {
 			// return the result
 			return writer.toString();
 		} catch (TransformerException e) {
-			LOG.error("Exception in XSLT process", e);
+			LOG.error("Exception in XSLT process.", e);
 			return "";
 		} finally {
 			// clean up after ourselves
@@ -147,7 +147,7 @@ public class TransformService extends JmsMicroserviceBase {
 				try {
 					writer.close();
 				} catch (IOException e) {
-					LOG.error("Could not close XML writer", e);
+					LOG.error("Could not close XML writer.", e);
 				}
 			}
 		}

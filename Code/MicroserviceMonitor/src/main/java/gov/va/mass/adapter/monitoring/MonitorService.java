@@ -1,6 +1,7 @@
 package gov.va.mass.adapter.monitoring;
 
 import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -43,23 +44,22 @@ public class MonitorService {
 		
 		// wait to allow all microservices time to start before hitting them for info
 		if ((System.currentTimeMillis() / 1000) - beganAt < config.getStartWait()) {
-			log.info(
-					"Waiting " + config.getStartWait() + " seconds so that monitored microservices may have time to start...");
+			log.debug("Waiting {} seconds so that monitored microservices may have time to start...", config.getStartWait());
 			return;
 		}
 		
 		alertManager.clear();
 		
-		log.info("Checking DB service");
+		log.debug("Checking DB service");
 		checkMicroService(config.getMessagedb(), "MessageDB");
 		for (InterfaceConfig intf : config.getInterfaces()) {
-			log.info("Checking interface '" + intf.getName() + "'");
+			log.debug("Checking interface '{}'", intf.getName());
 			checkMicroService(intf.getReceiver(), intf.getName() + " Reciever");
 			checkMicroService(intf.getTransform(), intf.getName() + " Transform");
 			checkMicroService(intf.getSender(), intf.getName() + " Sender");
 		}
 		
-		log.info("Checking JMS Broker");
+		log.debug("Checking JMS Broker");
 		checkBroker();
 		
 		alertManager.sendAlertsAsEmails(config.getEmail().getToAddress(), emailTemplate);
@@ -79,7 +79,12 @@ public class MonitorService {
 			KeyStore keyStore = config.getKeyStore().createKeystore(clients);
 			KeyStore trustStore = config.getTrustStore().createKeystore(clients);
 			if (keyStore != null && trustStore != null) {
-				client = clients.getSslTlsClient(keyStore, trustStore, config.getKeyStore().getKeyStorePassword());
+				try {
+					client = clients.getSslTlsClient(keyStore, trustStore, config.getKeyStore().getKeyStorePassword());
+				} catch (GeneralSecurityException e) {
+					log.error("Attempt to check truststore {} for keystore {} caused error.", config.getTrustStore(), config.getKeyStore(), e);
+					client = clients.getSimpleClient();
+				}
 			} else {
 				client = clients.getSimpleClient();
 			}
@@ -87,7 +92,7 @@ public class MonitorService {
 			client = clients.getSimpleClient();
 		}
 		MicroserviceStats stats = new MicroserviceStats(client, url);
-		log.info(stats.toString() + " url: " + url);
+		log.debug("{} url: {}", stats.toString() , url);
 		
 		if (!stats.isAlive) {
 			alertManager.raiseAlert(AlertType.ServiceDown, name);
@@ -106,7 +111,7 @@ public class MonitorService {
 			alertManager.raiseAlert(AlertType.ServiceDown, "JMS Broker");
 		}
 		for (QueueStats q : stats.queues) {
-			log.info(q.toString());
+			log.debug(q.toString());
 			boolean found = false;
 			for (AlertConfig alert : config.getAlerts()) {
 				if (!(q.name.equals(alert.getName())))

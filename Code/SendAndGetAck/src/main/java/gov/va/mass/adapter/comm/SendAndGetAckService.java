@@ -88,7 +88,7 @@ public class SendAndGetAckService extends JmsMicroserviceBase{
 	public void sendMessagesFromReadyQueue(String msgtxt) throws MalformedURLException, MicroserviceException {
 
 		// Log message and save to database before sending.
-		logger.info("Received from Q: " + msgtxt);
+		logger.info("Received from Q: {}", msgtxt);
 		putMsgIdAndSenderOnMDC(msgtxt);
 		
 		//Only write to the database that the message was sent if we successfully send the message without NACK.
@@ -98,7 +98,7 @@ public class SendAndGetAckService extends JmsMicroserviceBase{
 		
 		//Clear MDC
 		MDC.clear();
-		logger.info("MDC cleared");
+		logger.debug("MDC cleared");
 	}
 
 	// Function to send messages using the HAPI Specification.
@@ -120,7 +120,7 @@ public class SendAndGetAckService extends JmsMicroserviceBase{
 		@SuppressWarnings("rawtypes")
 		ISendable rawsendable = new RawSendable(msgtxt);
 		EncodingStyle es = rawsendable.getEncodingStyle();
-		logger.info(" rawsendable " + " encoding style " + es.toString() + " content type " + es.getContentType());
+		logger.info(" rawsendable encoding style {} content type {}", es.toString(), es.getContentType());
 
 		// Loop attempting to send until max attempts reached.
 		sendattemptcounter = 0;
@@ -130,12 +130,12 @@ public class SendAndGetAckService extends JmsMicroserviceBase{
 				++sendattemptcounter;
 				
 				//Log sending attemp and the raw message.
-				logger.info(" \n\nSending to attempt# " + sendattemptcounter + "\n " + rawsendable.getMessage().toString());
+				logger.info(" \n\nSending to attempt# {}\n {}", sendattemptcounter, rawsendable.getMessage().toString());
 				
 				//Attempt to get the raw sendable information and transmit receiving the acknowledgement and logging it.
 				IReceivable<String> receivable = client.sendAndReceive(rawsendable);
 				String respstring = receivable.getMessage();
-				logger.info("\nResponse :\n" + respstring + "\n");
+				logger.info("\nResponse :\n{}\n", respstring);
 				
 				//Return whether the ack was positive or negative.
 				acked = isPositiveAck(respstring);
@@ -145,10 +145,9 @@ public class SendAndGetAckService extends JmsMicroserviceBase{
 				if (sendattemptcounter == MAX_SEND_ATTEMPTS) {
 					logger.info("MAX attempts to send to exceeded.");
 					this.state.serviceFailed();
-					throw this.enterErrorState("Exception during sending shutting down the service.");
+					throw this.enterErrorState("Exception during sending. Shutting down the service.");
 				} else {
-					logger.info(
-							"Wait for a certain period, before reattempting to send. Or push this on a hold queue");
+					logger.info("Wait for {} seconds before reattempting to send. Or push this on a hold queue", SEND_ATTEMPT_INTERVAL);
 				}
 
 				// Pause for the set amount of time if we were unsuccessful in sending the message. If a single message reaches this point something is wrong with communications.
@@ -179,7 +178,7 @@ public class SendAndGetAckService extends JmsMicroserviceBase{
 
 		// Send to the database
 		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
-		logger.info("Forwarded to queue = " + databaseQueue);
+		logger.info("Forwarded to queue = {}", databaseQueue);
 	}
 
 	// Function to add to MDC.

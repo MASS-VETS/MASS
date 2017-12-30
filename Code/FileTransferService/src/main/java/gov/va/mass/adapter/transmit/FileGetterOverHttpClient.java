@@ -55,7 +55,7 @@ public class FileGetterOverHttpClient extends MicroserviceBase {
 		tempFile = stream2file(is);
 		byte[] filebytes = FileCopyUtils.copyToByteArray(tempFile);
 		
-		logger.debug("File saved of size " + filebytes.length);
+		logger.debug("File saved of size {}", filebytes.length);
 		
 		// Send to the database
 		if (databaseQueue != null && !databaseQueue.isEmpty()) {
@@ -73,7 +73,7 @@ public class FileGetterOverHttpClient extends MicroserviceBase {
 			mmsg.put("dateTime", dateTime);
 			
 			jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
-			logger.info("Forwarded to queue = " + databaseQueue);
+			logger.info("Forwarded to queue = {}", databaseQueue);
 		}
 		
 		return tempFile;

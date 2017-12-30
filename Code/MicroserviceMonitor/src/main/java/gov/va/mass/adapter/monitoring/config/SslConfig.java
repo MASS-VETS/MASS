@@ -1,5 +1,6 @@
 package gov.va.mass.adapter.monitoring.config;
 
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import gov.va.mass.adapter.core.HttpClientProvider;
 

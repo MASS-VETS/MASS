@@ -10,13 +10,18 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
+
+import gov.va.mass.adapter.monitoring.email.EmailTemplate;
 
 /**
  * @author avolkano
  */
 public class RestJsonHelper {
+	static final Logger log = LoggerFactory.getLogger(RestJsonHelper.class);
 	
 	public static JsonObject getObjectAtPath(CloseableHttpClient client, String baseUri, String path) {
 		HttpGet get = new HttpGet(baseUri + path);
@@ -28,7 +33,7 @@ public class RestJsonHelper {
 			jsonReader.close();
 			return resp;
 		} catch (HttpClientErrorException | HttpServerErrorException | IOException e) {
-			e.printStackTrace();
+			log.error("Attempting connection to {}{} caused error.", baseUri, path, e);
 			JsonObjectBuilder builder = Json.createObjectBuilder();
 			return builder.build(); // leave it empty. Caller should account for this by checking!
 		}

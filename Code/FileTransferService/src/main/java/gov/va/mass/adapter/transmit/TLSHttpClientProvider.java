@@ -102,9 +102,9 @@ public class TLSHttpClientProvider {
 				keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
 				InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
 				keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());
-				logger.debug("Key store has " + keyStore.size() + " keys");
+				logger.debug("Key store has {} keys", keyStore.size());
 			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-				logger.error("Problem with keystore " + e.toString());
+				logger.error("Problem with keystore.", e);
 			}
 	
 			try {
@@ -113,7 +113,7 @@ public class TLSHttpClientProvider {
 																								// be uniform
 						.build();
 			} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
-				logger.error("Could not create SSLContext " + e.toString());
+				logger.error("Could not create SSLContex.", e);
 			}
 		}
 		
@@ -132,7 +132,7 @@ public class TLSHttpClientProvider {
 		if (TLS_ENABLED) {
 			SSLConnectionSocketFactory sslConnectionFactory = null;
 			String env = System.getenv("ENV") ; 
-			logger.debug("ssl conn fact. creation " + env);
+			logger.debug("ssl conn fact. creation {}", env);
 			if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
 				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
 						BrowserCompatHostnameVerifier.INSTANCE); 

@@ -96,7 +96,7 @@ public class FileSenderOverHttpClient extends MicroserviceBase {
 	}
 	
 	private File saveUploadedFiles(MultipartFile file) throws IOException {
-		logger.debug("In saveUploadedFiles " + file.getOriginalFilename());
+		logger.debug("In saveUploadedFiles {}", file.getOriginalFilename());
 		
 		byte[] bytes = file.getBytes();
 		
@@ -116,11 +116,11 @@ public class FileSenderOverHttpClient extends MicroserviceBase {
 		// Send to the database
 		if (databaseQueue != null && !databaseQueue.isEmpty()) {
 			jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
-			logger.info("Forwarded to queue = " + databaseQueue);
+			logger.info("Forwarded to queue = {}", databaseQueue);
 		}
 		
 		File tempFile = stream2file(file.getInputStream());
-		logger.debug("length of saved file " + tempFile.length());
+		logger.debug("length of saved file {}", tempFile.length());
 		return tempFile;
 	}
 	
@@ -150,7 +150,7 @@ public class FileSenderOverHttpClient extends MicroserviceBase {
 			logger.debug("Posted file of the type text/csv");
 			logger.debug("Response " + response.toString());
 		} catch (IOException e) {
-			logger.error(" Could not execute post method on httpclient " + e.toString());
+			logger.error("Could not execute post method on httpclient.", e);
 		} finally {
 			httpPost.releaseConnection();
 		}

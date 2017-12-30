@@ -32,8 +32,7 @@ public class EmailTemplate {
 	}
 	
 	public void SendMail(String toEmail, String subject, String text) {
-		log.info("Sending e-mail to " + toEmail + " for " + subject);
-		log.info(text);
+		log.info("Sending e-mail to {} for {} \n content:{}", toEmail, subject, text);
 		Session session = Session.getInstance(_props,
 				new javax.mail.Authenticator() {
 					@Override
