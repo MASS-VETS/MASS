@@ -32,6 +32,7 @@ else
   -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${nm}_xslt_c xslt_i\
   --server.port=$port --jms.inputQ=$rcvo --jms.outputQ=$sndi --xslt.name=$xslt\
   ${miscOpts[*]}
+  ${serverSslOpts[*]}
 fi
 
 #fire up the docker containers
