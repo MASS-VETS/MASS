@@ -1,0 +1,51 @@
+spring:
+  activemq:
+    broker-url: tcp://localhost:61616
+    user: admin
+    password: admin
+    in-memory: false
+    pool:
+      enabled: false
+
+server:
+  port: 1234
+  ssl:
+    enabled: true
+    key-store: D:/dev/VA/Certs/epic24212.jks
+    key-store-password: thepassword
+    key-store-type: JKS
+    trust-store: C:/Program Files/Java/jdk1.8.0_144/jre/lib/security/cacerts
+    trust-store-password: changeit
+    trust-store-type: JKS
+
+nail:
+  responses:
+    -
+      method: GET
+      url: /heartbeat/isalive
+      contentType: application/json; charset=utf-8
+      content: >
+        {
+          "serviceName": "nailService",
+          "isAlive": "true" 
+        }
+      isFile: false
+    -
+      method: POST
+      url: /echo
+      contentType: text/plain; charset=utf-8
+      content: >
+        {REQ}
+      isFile: false 
+    -
+      method: POST
+      url: /receive
+      contentType: application/hl7-v2; charset=utf-8
+      content: D:/dev/VA/Messages/ACK_NOW.hl7
+      isFile: true
+    -
+      method: POST
+      url: /nak
+      contentType: application/hl7-v2; charset=utf-8
+      content: D:/dev/VA/Messages/ACK_NAK2.hl7
+      isFile: true

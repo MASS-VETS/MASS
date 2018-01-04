@@ -33,7 +33,7 @@ import gov.va.mass.adapter.core.HttpClientProvider;
 //@ RestController
 @Component
 @PropertySource("classpath:application.yaml")
-public class BulkSenderService {
+public class TheHammerService {
 	
 	@Value("${send.count}")
 	int messageCount;
@@ -76,7 +76,7 @@ public class BulkSenderService {
 	
 	@Value("${logging.verbose}")
 	boolean verboseLogging;
-	static final Logger log = LoggerFactory.getLogger(BulkSenderService.class);
+	static final Logger log = LoggerFactory.getLogger(TheHammerService.class);
 	
 	private void logIfVerbose(String message) {
 		if (!verboseLogging) {

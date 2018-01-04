@@ -11,14 +11,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
-public class BulkSenderServiceApplication {
-	static final Logger log = LoggerFactory.getLogger(BulkSenderServiceApplication.class);
+public class TheHammerApplication {
+	static final Logger log = LoggerFactory.getLogger(TheHammerApplication.class);
 	
 	@Autowired
-	BulkSenderService svc;
+	TheHammerService svc;
 	
 	public static void main(String[] args) {
-		SpringApplication.run(BulkSenderServiceApplication.class, args);
+		SpringApplication.run(TheHammerApplication.class, args);
 	}
 	
 	@Bean
