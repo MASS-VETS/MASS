@@ -1,5 +1,12 @@
 #!/bin/bash
 
+#descriptive names for incoming params
+configFile=$1
+
+if [ ${#configFile} -eq 0 ] ; then
+	configFile=Docker.cfg
+fi
+
 #--- Stop any active hammer containers
 active=$(docker ps -q -f name=hammer)
 if [ ${#active} -gt 0 ] ; then
@@ -24,15 +31,15 @@ cd ..
 
 #--- Fire up a hammer for each interface
 #------Scheduling INCOMING
-./DockerHammer insched 5100
+#./DockerHammer $configFile insched 5100
 #------Errors
-./DockerHammer error 5200
+./DockerHammer $configFile error 5200
 #------Orders
-./DockerHammer order 5300
+#./DockerHammer $configFile order 5300
 #------Scheduling
-./DockerHammer sched 5400
+#./DockerHammer $configFile sched 5400
 #------Demographics ADT
-./DockerHammer demogADT 5500
+#./DockerHammer $configFile demogADT 5500
 #------Demographics ORU
-./DockerHammer demogORU 5600
+#./DockerHammer $configFile demogORU 5600
 
