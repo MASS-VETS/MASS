@@ -16,9 +16,6 @@ source $configFile
 source DockerOpts
 
 
-#javaOpts="-Xms300m -Xmx300m"
-#gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseParallelGC -XX:NewRatio=3 -XX:ParallelGCThreads=8 -XX:+UseCGroupMemoryLimitForHeap -XX:+ShrinkHeapInSteps"
-
 #--- DOCKER CONTAINER: Transform
 if [ -z $xslt ]; then
   rcvo=${nm}SndQ
@@ -29,17 +26,16 @@ else
   port=$(( $rcvport + 5 ))
   docker run -d\
   ${containOpts[*]}\
-  -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${nm}_xslt_c xslt_i\
+  -p ${port}:${port} --name ${nm}_xslt_c xslt_i\
   --server.port=$port --jms.inputQ=$rcvo --jms.outputQ=$sndi --xslt.name=$xslt\
   ${miscOpts[*]}
-  ${serverSslOpts[*]}
 fi
 
 #fire up the docker containers
 #--- DOCKER CONTAINER: Receiver
 docker run -d\
   ${containOpts[*]}\
-  -e JAVA_OPTIONS=$javaOpts -p ${rcvport}:${rcvport} --name ${nm}_rcv_c rcv_i\
+  -p ${rcvport}:${rcvport} --name ${nm}_rcv_c rcv_i\
   --server.port=$rcvport --jms.databaseQ=sqlQ --jms.outputQ=$rcvo --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$inGuid\
   ${miscOpts[*]}\
   ${serverSslOpts[*]}
@@ -53,7 +49,7 @@ do
   port=$(( $rcvport + 10 ))
   docker run -d\
   ${containOpts[*]}\
-  -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${nm}_snd${i}_c snd_i\
+  -p ${port}:${port} --name ${nm}_snd${i}_c snd_i\
   --server.port=$port --jms.inputQ=$sndi --jms.databaseQ=sqlQ --destination.url=$desturl --maxattempts.send=1 --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$outGuid\
   ${miscOpts[*]}\
   ${clientSslOpts[*]}

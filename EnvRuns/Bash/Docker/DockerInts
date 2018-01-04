@@ -8,14 +8,6 @@ configFile=$1
 source $configFile
 
 
-cfgIntInsched=${indest}/559507
-cfgIntError=${dest}/334999
-cfgIntOrder=${dest}/334375
-cfgIntSched=${dest}/334501
-cfgIntDemogADT=${dest}/334701
-cfgIntDemogORU=${dest}/334701
-
-
 #------Scheduling INCOMING
 cmd/DockerRunInt $configFile insched 5100 3E6C7FF1-32DF-4699-8D85-06F59809F956 DCFA837E-DF14-45E0-A440-38B2FDA1985B ${cfgIntInsched} 1
 

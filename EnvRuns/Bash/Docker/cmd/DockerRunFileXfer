@@ -1,7 +1,16 @@
 #!/bin/bash
 #descriptive names for incoming params
 configFile=$1
+nm=$2
+port=$3
+intGuid=$4
+desturlGet=$5
+desturlPost=$6
 
+
+if ! [ -z $destUrlPost ]; then
+  postArg=--destination.url.post=$desturlPost
+fi
 
 
 #environment specific config
@@ -20,67 +29,11 @@ source DockerOpts
 
 
 
-nm="PCMM"
-intGuid=FDD64944-665D-4AAD-9C8A-BAADC496AF2C
-
-#--- DOCKER CONTAINER: PCMM Query Full
-port=8433
-intNm=${nm}_query_full_c
+#--- DOCKER CONTAINER: File Transfer
 docker run -d\
  ${containOpts[*]}\
- -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
- --server.port=$port --destination.url.get=$cfgPcmmQueryFullDestGet\
- ${clientSslOpts[*]}\
- ${serverSslOpts[*]}\
- ${miscOpts[*]}
-
-#--- DOCKER CONTAINER: PCMM Query Delta
-port=8434
-intNm=${nm}_query_delta_c
-docker run -d\
- ${containOpts[*]}\
- -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
- --server.port=$port --destination.url.get=$cfgPcmmQueryDeltaDestGet\
- ${clientSslOpts[*]}\
- ${serverSslOpts[*]}\
- ${miscOpts[*]}
-
-#--- DOCKER CONTAINER: PCMM Query Status
-port=8435
-intNm=${nm}_query_status_c
-docker run -d\
- ${containOpts[*]}\
- -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
- --server.port=$port --destination.url.get=$cfgPcmmQueryStatusDestGet\
- ${clientSslOpts[*]}\
- ${serverSslOpts[*]}\
- ${miscOpts[*]}
-
-#--- DOCKER CONTAINER: PCMM Get File
-port=8436
-intNm=${nm}_get_file_c
-docker run -d\
- ${containOpts[*]}\
- -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
- --server.port=$port --jms.databaseQ=sqlQ --interface.id=$intGuid --destination.url.get=$cfgPcmmFileGetDestGet\
- ${clientSslOpts[*]}\
- ${serverSslOpts[*]}\
- ${miscOpts[*]}
-
-
-
-
-
-nm="AC"
-
-#--- DOCKER CONTAINER: AudioCare Get and Post
-port=8533
-intGuid=29F55FB8-BE79-431A-9D33-7598F26D6582
-intNm=${nm}_get_post_c
-docker run -d\
- ${containOpts[*]}\
- -e JAVA_OPTIONS=$javaOpts -p ${port}:${port} --name ${intNm} fxfer_i\
- --server.port=$port --jms.databaseQ=sqlQ --interface.id=$intGuid --destination.url.get=$cfgAcDestGet --destination.url.post=$cfgAcDestPost\
+ -p ${port}:${port} --name ${nm} fxfer_i\
+ --server.port=$port --jms.databaseQ=sqlQ --interface.id=$intGuid --destination.url.get=$desturlGet $postArg\
  ${clientSslOpts[*]}\
  ${serverSslOpts[*]}\
  ${miscOpts[*]}

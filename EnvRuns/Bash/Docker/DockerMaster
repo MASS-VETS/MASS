@@ -21,9 +21,11 @@ source $configFile
 
 
 #Stop all Docker Containers
+echo "*** Stop all Docker Containers"
 cmd/DockerStopC
 
 #Remove all hammer containers (so that they don't get restared below)
+echo "*** Remove all Docker Containers"
 #--- Remove all hammer containers
 containers=$(docker ps -q -a -f name=hammer)
 if [ ${#containers} -gt 0 ] ; then
@@ -36,6 +38,7 @@ if [ $reConfig -gt 0 ] ; then
 fi
 
 #delete all docker images and rebuild them, but only if asked to
+echo "*** Delete all Docker Images"
 if [ $rebuildI -gt 0 ] ; then
 	#remove Docker container ActiveMQ (losing all queue entries)
 	cmd/DockerRmvCAmq
@@ -54,7 +57,8 @@ if [ $reConfig -gt 0 ] ; then
 	#Docker container SQL
 	cmd/DockerRunSql $configFile
 	cmd/DockerRunMon $configFile
-	cmd/DockerRunFileXfer $configFile
+	#Docker container all File Transfer Instances
+	./DockerFileXfers $configFile
 	#Docker container all Interface Instances
 	./DockerInts $configFile
 else

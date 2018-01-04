@@ -12,14 +12,9 @@ source $configFile
 source DockerOpts
 
 
-#javaOpts="-Xms300m -Xmx300m"
-#gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseParallelGC -XX:NewRatio=3 -XX:ParallelGCThreads=8 -XX:+UseCGroupMemoryLimitForHeap -XX:+ShrinkHeapInSteps"
-#gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseG1GC"
-
 docker run -d\
  ${containOpts[*]}\
  -p 1433:1433 -p 5001:5001\
- -e JAVA_OPTIONS=$javaOpts -e GC_OPTIONS=$gcOpts\
  --name ${nm}_c sql_i\
  --server.port=5001\
  --jms.inputQ=sqlQ --spring.datasource.url=$cfgSqlUrl --spring.datasource.username=$cfgSqlLogin --spring.datasource.password=$cfgSqlPwd --database.pingonstartup=true\

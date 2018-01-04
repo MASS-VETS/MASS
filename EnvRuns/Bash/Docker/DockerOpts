@@ -1,53 +1,72 @@
 #!/bin/bash
+#!/bin/bash
 
 #SSL setup
 #called by DockerRunFileXfer and DockerInts
 if [ $cfgUseSSL -gt 0 ] ; then
-	serverSslOpts[1]="--server.ssl.enabled=false"
-	serverSslOpts[2]="--server.ssl.client-auth=need"
+    i=0
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.enabled=true"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.client-auth=need"
 	
-	serverSslOpts[3]="--server.ssl.key-store=/keystore/${cfgKeystoreName}"
-	serverSslOpts[4]="--server.ssl.key-store-password=${cfgKeystorePwd}"
-	serverSslOpts[5]="--server.ssl.key-password=${cfgKeyPwd}"
-	serverSslOpts[6]="--server.ssl.key-store-type=JKS"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store=/keystore/${cfgKeystoreName}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store-password=${cfgKeystorePwd}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-password=${cfgKeyPwd}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store-type=JKS"
 	
-	serverSslOpts[7]="--server.ssl.trust-store=/keystore/${cfgTruststoreName}"
-	serverSslOpts[8]="--server.ssl.trust-store-password=${cfgTruststorePwd}"
-	serverSslOpts[9]="--server.ssl.trust-password=${cfgTrustPwd}"
-	serverSslOpts[10]="--server.ssl.trust-store-type=JKS"
+#	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store=/keystore/${cfgTruststoreName}"
+#	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-password=${cfgTruststorePwd}"
+#	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-password=${cfgTrustPwd}"
+#	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-type=JKS"
 	
-	clientSslOpts[1]="--keystore.enabled=true"
-	clientSslOpts[2]="--keystore.password=${cfgKeystorePwd}"
-	clientSslOpts[4]="--keystore.location=/keystore/${cfgKeystoreName}"
-	clientSslOpts[3]="--keystore.type=JKS"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store=/keystore/${cfgTruststoreName}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-password=${cfgTruststorePwd}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-password=${cfgTrustPwd}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-type=P7B"
+	
+	i=0
+	i=$((i+1)); clientSslOpts[$i]="--keystore.enabled=true"
+	i=$((i+1)); clientSslOpts[$i]="--keystore.password=${cfgKeystorePwd}"
+	i=$((i+1)); clientSslOpts[$i]="--keystore.location=/keystore/${cfgKeystoreName}"
+	i=$((i+1)); clientSslOpts[$i]="--keystore.type=JKS"
 else
 	serverSslOpts[1]="--server.ssl.enabled=false"
 	clientSslOpts[1]="--keystore.enabled=false"
 fi
 
 #command line arguments PRIOR to container name
-containOpts[1]="-v ${cfgHostKeystorePath}:/keystore"
-containOpts[2]="-v ${cfgHostMdcLogPath}:/logs"
-containOpts[3]="-v ${cfgHostAmqPath}:/data/activemq"
-containOpts[4]="-e ENV=dev"
-containOpts[5]="--restart unless-stopped"
-containOpts[6]="--memory=400m"
+i=0
+i=$((i+1)); containOpts[$i]="-v ${cfgHostKeystorePath}:/keystore"
+i=$((i+1)); containOpts[$i]="-v ${cfgHostMdcLogPath}:/logs"
+i=$((i+1)); containOpts[$i]="-v ${cfgHostAmqPath}:/data/activemq"
+i=$((i+1)); containOpts[$i]="-e ENV=dev"
+i=$((i+1)); containOpts[$i]="-e JAVA_OPTS1=$cfgJavaOpts1"
+i=$((i+1)); containOpts[$i]="-e JAVA_OPTS2=$cfgJavaOpts2"
+i=$((i+1)); containOpts[$i]="-e JAVA_OPTS3=$cfgJavaOpts3"
+i=$((i+1)); containOpts[$i]="-e JAVA_OPTS4=$cfgJavaOpts4"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS5=$cfgJavaOpts5"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS6=$cfgJavaOpts6"
+i=$((i+1)); containOpts[$i]="--restart unless-stopped"
+i=$((i+1)); containOpts[$i]="--memory=400m"
+
 
 #command line arguments AFTER container name
-miscOpts[1]="--spring.activemq.broker-url=$cfgAmqBroker"
-miscOpts[2]="--logging.file=/logs/app-${nm}.log"
-miscOpts[3]="--logging.level.root=ERROR"
-miscOpts[4]="--logging.level.gov.va.mass.adapter.comm=INFO"
-miscOpts[5]="--logging.level.gov.va.mass.adapter.comm.ReceiveOverHapiService=TRACE"
-miscOpts[6]="--logging.level.gov.va.mass.adapter.comm.SendAndGetAckService=INFO"
-miscOpts[7]="--logging.level.gov.va.mass.adapter.storage=INFO"
-miscOpts[8]="--logging.level.gov.va.mass.adapter.monitoring=ERROR"
-miscOpts[9]="--logging.level.gov.va.mass.adapter.transforms=ERROR"
-miscOpts[10]="--logging.level.gov.va.mass.adapter.transmit=INFO"
-miscOpts[11]="--logging.level.org.apache.commons.logging=TRACE"
-miscOpts[12]="--server.tomcat.max-threads=400"
+i=0
+i=$((i+1)); miscOpts[$i]="--spring.activemq.broker-url=$cfgAmqBroker"
+i=$((i+1)); miscOpts[$i]="--logging.file=/logs/app-${nm}.log"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm.ReceiveOverHapiService=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm.SendAndGetAckService=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.storage=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.monitoring=ERROR"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.transforms=ERROR"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.transmit=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.org.apache.commons.logging=TRACE"
+i=$((i+1)); miscOpts[$i]="--logging.level.root=INFO"
+i=$((i+1)); miscOpts[$i]="--server.tomcat.max-threads=400"
+i=$((i+1)); miscOpts[$i]="--logging.level.javax.net.ssl=DEBUG"
+i=$((i+1)); miscOpts[$i]="--logging.level.javax.net=DEBUG"
 
-#miscOpts[13]="--debug"
+#i=$((i+1)); miscOpts[$i]="--debug"
 
 # "trace", "debug", "info", "warn", "error" or "off". 
-#miscOpts[3]="--logging.enabled=/logs/app.log"
+#i=$((i+1)); miscOpts[$i]="--logging.enabled=/logs/app.log"
