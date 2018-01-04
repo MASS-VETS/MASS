@@ -5,12 +5,11 @@ nm=$2
 rcvport=$3
 msgCnt=$4
 msgRate=$5
-msgType=$6
+msgSrc=$6
 
 #environment specific config
 #sets all cfg* variables
 source ../$configFile
-source ../DockerOpts
 
 #defaults
 if [ -z $msgCnt ]; then
@@ -19,14 +18,14 @@ fi
 if [ -z $msgRate ]; then
   msgRate=10
 fi
-if [ -z $msgType ]; then
-  msgType="ADT^A01"
+if [ -z $msgSrc ]; then
+  msgSrc=/logs/ORU_R01.hl7
 fi
 
 
 #--- DOCKER CONTAINER for a single interface running hammer
 docker run -d\
-  ${containOpts[*]}\
+  -v ${cfgHostMdcLogPath}:/logs\
   --name hammer_${nm}_c hammer_i\
-  --memory="600m" --restart unless-stopped\
-  --destination.url=http://severusqa-submission1:${rcvport}/receive --message.type=${msgType} --message.count=${msgCnt} --message.rate=${msgRate}
+  --memory="600m"\
+  --destination.url=http://severusqa-submission1:${rcvport}/receive --send.source=${msgSrc} --send.count=${msgCnt} --send.maxrate=${msgRate}

@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 
 #SSL setup
 #called by DockerRunFileXfer and DockerInts
@@ -39,10 +38,10 @@ i=$((i+1)); containOpts[$i]="-v ${cfgHostKeystorePath}:/keystore"
 i=$((i+1)); containOpts[$i]="-v ${cfgHostMdcLogPath}:/logs"
 i=$((i+1)); containOpts[$i]="-v ${cfgHostAmqPath}:/data/activemq"
 i=$((i+1)); containOpts[$i]="-e ENV=dev"
-i=$((i+1)); containOpts[$i]="-e JAVA_OPTS1=$cfgJavaOpts1"
-i=$((i+1)); containOpts[$i]="-e JAVA_OPTS2=$cfgJavaOpts2"
-i=$((i+1)); containOpts[$i]="-e JAVA_OPTS3=$cfgJavaOpts3"
-i=$((i+1)); containOpts[$i]="-e JAVA_OPTS4=$cfgJavaOpts4"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS1=$cfgJavaOpts1"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS2=$cfgJavaOpts2"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS3=$cfgJavaOpts3"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS4=$cfgJavaOpts4"
 #i=$((i+1)); containOpts[$i]="-e JAVA_OPTS5=$cfgJavaOpts5"
 #i=$((i+1)); containOpts[$i]="-e JAVA_OPTS6=$cfgJavaOpts6"
 i=$((i+1)); containOpts[$i]="--restart unless-stopped"
@@ -61,8 +60,8 @@ i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.monitoring=ERROR"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.transforms=ERROR"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.transmit=INFO"
 i=$((i+1)); miscOpts[$i]="--logging.level.org.apache.commons.logging=TRACE"
-i=$((i+1)); miscOpts[$i]="--logging.level.root=INFO"
-i=$((i+1)); miscOpts[$i]="--server.tomcat.max-threads=400"
+i=$((i+1)); miscOpts[$i]="--logging.level.root=ERROR"
+#i=$((i+1)); miscOpts[$i]="--server.tomcat.max-threads=1000"
 i=$((i+1)); miscOpts[$i]="--logging.level.javax.net.ssl=DEBUG"
 i=$((i+1)); miscOpts[$i]="--logging.level.javax.net=DEBUG"
 
