@@ -11,6 +11,15 @@ msgSrc=$6
 #sets all cfg* variables
 source ../$configFile
 
+if [ $cfgUseSSL -gt 0 ]; then
+	url=https://severusqa-submission1:${rcvport}/receive
+else
+	url=http://severusqa-submission1:${rcvport}/receive
+fi
+
+
+
+
 #defaults
 if [ -z $msgCnt ]; then
   msgCnt=100
@@ -19,13 +28,13 @@ if [ -z $msgRate ]; then
   msgRate=10
 fi
 if [ -z $msgSrc ]; then
-  msgSrc=/logs/ORU_R01.hl7
+  msgSrc=/hostpath/testing/ORU_R01.hl7
 fi
 
 
 #--- DOCKER CONTAINER for a single interface running hammer
 docker run -d\
-  -v ${cfgHostMdcLogPath}:/logs\
+  -v ${cfgHostPath}:/hostpath\
   --name hammer_${nm}_c hammer_i\
   --memory="600m"\
-  --destination.url=http://severusqa-submission1:${rcvport}/receive --send.source=${msgSrc} --send.count=${msgCnt} --send.maxrate=${msgRate}
+  --destination.url=$url --send.source=${msgSrc} --send.count=${msgCnt} --send.maxrate=${msgRate}

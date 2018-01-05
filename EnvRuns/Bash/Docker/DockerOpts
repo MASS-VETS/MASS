@@ -7,25 +7,20 @@ if [ $cfgUseSSL -gt 0 ] ; then
 	i=$((i+1)); serverSslOpts[$i]="--server.ssl.enabled=true"
 	i=$((i+1)); serverSslOpts[$i]="--server.ssl.client-auth=need"
 	
-	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store=/keystore/${cfgKeystoreName}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store=/hostpath/ssl/${cfgKeystoreName}"
 	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store-password=${cfgKeystorePwd}"
 	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-password=${cfgKeyPwd}"
 	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store-type=JKS"
 	
-#	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store=/keystore/${cfgTruststoreName}"
-#	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-password=${cfgTruststorePwd}"
-#	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-password=${cfgTrustPwd}"
-#	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-type=JKS"
-	
-	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store=/keystore/${cfgTruststoreName}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store=/hostpath/ssl/${cfgTruststoreName}"
 	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-password=${cfgTruststorePwd}"
 	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-password=${cfgTrustPwd}"
-	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-type=P7B"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-type=JKS"
 	
 	i=0
 	i=$((i+1)); clientSslOpts[$i]="--keystore.enabled=true"
 	i=$((i+1)); clientSslOpts[$i]="--keystore.password=${cfgKeystorePwd}"
-	i=$((i+1)); clientSslOpts[$i]="--keystore.location=/keystore/${cfgKeystoreName}"
+	i=$((i+1)); clientSslOpts[$i]="--keystore.location=/hostpath/ssl/${cfgKeystoreName}"
 	i=$((i+1)); clientSslOpts[$i]="--keystore.type=JKS"
 else
 	serverSslOpts[1]="--server.ssl.enabled=false"
@@ -34,9 +29,8 @@ fi
 
 #command line arguments PRIOR to container name
 i=0
-i=$((i+1)); containOpts[$i]="-v ${cfgHostKeystorePath}:/keystore"
-i=$((i+1)); containOpts[$i]="-v ${cfgHostMdcLogPath}:/logs"
-i=$((i+1)); containOpts[$i]="-v ${cfgHostAmqPath}:/data/activemq"
+i=$((i+1)); containOpts[$i]="-v ${cfgHostPath}:/hostpath"
+i=$((i+1)); containOpts[$i]="-v ${cfgHostPath}/amq:/data/activemq"
 i=$((i+1)); containOpts[$i]="-e ENV=dev"
 #i=$((i+1)); containOpts[$i]="-e JAVA_OPTS1=$cfgJavaOpts1"
 #i=$((i+1)); containOpts[$i]="-e JAVA_OPTS2=$cfgJavaOpts2"
@@ -45,27 +39,27 @@ i=$((i+1)); containOpts[$i]="-e ENV=dev"
 #i=$((i+1)); containOpts[$i]="-e JAVA_OPTS5=$cfgJavaOpts5"
 #i=$((i+1)); containOpts[$i]="-e JAVA_OPTS6=$cfgJavaOpts6"
 i=$((i+1)); containOpts[$i]="--restart unless-stopped"
-i=$((i+1)); containOpts[$i]="--memory=400m"
+i=$((i+1)); containOpts[$i]="--memory=800m"
 
 
 #command line arguments AFTER container name
 i=0
 i=$((i+1)); miscOpts[$i]="--spring.activemq.broker-url=$cfgAmqBroker"
-i=$((i+1)); miscOpts[$i]="--logging.file=/logs/app-${nm}.log"
+i=$((i+1)); miscOpts[$i]="--logging.file=/hostpath/logs/app-${nm}.log"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm.ReceiveOverHapiService=INFO"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm.SendAndGetAckService=INFO"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm=INFO"
-i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.storage=INFO"
-i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.monitoring=ERROR"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.storage=TRACE"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.monitoring=INFO"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.transforms=ERROR"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.transmit=INFO"
 i=$((i+1)); miscOpts[$i]="--logging.level.org.apache.commons.logging=TRACE"
 i=$((i+1)); miscOpts[$i]="--logging.level.root=ERROR"
-#i=$((i+1)); miscOpts[$i]="--server.tomcat.max-threads=1000"
+i=$((i+1)); miscOpts[$i]="--server.tomcat.max-threads=500"
 i=$((i+1)); miscOpts[$i]="--logging.level.javax.net.ssl=DEBUG"
 i=$((i+1)); miscOpts[$i]="--logging.level.javax.net=DEBUG"
 
 #i=$((i+1)); miscOpts[$i]="--debug"
 
 # "trace", "debug", "info", "warn", "error" or "off". 
-#i=$((i+1)); miscOpts[$i]="--logging.enabled=/logs/app.log"
+#i=$((i+1)); miscOpts[$i]="--logging.enabled=/hostpath/logs/app.log"

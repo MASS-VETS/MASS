@@ -20,6 +20,11 @@ fi
 source $configFile
 
 
+#--- Copy sample messages to the testing host folder
+echo "*** Copy samplemessages to ${cfgHostPath}/testing"
+cp -R samplemessages/. ${cfgHostPath}/testing
+
+
 #Stop all Docker Containers
 echo "*** Stop all Docker Containers"
 cmd/DockerStopC

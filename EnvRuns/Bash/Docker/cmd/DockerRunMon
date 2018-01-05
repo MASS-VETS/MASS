@@ -17,5 +17,6 @@ docker run -d\
  ${containOpts[*]}\
  --name ${nm}_c mon_i\
  --start.wait=120 --docker.server=$cfgMonServer\
+ --monitor.server=$cfgMonServer\
  ${miscOpts[*]}
  

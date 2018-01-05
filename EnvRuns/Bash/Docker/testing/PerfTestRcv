@@ -1,0 +1,46 @@
+#!/bin/bash
+
+#descriptive names for incoming params
+configFile=$1
+
+if [ ${#configFile} -eq 0 ] ; then
+	configFile=Docker.cfg
+fi
+
+#--- Stop any active nail containers
+active=$(docker ps -q -f name=nail)
+if [ ${#active} -gt 0 ] ; then
+	docker stop $active
+fi
+
+#--- Remove all nail containers
+containers=$(docker ps -q -a -f name=nail)
+if [ ${#containers} -gt 0 ] ; then
+	docker rm -f $containers
+fi
+
+#docker start nail_c
+
+#--- Remove the nail image
+docker rmi -f nail_i 
+
+#--- Build the nail image
+cd ../build/thenail
+docker build . -t nail_i
+
+cd ../../testing
+
+#--- Fire up a nail for each interface
+#------Scheduling INCOMING
+#./DockerNail $configFile insched 5101
+#------Errors
+./DockerNail $configFile error 5201 1000 9000
+#------Orders
+#./DockerNail $configFile order 5301
+#------Scheduling
+#./DockerNail $configFile sched 5401
+#------Demographics ADT
+#./DockerNail $configFile demogADT 5501
+#------Demographics ORU
+#./DockerNail $configFile demogORU 5601
+
