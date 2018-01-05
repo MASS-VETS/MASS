@@ -139,6 +139,8 @@ public class TheHammerService {
 		if (destinationUrl.isEmpty()) {
 			return "No destination URL specified.";
 		}
+		log.info("Sending at URL: {}", destinationUrl);
+		
 		if (!messageCache.IsInitialized()) {
 			return "Message cannot be loaded.";
 		}
@@ -165,7 +167,7 @@ public class TheHammerService {
 		if (maxRate > 0) {
 			delay = 1000 / maxRate;
 		}
-		log.info("delay: ()", delay);
+		log.info("delay: {}", delay);
 		try {
 			log.info("attempting to send one message");
 			long lastStart = System.currentTimeMillis();
