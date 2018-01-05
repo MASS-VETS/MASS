@@ -94,7 +94,7 @@ public class SendAndGetAckService extends JmsMicroserviceBase {
 	public void sendMessagesFromReadyQueue(String msgtxt) throws MalformedURLException, MicroserviceException {
 		
 		// Log message and save to database before sending.
-		logger.info("Received from Q: {}", msgtxt);
+		logger.info("Received message from amq: {}", msgtxt);
 		putMsgIdAndSenderOnMDC(msgtxt);
 		
 		// Only write to the database that the message was sent if we successfully send

@@ -121,6 +121,8 @@ public class TheHammerService {
 		if (destinationUrl.isEmpty()) {
 			return "No destination URL specified";
 		}
+		log.info("Sending at URL: {}", destinationUrl);
+		
 		if (!messageCache.IsInitialized()) {
 			return "Message cannot be loaded.";
 		}
@@ -163,12 +165,15 @@ public class TheHammerService {
 		if (maxRate > 0) {
 			delay = 1000 / maxRate;
 		}
-		log.info("delay = " + delay);
+		log.info("delay: ()", delay);
 		try {
+			log.info("attempting to send one message");
 			long lastStart = System.currentTimeMillis();
 			if (!sendOne(messageCache.GetMessage(), headers)) {
 				return false;
 			}
+
+			log.info("attempting to send the remaing {} messages", messageCount);
 			messagesSent++;
 			for (int i = 1; i < messageCount; i++) {
 				long timeSinceLast = System.currentTimeMillis() - lastStart;
@@ -193,6 +198,7 @@ public class TheHammerService {
 		try {
 			CloseableHttpClient client;
 			if (tlsEnabled) {
+				logIfVerbose("Looking up ssl info");
 				KeyStore ks = clients.createKeystore(keystoreType, keystore, keystorePassword);
 				KeyStore ts = clients.createKeystore(truststoreType, truststore, truststorePassword);
 				client = clients.getSslTlsClient(ks, ts, keystorePassword);
@@ -213,6 +219,8 @@ public class TheHammerService {
 			CloseableHttpResponse resp = client.execute(request);
 			String response = new BasicResponseHandler().handleResponse(resp);
 			logIfVerbose("Received: " + response);
+			
+			
 			if (pingInstead) {
 				return true;
 			}

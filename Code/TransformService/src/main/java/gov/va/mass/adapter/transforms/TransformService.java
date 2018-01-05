@@ -45,9 +45,10 @@ public class TransformService extends JmsMicroserviceBase {
 	
 	@JmsListener(destination = "${jms.inputQ}")
 	public JmsResponse<String> transformPipeMessage(String pipeMessage) throws MicroserviceException {
-		LOG.info("Received message");
-		this.state.serviceCalled();
+		LOG.debug("Received message from amq");
 		logMessage(pipeMessage);
+		
+		this.state.serviceCalled();
 		
 		// Set up HAPI context
 		HapiContext context = new DefaultHapiContext();
@@ -68,17 +69,17 @@ public class TransformService extends JmsMicroserviceBase {
 			// Turn the message into XML...
 			Parser xmlParser = context.getXMLParser();
 			String xmlMessage = xmlParser.encode(hapiMessage);
-			LOG.info("Message converted to XML");
+			LOG.debug("Message converted to XML");
 			
 			// ...transform the XML...
 			String transMessage = transformXmlMessage(xmlMessage, xsltSource);
-			LOG.info("Message transformed using '{}'", xsltName);
+			LOG.debug("Message transformed using '{}'", xsltName);
 			
 			// ...And turn it back into pipe-based to return it.
 			hapiMessage = xmlParser.parse(transMessage);
 			String transPipeMessage = hl7Parser.encode(hapiMessage);
 			
-			LOG.info("Message transformation complete");
+			LOG.debug("Message transformation complete");
 			logMessage(transPipeMessage);
 			
 			return JmsResponse.forQueue(transPipeMessage, outputQueue);
@@ -97,7 +98,7 @@ public class TransformService extends JmsMicroserviceBase {
 	
 	private static void logMessage(String message) {
 		for (String s : message.split("(\r\n|\r|\n)")) {
-			LOG.info(s);
+			LOG.debug(s);
 		}
 	}
 	

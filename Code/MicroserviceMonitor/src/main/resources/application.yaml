@@ -14,12 +14,12 @@ monitor:
   rate: " */5 * * * * * "
   keyStore: 
     keyStoreType: jks
-    keyStore: path-to-your-jks
-    keyStorePassword: thepassword
+    keyStore: C:\Vista\flatfile\files\epic31921.jks
+    keyStorePassword: 123456
   trustStore: 
     keyStoreType: jks
-    keyStore: cacerts-path
-    keyStorePassword: thepassword
+    keyStore: C:\Program Files\Java\jdk1.8.0_151\jre\lib\security\cacerts
+    keyStorePassword: accesscode
   jms: 
     port: 8161
     path: /api/jolokia/read

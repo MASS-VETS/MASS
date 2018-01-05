@@ -69,6 +69,8 @@ public class HL7MessageDbService extends JmsMicroserviceBase {
 	
 	@JmsListener(destination = "${jms.inputQ}")
 	public void storeHL7Message(MapMessage msg) throws MicroserviceException {
+		log.debug("Received message from amq");
+		
 		this.state.serviceCalled();
 		// Initialize the parameters for the query.
 		String messageContent = "";
@@ -82,6 +84,7 @@ public class HL7MessageDbService extends JmsMicroserviceBase {
 			interfaceId = msg.getString("interfaceId");
 			fieldList = msg.getString("fieldList");
 			dateTime = msg.getString("dateTime");
+			log.debug("Message content: {}", messageContent);
 		} catch (JMSException e1) {
 			log.info("Message received does not contain appropriate mapping for interface or message content.");
 			this.state.serviceFailed();
@@ -105,7 +108,7 @@ public class HL7MessageDbService extends JmsMicroserviceBase {
 			MDC.put("messageContent", messageContent);
 			MDC.put("fieldList", fieldList);
 			MDC.put("dateTime", dateTime);
-			log.info("Message stored");
+			log.debug("Message stored");
 			this.state.serviceSucceeded();
 		} catch (DataAccessException e) {
 			this.state.serviceFailed();
