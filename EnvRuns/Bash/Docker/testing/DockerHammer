@@ -11,13 +11,12 @@ msgSrc=$6
 #sets all cfg* variables
 source ../$configFile
 
+
+url=http://${cfgMonServer}:${rcvport}/receive	
+
 if [ $cfgUseSSL -gt 0 ]; then
-	url=https://severusqa-submission1:${rcvport}/receive
-else
-	url=http://severusqa-submission1:${rcvport}/receive
+	url="${url/http:/https:}"
 fi
-
-
 
 
 #defaults
