@@ -25,6 +25,7 @@ if [ $cfgUseSSL -gt 0 ] ; then
 else
 	serverSslOpts[1]="--server.ssl.enabled=false"
 	clientSslOpts[1]="--keystore.enabled=false"
+	clientSslOpts[2]="--ssl.enabled=false"
 fi
 
 #command line arguments PRIOR to container name

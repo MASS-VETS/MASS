@@ -52,3 +52,26 @@ Helpful Hints...
 	server:
 	  ssl:
 	    enabled: true
+
+
+*** Managing Certificates **********************************************************
+1) copy a docker's java keystore into our host's keystore file…
+	docker exec -i PCMM_query_full_c cp -T $JAVA_HOME/etc/ssl/certs/java/cacerts /hostpath/ssl/cacerts
+2) copy the linux certificates to our hostpath/ssl directory
+	cp /etc/ssl/certs/ca* .
+	Which copies these 2 files:  (NOTE: crt are equivalent to cer)
+		ca-bundle.crt
+		ca-bundle.trust.crt
+3) To see the contents of these files, run this:
+	openssl x509 -in ca-bundle.crt -text -noout
+	openssl x509 -in ca-bundle.trust.crt -text -noout
+
+3) import the copy the linux certificates to our hostpath/ssl directory
+
+	For whatever reason, I could not run this from within docker container:
+	docker exec PCMM_query_full_c keytool -import -trustcacerts -alias vistaclient -file keystore/epic-vista-ca.cer -keystore keystore/cacerts
+	
+	So I copied cacerts and epic-vista-ca.cer over to windows and ran this there:
+	keytool -import -trustcacerts -alias vistaclient -file epic-vista-ca.cer -keystore cacerts
+	
+	Which worked.
