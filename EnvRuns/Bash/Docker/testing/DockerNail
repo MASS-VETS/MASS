@@ -3,29 +3,15 @@
 configFile=$1
 nm=$2
 rcvport=$3
-msgCnt=$4
-msgRate=$5
-msgSrc=$6
 
 #environment specific config
 #sets all cfg* variables
 source ../$configFile
 
-#defaults
-if [ -z $msgCnt ]; then
-  msgCnt=100
-fi
-if [ -z $msgRate ]; then
-  msgRate=10
-fi
-if [ -z $msgSrc ]; then
-  msgSrc=/hostpath/testing/ORU_R01.hl7
-fi
-
-
 #--- DOCKER CONTAINER for a single interface running nail
 docker run -d\
   -v ${cfgHostPath}:/hostpath\
-  -p ${rcvport}:${rcvport} --name nail_${nm}_c nail_i\
   --memory="600m"\
+  -p ${rcvport}:${rcvport} --name nail_${nm}_c nail_i\
   --server.port=${rcvport}
+  --destination.ssl.enabled=${cfgUseSSL}

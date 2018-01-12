@@ -32,15 +32,15 @@ cd ../../testing
 
 #--- Fire up a hammer for each interface
 #------Scheduling INCOMING
-#./DockerHammer $configFile insched 5100
+./DockerHammer $configFile insched 5100
 #------Errors
-./DockerHammer $configFile error 5200 1000 9000
+./DockerHammer $configFile error 5200
 #------Orders
-#./DockerHammer $configFile order 5300
+./DockerHammer $configFile order 5300
 #------Scheduling
-#./DockerHammer $configFile sched 5400
+./DockerHammer $configFile sched 5400
 #------Demographics ADT
-#./DockerHammer $configFile demogADT 5500
+./DockerHammer $configFile demogADT 5500
 #------Demographics ORU
-#./DockerHammer $configFile demogORU 5600
+./DockerHammer $configFile demogORU 5600
 

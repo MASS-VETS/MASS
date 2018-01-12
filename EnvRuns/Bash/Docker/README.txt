@@ -17,16 +17,14 @@ Helpful Hints...
 
 *** Performance Testing w/ Nail (Adapter's Sender) *********************************
 1) in Docker/Docker.cfg, for each interface you wish to test,
-   comment out the destination, e.g.
-	#cfgIntError=${dest}/334999
-   and comment in the Nail Config line for that interface, e.g.
-	cfgIntError=http://severusqa-submission1.epic.com:5201/receive		#Nail Config  
+   comment in the Nail Config line for that interface, e.g.
+	cfgIntError=http://${cfgMonServer}:5101/receive
 2) From Docker/testing turn on the nail listener
 	./PerfTestRcv
 3) from Docker/testing fire off some messages from hammer
 	./PerfTestSnd
 4) in Docker/build/thehammer/hammer.yaml.cfg
-   set verbose to true
+   ensure verbose is set to true
 	logging:
 	  verbose: true
 
@@ -40,22 +38,10 @@ Helpful Hints...
 	    - 
 	      receiver: 
 	        useSsl: true
-3) (for performance testing only) 
-   in Docker/build/thehammer/hammer.yaml.cfg
-   set destination.ssl.enabled = true, false if turning off
-	destination:
-	  ssl:
-	    enabled: true
-4) (for performance testing only) 
-   in Docker/build/thenail/nail.yaml.cfg
-   set server.ssl.enabled = true, false if turning off
-	server:
-	  ssl:
-	    enabled: true
 
 
 *** Managing Certificates **********************************************************
-1) copy a docker's java keystore into our host's keystore fileâ€¦
+1) copy a docker's java keystore into our host's keystore file…
 	docker exec -i PCMM_query_full_c cp -T $JAVA_HOME/etc/ssl/certs/java/cacerts /hostpath/ssl/cacerts
 2) copy the linux certificates to our hostpath/ssl directory
 	cp /etc/ssl/certs/ca* .

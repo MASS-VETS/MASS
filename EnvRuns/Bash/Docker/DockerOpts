@@ -40,7 +40,7 @@ i=$((i+1)); containOpts[$i]="-e ENV=dev"
 #i=$((i+1)); containOpts[$i]="-e JAVA_OPTS5=$cfgJavaOpts5"
 #i=$((i+1)); containOpts[$i]="-e JAVA_OPTS6=$cfgJavaOpts6"
 i=$((i+1)); containOpts[$i]="--restart unless-stopped"
-i=$((i+1)); containOpts[$i]="--memory=800m"
+i=$((i+1)); containOpts[$i]="--memory=400m"
 
 
 #command line arguments AFTER container name

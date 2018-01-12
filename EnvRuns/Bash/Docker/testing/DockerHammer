@@ -34,6 +34,7 @@ fi
 #--- DOCKER CONTAINER for a single interface running hammer
 docker run -d\
   -v ${cfgHostPath}:/hostpath\
-  --name hammer_${nm}_c hammer_i\
   --memory="600m"\
+  --name hammer_${nm}_c hammer_i\
   --destination.url=$url --send.source=${msgSrc} --send.count=${msgCnt} --send.maxrate=${msgRate}
+  --server.ssl.enabled=${cfgUseSSL}

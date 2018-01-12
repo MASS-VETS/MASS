@@ -32,15 +32,15 @@ cd ../../testing
 
 #--- Fire up a nail for each interface
 #------Scheduling INCOMING
-#./DockerNail $configFile insched 5101
+./DockerNail $configFile insched 5101
 #------Errors
-./DockerNail $configFile error 5201 1000 9000
+./DockerNail $configFile error 5201
 #------Orders
-#./DockerNail $configFile order 5301
+./DockerNail $configFile order 5301
 #------Scheduling
-#./DockerNail $configFile sched 5401
+./DockerNail $configFile sched 5401
 #------Demographics ADT
-#./DockerNail $configFile demogADT 5501
+./DockerNail $configFile demogADT 5501
 #------Demographics ORU
-#./DockerNail $configFile demogORU 5601
+./DockerNail $configFile demogORU 5601
 

@@ -1,5 +1,7 @@
 #!/bin/bash
-#--- Remove all Containers except container AMQ
+#--- Remove all Containers
+docker rm -f $(docker ps -a -q)
+
 container=$(docker ps -q -a -f name=_rcv)
 if [ ${#container} -gt 0 ] ; then
 	docker rm -f $container
