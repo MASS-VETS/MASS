@@ -7,21 +7,8 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
---Drop all of the existing tables
-DROP TABLE keyValues
-DROP TABLE messageData
-DROP TABLE interfaces
-
---Drop all of the stored procedures & Functions
-DROP PROCEDURE purgeMessageData
-DROP PROCEDURE storeKeyValue
-DROP PROCEDURE storeMessage
-DROP PROCEDURE storeHAPIKeyValue
-DROP PROCEDURE storeHAPIMessage
-DROP FUNCTION DelimitedSplit8k
-
 --Function to String SPLIT
-CREATE FUNCTION [dbo].[DelimitedSplit8K]
+ALTER FUNCTION [dbo].[DelimitedSplit8K]
 --===== Define I/O parameters
         (@pString VARCHAR(8000), @pDelimiter CHAR(1))
 --WARNING!!! DO NOT USE MAX DATA-TYPES HERE!  IT WILL KILL PERFORMANCE!
@@ -53,6 +40,18 @@ cteLen(N1,L1) AS(--==== Return start and length (for use in substring)
  SELECT [value]       = SUBSTRING(@pString, l.N1, l.L1)
    FROM cteLen l
 GO
+
+--Drop all of the existing tables
+DROP TABLE keyValues
+DROP TABLE messageData
+DROP TABLE interfaces
+
+--Drop all of the stored procedures & Functions
+DROP PROCEDURE purgeMessageData
+DROP PROCEDURE storeKeyValue
+DROP PROCEDURE storeMessage
+DROP PROCEDURE storeHAPIKeyValue
+DROP PROCEDURE storeHAPIMessage
 
 --First create the interfaces table
 
