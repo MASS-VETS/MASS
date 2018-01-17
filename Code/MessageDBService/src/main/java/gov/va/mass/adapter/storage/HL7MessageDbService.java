@@ -111,6 +111,7 @@ public class HL7MessageDbService extends JmsMicroserviceBase {
 			log.debug("Message stored");
 			this.state.serviceSucceeded();
 		} catch (DataAccessException e) {
+			e.printStackTrace();
 			this.state.serviceFailed();
 			throw this.enterErrorState("Data access exception shutting down the service.");
 		}
