@@ -37,4 +37,4 @@ docker run -d\
   --memory="600m"\
   --name hammer_${nm}_c hammer_i\
   --destination.url=$url --send.source=${msgSrc} --send.count=${msgCnt} --send.maxrate=${msgRate}\
-  --server.ssl.enabled=${cfgUseSSL}
+  --destination.ssl.enabled=${cfgUseSSL}

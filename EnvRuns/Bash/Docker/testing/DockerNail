@@ -13,5 +13,5 @@ docker run -d\
   -v ${cfgHostPath}:/hostpath\
   --memory="600m"\
   -p ${rcvport}:${rcvport} --name nail_${nm}_c nail_i\
-  --server.port=${rcvport}
-  --destination.ssl.enabled=${cfgUseSSL}
+  --server.port=${rcvport}\
+  --server.ssl.enabled=${cfgUseSSL}
