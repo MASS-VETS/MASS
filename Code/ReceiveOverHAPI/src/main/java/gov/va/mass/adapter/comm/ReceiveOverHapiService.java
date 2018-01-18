@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.jms.core.JmsMessagingTemplate;
+import org.springframework.messaging.MessagingException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -100,8 +101,16 @@ public class ReceiveOverHapiService extends MicroserviceBase{
 		mmsg.put("dateTime", dateTime);
 
 		//Put the message on the respective JMS queues.
-		jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
-		jmsMsgTemplate.convertAndSend(outputQueue, msg);
+		try {
+			logger.debug("Adding to {}", databaseQueue);
+			jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
+			logger.debug("Adding to {}", outputQueue);
+			jmsMsgTemplate.convertAndSend(outputQueue, msg);
+		} catch (MessagingException e) {
+			e.printStackTrace();
+			this.state.serviceFailed();
+			throw e;
+		}
 		
 		//Log the Processing ID for later reference.
 		MDC.put("MSGID", msgValues.get("controlId"));
