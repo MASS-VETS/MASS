@@ -24,11 +24,12 @@ public class MessageCache {
 	
 	private boolean initialized = false;
 	
-	public String GetMessage() {
+	public String GetMessage(int msgNum) {
 		if (!initialized) {
 			return "";
 		}
-		return messageContent.replace("{NOW}", dateFormatter.format(new Date()));
+		
+		return messageContent.replace("{NOW}", dateFormatter.format(new Date())).replace("{MSGNUM}", Integer.toString(msgNum)); 
 	}
 	
 	public boolean IsInitialized() {

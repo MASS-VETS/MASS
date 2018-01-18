@@ -171,7 +171,7 @@ public class TheHammerService {
 		try {
 			log.info("attempting to send one message");
 			long lastStart = System.currentTimeMillis();
-			if (!sendOne(messageCache.GetMessage(), headers)) {
+			if (!sendOne(messageCache.GetMessage(1), headers)) {
 				return false;
 			}
 
@@ -183,7 +183,7 @@ public class TheHammerService {
 					Thread.sleep(delay - timeSinceLast);
 				}
 				lastStart = System.currentTimeMillis();
-				if (!sendOne(messageCache.GetMessage(), headers)) {
+				if (!sendOne(messageCache.GetMessage(i+1), headers)) {
 					return false;
 				}
 				messagesSent++;
