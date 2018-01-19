@@ -61,6 +61,13 @@
 			<!-- <version>2.8.8.1</version> -->
 		</dependency>
 		
+		<!-- Needed for pooling activemq connections -->
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>activemq-pool</artifactId>
+		</dependency>
+		
+		
 		<!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>

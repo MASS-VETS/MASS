@@ -121,7 +121,7 @@ public class TheHammerService {
 		if (destinationUrl.isEmpty()) {
 			return "No destination URL specified";
 		}
-		log.info("Sending at URL: {}", destinationUrl);
+		log.debug("Sending at URL: {}", destinationUrl);
 		
 		if (!messageCache.IsInitialized()) {
 			return "Message cannot be loaded.";
@@ -139,7 +139,7 @@ public class TheHammerService {
 		if (destinationUrl.isEmpty()) {
 			return "No destination URL specified.";
 		}
-		log.info("Sending at URL: {}", destinationUrl);
+		log.debug("Sending at URL: {}", destinationUrl);
 		
 		if (!messageCache.IsInitialized()) {
 			return "Message cannot be loaded.";
@@ -167,15 +167,15 @@ public class TheHammerService {
 		if (maxRate > 0) {
 			delay = 1000 / maxRate;
 		}
-		log.info("delay: {}", delay);
+		log.debug("delay: {}", delay);
 		try {
-			log.info("attempting to send one message");
+			log.debug("attempting to send one message");
 			long lastStart = System.currentTimeMillis();
 			if (!sendOne(messageCache.GetMessage(1), headers)) {
 				return false;
 			}
 
-			log.info("attempting to send the remaing {} messages", messageCount);
+			log.debug("attempting to send the remaining {} messages", messageCount);
 			messagesSent++;
 			for (int i = 1; i < messageCount; i++) {
 				long timeSinceLast = System.currentTimeMillis() - lastStart;
@@ -200,7 +200,7 @@ public class TheHammerService {
 		try {
 			CloseableHttpClient client;
 			if (tlsEnabled) {
-				logIfVerbose("Looking up ssl info");
+				log.debug("Looking up ssl info");
 				KeyStore ks = clients.createKeystore(keystoreType, keystore, keystorePassword);
 				KeyStore ts = clients.createKeystore(truststoreType, truststore, truststorePassword);
 				client = clients.getSslTlsClient(ks, ts, keystorePassword);
@@ -210,17 +210,17 @@ public class TheHammerService {
 			HttpUriRequest request;
 			if (pingInstead) {
 				request = new HttpGet(destinationUrl);
-				logIfVerbose("sending: GET");
+				log.debug("sending: GET");
 			} else {
 				HttpPost post = new HttpPost(destinationUrl);
 				post.setHeader("Content-Type", "application/hl7-v2; charset=UTF-8");
 				post.setEntity(new StringEntity(msg));
 				request = post;
-				logIfVerbose("sending: POST " + msg);
+				log.debug("sending: POST " + msg);
 			}
 			CloseableHttpResponse resp = client.execute(request);
 			String response = new BasicResponseHandler().handleResponse(resp);
-			logIfVerbose("Received: " + response);
+			log.debug("Received: " + response);
 			
 			
 			if (pingInstead) {
@@ -231,7 +231,7 @@ public class TheHammerService {
 			}
 			return checkAck(response);
 		} catch (HttpResponseException e) {
-			log.info("Status code: " + e.getStatusCode() + " message: " + e.getMessage());
+			log.error("Status code: " + e.getStatusCode() + " message: " + e.getMessage());
 			return false;
 		} catch (ClientProtocolException e) {
 			e.printStackTrace();
