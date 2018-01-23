@@ -37,7 +37,7 @@ docker run -d\
   ${containOpts[*]}\
   --memory=${cfgRcvMem}\
   -p ${rcvport}:${rcvport} --name ${nm}_rcv_c rcv_i\
-  --server.port=$rcvport --jms.databaseQ=sqlQ --jms.outputQ=$rcvo --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$inGuid\
+  --server.port=$rcvport --jms.databaseQ=sqlQ --jms.outputQ=$rcvo --index.fieldList=MSH-10,PID-5,PID-3 --interface.id=$inGuid --interface.processingId=T^\
   ${miscOpts[*]}\
   ${serverSslOpts[*]}
 

@@ -46,9 +46,21 @@ i=$((i+1)); containOpts[$i]="--memory=400m"
 #command line arguments AFTER container name
 i=0
 i=$((i+1)); miscOpts[$i]="--spring.activemq.broker-url=$cfgAmqBroker"
+i=$((i+1)); miscOpts[$i]="--spring.activemq.packages.trust-all=true"
+
+#kaha 
+#i=$((i+1)); miscOpts[$i]="--spring.activemq.kahaDB.journalDiskSyncStrategy=periodic"
+#i=$((i+1)); miscOpts[$i]="--spring.activemq.kahaDB.preallocationStartegy=zeros"
+
+#pool activemq connections (which gains us cached connections)
+i=$((i+1)); miscOpts[$i]="--spring.activemq.pool.enabled=true"
+i=$((i+1)); miscOpts[$i]="--spring.activemq.pool.max-connections=20"
+i=$((i+1)); miscOpts[$i]="--spring.activemq.pool.create-connection-on-startup=true"
+
+#i=$((i+1)); miscOpts[$i]="--spring.activemq.non-blocking-redelivery=true"
 i=$((i+1)); miscOpts[$i]="--server.tomcat.max-threads=500"
 i=$((i+1)); miscOpts[$i]="--logging.file=/hostpath/logs/app-${nm}.log"
-i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm.ReceiveOverHapiService=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm.ReceiveOverHapiService=ERROR"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm.SendAndGetAckService=INFO"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.storage.HL7MessageDbService=INFO"
 i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.monitoring.MonitorService=INFO"
