@@ -22,15 +22,10 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.stereotype.Component;
-import ca.uhn.hl7v2.DefaultHapiContext;
-import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.HapiContext;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.parser.Parser;
-import ca.uhn.hl7v2.util.Terser;
 import gov.va.mass.adapter.core.HttpClientProvider;
 import gov.va.mass.adapter.core.JmsMicroserviceBase;
 import gov.va.mass.adapter.core.MicroserviceException;
+import gov.va.mass.adapter.core.hl7v2.Message;
 
 /*
  * Pick up messages from readytosend queue and send via HAPI
@@ -95,7 +90,16 @@ public class SendAndGetAckService extends JmsMicroserviceBase {
 		
 		// Log message and save to database before sending.
 		logger.info("Received message from amq: {}", msgtxt);
-		putMsgIdAndSenderOnMDC(msgtxt);
+		Message msg = null;
+		try {
+			msg = new Message(msgtxt);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
+		
+		MDC.put("MsgId", msg.ControlId);
+		MDC.put("Sender", msg.MSH.get(3));
 		
 		// Only write to the database that the message was sent if we successfully send
 		// the message without NACK.
@@ -205,87 +209,16 @@ public class SendAndGetAckService extends JmsMicroserviceBase {
 		logger.info("Forwarded to queue = {}", databaseQueue);
 	}
 	
-	// Function to add to MDC.
-	private void putMsgIdAndSenderOnMDC(String msg) {
-		
-		// Initialize the context.
-		HapiContext context = new DefaultHapiContext();
-		Parser p = context.getGenericParser();
-		Message hapiMsg = null;
-		String sendingApplication = null;
-		String msgid = null;
-		
-		// Parse the message into the HAPI structure.
-		try {
-			hapiMsg = p.parse(msg);
-			// Prevent close() from NULLREF on itself.
-			try {
-				context.getExecutorService();
-				context.close();
-			} catch (Exception e1) {
-				e1.printStackTrace();
-			}
-		} catch (HL7Exception e) {
-			logger.error("Unable to parse message.");
-			e.printStackTrace();
-		}
-		
-		// Make sure that we return if we were unable to parse the message string into a
-		// message.
-		if (hapiMsg == null) {
-			return;
-		}
-		
-		// Use the HAPI Terser to parse the message.
-		Terser terser = new Terser(hapiMsg);
-		try {
-			sendingApplication = terser.get("/.MSH-3-1");
-			msgid = terser.get("/MSH-10");
-		} catch (HL7Exception e) {
-			logger.error("Unable to parse message to get the Msg Id and Sender.");
-			e.printStackTrace();
-		}
-		MDC.put("MsgId", msgid);
-		MDC.put("Sender", sendingApplication);
-	}
-	
-	// Get the required values for processing from the message.
-	// FUTURE: Update code to modularize the get values from message string function
-	// which is present here and other places into a library.
 	private boolean isPositiveAck(String respmsg) {
-		String AckValue = "";
-		
-		// Initialize parser and variables.
-		HapiContext context = new DefaultHapiContext();
-		Parser p = context.getGenericParser();
-		Message msg = null;
-		
-		// Attempt to parse the message.
+		Message msg;
 		try {
-			msg = p.parse(respmsg);
-		} catch (HL7Exception e) {
-			logger.error("Unable to parse message");
+			msg = new Message(respmsg);
+		} catch (Exception e) {
 			e.printStackTrace();
+			return false;
 		}
 		
-		// Prevent close() from NULLREF on itself.
-		try {
-			context.getExecutorService();
-			context.close();
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		
-		// Use the Terser to find a specific message value in this case that is the
-		// acknowledgement's code.
-		Terser terser = new Terser(msg);
-		try {
-			AckValue = terser.get("/MSA-1-1");
-		} catch (HL7Exception e) {
-			logger.error("Unable to get msg id from the message.");
-			e.printStackTrace();
-		}
-		
+		String AckValue = msg.FieldFromSegment(1, 1);
 		return (AckValue.equals("AA") || AckValue.equals("CA"));
 	}
 	
