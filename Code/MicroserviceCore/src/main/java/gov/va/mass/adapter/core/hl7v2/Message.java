@@ -29,11 +29,11 @@ public class Message {
 		
 		// set some shortcuts
 		ControlId = MSH.get(10);
-		ProcessingId = MSH.get(11);
+		ProcessingId = MSH.get(11, MSH.cs, 1);
 		Version = MSH.get(12);
 	}
 	
-	public String FieldFromSegment(int segNo, int fieldNo) {
+	public String getField(int segNo, int fieldNo) {
 		if (segNo >= segments.length) {
 			return "";
 		}

@@ -218,7 +218,7 @@ public class SendAndGetAckService extends JmsMicroserviceBase {
 			return false;
 		}
 		
-		String AckValue = msg.FieldFromSegment(1, 1);
+		String AckValue = msg.getField(1, 1);
 		return (AckValue.equals("AA") || AckValue.equals("CA"));
 	}
 	
