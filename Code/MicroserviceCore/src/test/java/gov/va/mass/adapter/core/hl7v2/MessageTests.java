@@ -11,20 +11,17 @@ public class MessageTests {
 	
 	@Test
 	public void TestMessageEmpty() {
-		assertThatThrownBy(() -> new Message(""))
-				.hasMessage("Message must start with MSH");
+		assertThatThrownBy(() -> new Message("")).hasMessage("Message must start with MSH");
 	}
 	
 	@Test
 	public void TestMessagePID() {
-		assertThatThrownBy(() -> new Message("PID"))
-				.hasMessage("Message must start with MSH");
+		assertThatThrownBy(() -> new Message("PID")).hasMessage("Message must start with MSH");
 	}
 	
 	@Test
 	public void TestMessageMSH() {
-		assertThatThrownBy(() -> new Message("MSH"))
-				.hasMessage("Message must end with character 13");
+		assertThatThrownBy(() -> new Message("MSH")).hasMessage("Message must end with character 13");
 	}
 	
 	@Test
@@ -37,7 +34,7 @@ public class MessageTests {
 	
 	@Test
 	public void TestMessageMSHfull() throws Exception {
-		Message msg = new Message("MSH|^~\\&|||||20180118183134|ME|ADT^A08|123|T^|2.4\r");
+		Message msg = new Message("MSH|^~\\&|||||20180118183134|ME|ADT^A08|123|T|2.4\r");
 		assertEquals("123", msg.ControlId);
 		assertEquals("T", msg.ProcessingId);
 		assertEquals("2.4", msg.Version);
@@ -49,8 +46,7 @@ public class MessageTests {
 		assertEquals("123", msg.ControlId);
 		assertEquals("T", msg.ProcessingId);
 		assertEquals("2.4", msg.Version);
-		assertEquals("123^^MRN", msg.getField(1, 3));
-		assertEquals("ME", msg.getField(1, 5));
+		assertEquals("123^^MRN", msg.FieldFromSegment(1, 3));
 	}
 	
 	@Test
@@ -76,9 +72,7 @@ public class MessageTests {
 	@Test
 	public void TestOutOfBounds() throws Exception {
 		Message msg = new Message("MSH|^~\\&|SA|SF|RA|RF|20180118183134|ME|ADT^A08|123|T|2.4\rPID|1||123^^MRN||ME\r");
-		assertEquals("", msg.getField(1, 34));
-		assertEquals("", msg.getField(12, 0));
-		assertEquals("A08", msg.MSH.get(9, msg.MSH.cs, 2));
-		assertEquals("", msg.MSH.get(9, msg.MSH.cs, 3));
+		assertEquals("", msg.FieldFromSegment(1, 34));
+		assertEquals("", msg.FieldFromSegment(12, 0));
 	}
 }
