@@ -52,7 +52,14 @@ public class MessageTests {
 	@Test
 	public void TestMessageAck() throws Exception {
 		Message msg = new Message("MSH|^~\\&|SA|SF|RA|RF|20180118183134|ME|ADT^A08|123|T|2.4\rPID|1||123^^MRN||ME\r");
-		assertEquals("MSH|^~\\&|RA|RF|SA|SF|20180118183134|ME|ACK^A08|123|T|2.4\rMSA|AA|123|\r", msg.generateAck());
+		assertEquals("MSH|^~\\&|RA|RF|SA|SF|20180118183134|ME|ACK^A08|123|T|2.4\rMSA|AA|123\r", msg.generateAck());
+	}
+	
+	@Test
+	public void TestMessageAck2() throws Exception {
+		Message msg = new Message(
+				"MSH|^~\\&|SA|SF|RA|RF|20180118183134|ME|ADT^A08^ADT_A01|123|T|2.4\rPID|1||123^^MRN||ME\r");
+		assertEquals("MSH|^~\\&|RA|RF|SA|SF|20180118183134|ME|ACK^A08^ACK|123|T|2.4\rMSA|AA|123\r", msg.generateAck());
 	}
 	
 	@Test
@@ -60,5 +67,12 @@ public class MessageTests {
 		Message msg = new Message("MSH|^~\\&|SA|SF|RA|RF|20180118183134|ME|ADT^A08|123|T|2.4\rPID|1||123^^MRN||ME\r");
 		assertEquals("MSH|^~\\&|RA|RF|SA|SF|20180118183134|ME|ACK^A08|123|T|2.4\rMSA|AE|123|BANANA\r",
 				msg.generateNak("BANANA"));
+	}
+	
+	@Test
+	public void TestOutOfBounds() throws Exception {
+		Message msg = new Message("MSH|^~\\&|SA|SF|RA|RF|20180118183134|ME|ADT^A08|123|T|2.4\rPID|1||123^^MRN||ME\r");
+		assertEquals("", msg.FieldFromSegment(1, 34));
+		assertEquals("", msg.FieldFromSegment(12, 0));
 	}
 }
