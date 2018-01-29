@@ -9,7 +9,7 @@ public class MSHTests {
 	public void testMSHEmpty() {
 		MSH msh = new MSH("");
 		assertEquals("|", msh.fs);
-		assertEquals("MSH", msh.get(0));
+		assertEquals("", msh.get(0));
 		assertEquals("|", msh.get(1));
 		assertEquals("", msh.get(2));
 		assertEquals("", msh.get(20));
@@ -19,7 +19,7 @@ public class MSHTests {
 	public void testMSH() {
 		MSH msh = new MSH("MSH");
 		assertEquals("|", msh.fs);
-		assertEquals("MSH", msh.get(0));
+		assertEquals("", msh.get(0));
 		assertEquals("|", msh.get(1));
 		assertEquals("", msh.get(2));
 		assertEquals("", msh.get(20));
@@ -29,7 +29,7 @@ public class MSHTests {
 	public void testMSHpipe() {
 		MSH msh = new MSH("MSH|");
 		assertEquals("|", msh.fs);
-		assertEquals("MSH", msh.get(0));
+		assertEquals("", msh.get(0));
 		assertEquals("|", msh.get(1));
 		assertEquals("", msh.get(2));
 	}
@@ -92,7 +92,7 @@ public class MSHTests {
 		MSH msh0 = new MSH("MSH|^~\\&|SendingApplication|SendingFacility|ReceivingApplication|ReceivingFacility");
 		MSH msh = new MSH(msh0);
 		assertEquals("|", msh.fs);
-		assertEquals("MSH", msh.get(0));
+		assertEquals("", msh.get(0));
 		assertEquals("|", msh.get(1));
 		assertEquals("SendingApplication", msh.get(3));
 		assertEquals("SendingFacility", msh.get(4));
@@ -106,8 +106,6 @@ public class MSHTests {
 		MSH msh = new MSH("MSH|^~\\&");
 		msh.set(20, "banana");
 		assertEquals("banana", msh.get(20));
-		assertEquals("MSH|^~\\&||||||||||||||||||banana", msh.toString());
-		assertEquals("MSH|^~\\&||||||||||||||||||banana", msh.toString()); // just to make sure it's not volitile...
 		assertEquals("MSH|^~\\&||||||||||||||||||banana", msh.toString());
 	}
 }

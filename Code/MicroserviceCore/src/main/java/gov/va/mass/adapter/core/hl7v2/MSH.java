@@ -3,21 +3,41 @@ package gov.va.mass.adapter.core.hl7v2;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-public class MSH extends Segment {
+public class MSH {
+	
+	private ArrayList<String> fields = new ArrayList<String>();
 	public String fs;
 	public String cs;
 	public String rs;
 	public String es;
 	public String ss;
 	
+	int getSize() {
+		return fields.size();
+	}
+	
+	public String get(int fieldNo) {
+		if (fields.size() <= fieldNo) {
+			return "";
+		}
+		return fields.get(fieldNo);
+	}
+	
+	public void set(int fieldNo, String value) {
+		while (fields.size() <= fieldNo) {
+			fields.add("");
+		}
+		fields.set(fieldNo, value);
+	}
+	
 	public MSH(String rawMsh) {
-		super("MSH");
 		fs = "|";
 		if (rawMsh.length() > 3) {
 			fs = String.valueOf(rawMsh.charAt(3));
 		}
 		String[] mshFields = rawMsh.split(Pattern.quote(fs));
-		fields.add(fs); // MSH off by one weirdness.
+		fields.add(""); // technically MSH-0 isn't a thing.
+		fields.add(fs);
 		for (int i = 1; i < mshFields.length; i++) {
 			fields.add(mshFields[i]);
 		}
@@ -27,21 +47,17 @@ public class MSH extends Segment {
 		ss = getControlChar(3, "&");
 	}
 	
-	public MSH(MSH toCopy) {
-		super(toCopy);
-		fs = String.valueOf(toCopy.fs);
-		cs = String.valueOf(toCopy.cs);
-		rs = String.valueOf(toCopy.rs);
-		es = String.valueOf(toCopy.es);
-		ss = String.valueOf(toCopy.ss);
-	}
-	
 	private String getControlChar(int pos, String defaultVal) {
 		if (get(2).length() > pos) {
 			return get(2).substring(pos, pos + 1);
 		} else {
 			return defaultVal;
 		}
+	}
+	
+	public MSH(MSH toCopy) {
+		fs = String.valueOf(toCopy.fs);
+		fields.addAll(toCopy.fields);
 	}
 	
 	@Override

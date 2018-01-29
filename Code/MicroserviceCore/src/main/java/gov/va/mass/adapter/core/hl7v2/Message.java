@@ -68,15 +68,22 @@ public class Message {
 		}
 		newMsh.set(9, String.join(MSH.cs, msgType)); // set message type to ACK
 		
-		MessageBuilder b = new MessageBuilder(newMsh);
+		StringBuilder sb = new StringBuilder();
 		
-		int msa = b.addSegment("MSA");
-		b.set(msa, 1, ackCode);
-		b.set(msa, 2, this.ControlId);
+		sb.append(newMsh.toString());
+		sb.append("\r");
+		
+		sb.append("MSA");
+		sb.append(MSH.fs);
+		sb.append(ackCode);
+		sb.append(MSH.fs);
+		sb.append(this.ControlId);
+		sb.append(MSH.fs);
 		if (errorMessage != null) {
-			b.set(msa, 3, errorMessage);
+			sb.append(errorMessage);
 		}
+		sb.append("\r");
 		
-		return b.toString();
+		return sb.toString();
 	}
 }
