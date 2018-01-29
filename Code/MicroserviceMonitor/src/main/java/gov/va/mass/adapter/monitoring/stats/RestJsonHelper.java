@@ -1,31 +1,41 @@
 package gov.va.mass.adapter.monitoring.stats;
 
+import java.io.IOException;
 import java.io.StringReader;
-import java.net.URI;
-import java.net.URISyntaxException;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 import javax.json.JsonReader;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
 
+import gov.va.mass.adapter.monitoring.email.EmailTemplate;
+
+/**
+ * @author avolkano
+ */
 public class RestJsonHelper {
-	public static JsonObject getObjectAtPath(RestTemplate restTemplate, String baseUri, String path)
-			throws URISyntaxException {
-		URI uri = new URI(baseUri + path);
-		String responseString = "";
+	static final Logger log = LoggerFactory.getLogger(RestJsonHelper.class);
+	
+	public static JsonObject getObjectAtPath(CloseableHttpClient client, String baseUri, String path) {
+		HttpGet get = new HttpGet(baseUri + path);
 		try {
-			responseString = restTemplate.getForObject(uri, String.class);
-		} catch (HttpClientErrorException | HttpServerErrorException | ResourceAccessException e) {
+			HttpResponse response = client.execute(get);
+			String respString = new BasicResponseHandler().handleResponse(response);
+			JsonReader jsonReader = Json.createReader(new StringReader(respString));
+			JsonObject resp = jsonReader.readObject();
+			jsonReader.close();
+			return resp;
+		} catch (HttpClientErrorException | HttpServerErrorException | IOException e) {
+			log.error("Attempting connection to {}{} caused error.", baseUri, path, e);
 			JsonObjectBuilder builder = Json.createObjectBuilder();
 			return builder.build(); // leave it empty. Caller should account for this by checking!
 		}
-		JsonReader jsonReader = Json.createReader(new StringReader(responseString));
-		JsonObject resp = jsonReader.readObject();
-		jsonReader.close();
-		return resp;
 	}
 }

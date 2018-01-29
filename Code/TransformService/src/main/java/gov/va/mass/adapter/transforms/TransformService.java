@@ -45,9 +45,10 @@ public class TransformService extends JmsMicroserviceBase {
 	
 	@JmsListener(destination = "${jms.inputQ}")
 	public JmsResponse<String> transformPipeMessage(String pipeMessage) throws MicroserviceException {
-		LOG.info("Received message");
-		this.state.serviceCalled();
+		LOG.debug("Received message from amq");
 		logMessage(pipeMessage);
+		
+		this.state.serviceCalled();
 		
 		// Set up HAPI context
 		HapiContext context = new DefaultHapiContext();
@@ -61,43 +62,43 @@ public class TransformService extends JmsMicroserviceBase {
 			// Get the actual transform
 			Source xsltSource = xsltSource(xsltName);
 			if (xsltSource == null) {
-				LOG.error("No transform found '" + xsltName + "'");
+				LOG.error("No transform found '{}'", xsltName);
 				throw this.enterErrorState("No transform found '" + xsltName + "'");
 			}
 			
 			// Turn the message into XML...
 			Parser xmlParser = context.getXMLParser();
 			String xmlMessage = xmlParser.encode(hapiMessage);
-			LOG.info("Message converted to XML");
+			LOG.debug("Message converted to XML");
 			
 			// ...transform the XML...
 			String transMessage = transformXmlMessage(xmlMessage, xsltSource);
-			LOG.info("Message transformed using '" + xsltName + "'");
+			LOG.debug("Message transformed using '{}'", xsltName);
 			
 			// ...And turn it back into pipe-based to return it.
 			hapiMessage = xmlParser.parse(transMessage);
 			String transPipeMessage = hl7Parser.encode(hapiMessage);
 			
-			LOG.info("Message transformation complete");
+			LOG.debug("Message transformation complete");
 			logMessage(transPipeMessage);
 			
 			return JmsResponse.forQueue(transPipeMessage, outputQueue);
 		} catch (HL7Exception e) {
-			LOG.error("HL7 Exception in TransformService", e);
+			LOG.error("HL7 Exception in TransformService.", e);
 			
 			throw this.enterErrorState(e.getMessage());
 		} finally {
 			try {
 				context.close();
 			} catch (IOException e) {
-				LOG.error("Could not close HapiContext", e);
+				LOG.error("Could not close HapiContext.", e);
 			}
 		}
 	}
 	
 	private static void logMessage(String message) {
 		for (String s : message.split("(\r\n|\r|\n)")) {
-			LOG.info(s);
+			LOG.debug(s);
 		}
 	}
 	
@@ -136,7 +137,7 @@ public class TransformService extends JmsMicroserviceBase {
 			// return the result
 			return writer.toString();
 		} catch (TransformerException e) {
-			LOG.error("Exception in XSLT process", e);
+			LOG.error("Exception in XSLT process.", e);
 			return "";
 		} finally {
 			// clean up after ourselves
@@ -147,7 +148,7 @@ public class TransformService extends JmsMicroserviceBase {
 				try {
 					writer.close();
 				} catch (IOException e) {
-					LOG.error("Could not close XML writer", e);
+					LOG.error("Could not close XML writer.", e);
 				}
 			}
 		}

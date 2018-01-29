@@ -1,10 +1,23 @@
 #!/bin/bash
 #descriptive names for incoming params
-nm=$1
-rcvport=$2
-msgCnt=$3
-msgRate=$4
-msgType=$5
+configFile=$1
+nm=$2
+rcvport=$3
+msgCnt=$4
+msgRate=$5
+msgSrc=$6
+
+#environment specific config
+#sets all cfg* variables
+source ../$configFile
+
+
+url=http://${cfgMonServer}:${rcvport}/receive	
+
+if [ $cfgUseSSL -gt 0 ]; then
+	url="${url/http:/https:}"
+fi
+
 
 #defaults
 if [ -z $msgCnt ]; then
@@ -13,10 +26,18 @@ fi
 if [ -z $msgRate ]; then
   msgRate=10
 fi
-if [ -z $msgType ]; then
-  msgType="ADT^A01"
+if [ -z $msgSrc ]; then
+  msgSrc=/hostpath/testing/ORU_R01.hl7
 fi
 
 
 #--- DOCKER CONTAINER for a single interface running hammer
-docker run -d --name hammer${nm}_c hammer_i  --memory="600m" --restart unless-stopped --destination.url=http://severusqa-submission1:${rcvport}/receive --message.type=${msgType} --message.count=${msgCnt} --message.rate=${msgRate}
+docker run -d\
+  -v ${cfgHostPath}:/hostpath\
+  --memory="600m"\
+  --name hammer_${nm}_c hammer_i\
+  --destination.url=$url --send.source=${msgSrc} --send.count=${msgCnt} --send.maxrate=${msgRate}\
+  --destination.ssl.enabled=${cfgUseSSL}\
+  --logging.level.avo.hax.comm.TheHammerService=INFO
+#  --logging.verbose=false
+ 

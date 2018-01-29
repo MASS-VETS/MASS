@@ -6,6 +6,7 @@ import javax.jms.JMSException;
 import javax.jms.MapMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -68,6 +69,8 @@ public class HL7MessageDbService extends JmsMicroserviceBase {
 	
 	@JmsListener(destination = "${jms.inputQ}")
 	public void storeHL7Message(MapMessage msg) throws MicroserviceException {
+		log.debug("Received message from amq");
+		
 		this.state.serviceCalled();
 		// Initialize the parameters for the query.
 		String messageContent = "";
@@ -81,6 +84,7 @@ public class HL7MessageDbService extends JmsMicroserviceBase {
 			interfaceId = msg.getString("interfaceId");
 			fieldList = msg.getString("fieldList");
 			dateTime = msg.getString("dateTime");
+			log.debug("Message content: {}", messageContent);
 		} catch (JMSException e1) {
 			log.info("Message received does not contain appropriate mapping for interface or message content.");
 			this.state.serviceFailed();
@@ -91,12 +95,6 @@ public class HL7MessageDbService extends JmsMicroserviceBase {
 		SimpleJdbcCall call = new SimpleJdbcCall(jdbcTemplate).withProcedureName("storeHAPIMessage");
 		MapSqlParameterSource parameters = new MapSqlParameterSource();
 		
-		// Log and add the parameters to the parameter list object.
-		log.info("interfaceId=" + interfaceId);
-		log.info("messageContent=" + messageContent);
-		log.info("fieldList=" + fieldList);
-		log.info("dateTime=" + dateTime);
-		
 		addParam(parameters, "interface", interfaceId);
 		addParam(parameters, "messageContent", messageContent);
 		addParam(parameters, "fieldList", fieldList);
@@ -105,11 +103,20 @@ public class HL7MessageDbService extends JmsMicroserviceBase {
 		// Attempt to execute the query to store the data.
 		try {
 			call.execute(parameters);
-			log.info("Message stored");
+			// Log and add the parameters to the parameter list object.
+			MDC.put("interfaceId", interfaceId);
+			MDC.put("messageContent", messageContent);
+			MDC.put("fieldList", fieldList);
+			MDC.put("dateTime", dateTime);
+			log.debug("Message stored");
 			this.state.serviceSucceeded();
 		} catch (DataAccessException e) {
+			e.printStackTrace();
 			this.state.serviceFailed();
 			throw this.enterErrorState("Data access exception shutting down the service.");
+		}
+		finally {
+			MDC.clear();
 		}
 	}
 	

@@ -170,4 +170,53 @@ public class TransformServiceApplicationTests {
 		LOG.debug(output);
 		assertEquals(expected, output);
 	}
+	
+	@Test
+	// Patient Update Messages (ADT^A08) v2.4
+	// 2.4 only allows up to PID.11.7 PID.11.8 and higher are not allowed in HAPI
+	public void testDLUMessage7() throws HL7Exception, MicroserviceException {
+		String pipeMsg = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20171010163409-0500||ADT^A08^|500 9406|T^|2.4|||AL|NE\r"
+				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PA^^^^||19350409|M|P8^^^^^~DXL^TEST^^^^||123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C^^^^^^20171103^20171104||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008|||||||||\r"
+				+ "PV1|1|||||||||||||||||SC VETERAN\r"
+				+ "ZCT|1|DXL^EMERGENCY|Brother|123 Emergency St^Apt 111^Madison^WI^^^^|(865)776-0002\r"
+				+ "ZEL|1|SC LESS THAN 50%||||||||VERIFIED|||||||||||||||||||||||||||YES|20090917\r"
+				+ "ZEL|2|ALLIED VETERAN|||||||||||||||||||||||||||||||||||\r"
+				+ "ZEL|3|WORLD WAR I|||||||||||||||||||||||||||||||||||\r" + "ZEN|1|||UNVERIFIED|||||GROUP 1|||\r"
+				+ "ZSP|1|Y|50|||||||||CLASS II\r";
+		
+		String expected = "MSH|^~\\&|DG-REG-OUT|500^HL7.VEHU.DOMAIN.GOV:5026^DNS|MASS|^dhcp.epic.com:5106^DNS|20171010163409-0500||ADT^A31|500 9406|T|2.4|||AL|NE\r"
+				+ "PID|1||3^^^USVHA^IEN~10108^^^USVHA^NI||DXL^PA||19350409|M|P8~DXL^TEST||123 Conf Street^Addr Line 2^Knoxville^TN^37865^^C||(222)555-8235^^P^DXLTEST@email.com|(222)555-7720|||||666000008\r"
+				+ "NK1|1||123 Emergency St Apt 111 Madison WI\r"
+				+ "PV1|1|||||||||||||||||SC VETERAN\r"
+				+ "ZFY|SERVICE CONNECTED|ACTIVE|SERVICE CONNECTED|50% Service Connected\r"
+				+ "ZEL|SC LESS THAN 50%~ALLIED VETERAN~WORLD WAR I|CLASS II|GROUP 1|UNVERIFIED|YES|20090917\r";
+		
+		svc.xsltName = "ADT_A08";
+		JmsResponse<String> response = svc.transformPipeMessage(pipeMsg);
+		String output = response.getResponse();
+		LOG.debug(output);
+		assertEquals(expected, output);
+	}
+
+	@Test
+	// Patient Sensitivity Flag (ORU^R01)
+	// Message specific delimiters use instead !<>/$ of the standard |^~\&
+	public void testDLUMessage8() throws HL7Exception, MicroserviceException {
+		String pipeMsg = "MSH!<>/$!DG-REG-OUT!500<HL7.VEHU.DOMAIN.GOV:5026<DNS!MASS!<dhcp.epic.com:5106<DNS!20170914151436-0500!!ORU<R01<!500 8207!T<!2.4!!!AL!NE\r"
+				+ "PID!1!!3<<<USVHA<IEN>10108<<<USVHA<NI!!DXL<PATIENT<<<<!!19350407!M!P8<<<<<>DXL<TEST<<<<!!Line 1<LINE 2<SEYMOUR<TN<37865<<BA<>123 Conf Street<Addr Line 2<Knoxville<TN<37865<<C<!!(222)555-8235<<P<DXLTEST@email.com!(222)555-7720!!!!!666000008\r"
+				+ "OBR!1!!!SENSITIVITY\r" 
+				+ "OBX!1!ST!Status!!ACTIVE\r";
+		
+		String expected = "MSH!<>/$!DG-REG-OUT!500<HL7.VEHU.DOMAIN.GOV:5026<DNS!MASS!<dhcp.epic.com:5106<DNS!20170914151436-0500!!ADT<A31!500 8207!T!2.4!!!AL!NE\r"
+				+ "PID!1!!3<<<USVHA<IEN>10108<<<USVHA<NI!!DXL<PATIENT!!19350407!M!P8>DXL<TEST!!Line 1<LINE 2<SEYMOUR<TN<37865<<BA>123 Conf Street<Addr Line 2<Knoxville<TN<37865<<C!!(222)555-8235<<P<DXLTEST@email.com!(222)555-7720!!!!!666000008\r"
+				+ "ZFY!SENSITIVITY!ACTIVE!SENSITIVITY\r";
+
+		
+		svc.xsltName = "ORU_R01";
+		JmsResponse<String> response = svc.transformPipeMessage(pipeMsg);
+		String output = response.getResponse();
+		LOG.debug(output);
+		assertEquals(expected, output);
+	}
+	
 }

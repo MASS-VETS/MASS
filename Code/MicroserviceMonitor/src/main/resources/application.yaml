@@ -9,76 +9,105 @@ spring:
       enabled: false
 
 monitor:
-  rate: " */5 * * * * * " 
+  startWait: 0
+  server: localhost
+  rate: " */5 * * * * * "
+  keyStore: 
+    keyStoreType: jks
+    keyStore: C:\Vista\flatfile\files\epic31921.jks
+    keyStorePassword: 123456
+  trustStore: 
+    keyStoreType: jks
+    keyStore: C:\Program Files\Java\jdk1.8.0_151\jre\lib\security\cacerts
+    keyStorePassword: accesscode
   jms: 
-    uri: 8161/api/jolokia/read
+    port: 8161
+    path: /api/jolokia/read
     username: admin
     password: admin
   messagedb:
-    url: 5001
+    port: 5001
   interfaces:
     - 
       name: Scheduling INCOMING
       receiver: 
-        url: 5100
+        port: 5100
+        useSsl: true
       sender: 
-        url: 5110
+        port: 5110
     - 
       name: Errors
       receiver: 
-        url: 5200
+        port: 5200
+        useSsl: true
       sender: 
-        url: 5210
+        port: 5210
     - 
       name: Orders
       receiver: 
-        url: 5300
+        port: 5300
+        useSsl: true
       sender: 
-        url: 5310
+        port: 5310
     - 
       name: Scheduling
       receiver: 
-        url: 5400
+        port: 5400
+        useSsl: true
       sender: 
-        url: 5410
+        port: 5410
     - 
       name: Demographics ADT
       receiver: 
-        url: 5500
+        port: 5500
+        useSsl: true
       sender: 
-        url: 5510
+        port: 5510
       transform: 
-        url: 5505
+        port: 5505
     - 
       name: Demographics ORU
       receiver: 
-        url: 5600
+        port: 5600
+        useSsl: true
       sender: 
-        url: 5610
+        port: 5610
       transform: 
-        url: 5605
+        port: 5605
     - 
       name: PCMM Query Full
       receiver: 
-        url: 8433/adapter/filetransferservice/getter
+        port: 8433
+        path: /adapter/filetransferservice/getter
+        useSsl: true
     - 
       name: PCMM Query Delta
       receiver: 
-        url: 8434/adapter/filetransferservice/getter
+        port: 8434
+        path: /adapter/filetransferservice/getter
+        useSsl: true
     - 
       name: PCMM Query Status
       receiver: 
-        url: 8435/adapter/filetransferservice/getter
+        port: 8435
+        path: /adapter/filetransferservice/getter
+        useSsl: true
     - 
       name: PCMM Get File
       receiver: 
-        url: 8436/adapter/filetransferservice/getter
+        port: 8436
+        path: /adapter/filetransferservice/getter
+        useSsl: true
     - 
       name: AudioCare
       receiver: 
-        url: 8533/adapter/filetransferservice/getter
+        port: 8533
+        path: /adapter/filetransferservice/getter
+        useSsl: true
       sender: 
-        url: 8533/adapter/filetransferservice/sender
+        port: 8533
+        path: /adapter/filetransferservice/sender
+        useSsl: true
   email:
     fromAddress: thecloud19791979@gmail.com
     toAddress: sleader@epic.com
@@ -87,6 +116,10 @@ monitor:
     host: smtp.gmail.com
     port: 465
   alerts:
+    -
+      name: sqlQ
+      queueMax: 20
+      consumerMin: 1
     -
       name: demogADTSndQ
       queueMax: 20
@@ -118,6 +151,6 @@ monitor:
     -
       name: schedSndQ
       queueMax: 20
-      consumerMin: 1
+      consumerMin: 2
   timeBetweenAlerts: 10
 ---

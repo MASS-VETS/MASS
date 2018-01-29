@@ -1,0 +1,24 @@
+#!/bin/bash
+
+#descriptive names for incoming params
+configFile=$1
+
+#environment specific config
+#sets all cfg* variables
+source $configFile
+
+
+#--- DOCKER CONTAINER: PCMM Query Full
+cmd/DockerRunFileXfer $configFile PCMM_query_full_c 8433 FDD64944-665D-4AAD-9C8A-BAADC496AF2C cfgPcmmQueryFullDestGet
+
+#--- DOCKER CONTAINER: PCMM Query Delta
+cmd/DockerRunFileXfer $configFile PCMM_query_delta_c 8434 FDD64944-665D-4AAD-9C8A-BAADC496AF2C cfgPcmmQueryDeltaDestGet
+
+#--- DOCKER CONTAINER: PCMM Query Status
+cmd/DockerRunFileXfer $configFile PCMM_query_status_c 8435 FDD64944-665D-4AAD-9C8A-BAADC496AF2C cfgPcmmQueryStatusDestGet
+
+#--- DOCKER CONTAINER: PCMM Get File
+cmd/DockerRunFileXfer $configFile PCMM_get_file_c 8436 FDD64944-665D-4AAD-9C8A-BAADC496AF2C cfgPcmmFileGetDestGet
+
+#--- DOCKER CONTAINER: AudioCare Get and Post
+cmd/DockerRunFileXfer $configFile AC_get_post_c 8533 29F55FB8-BE79-431A-9D33-7598F26D6582 cfgAcDestGet cfgAcDestPost

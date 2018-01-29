@@ -1,18 +1,21 @@
 #!/bin/bash
 #--- DOCKER CONTAINER: SQL
+nm="sql"
 
 #descriptive names for incoming params
-amqBroker=$1
-sqlUrl=$2
-sqlLogin=$3
-sqlPwd=$4
+configFile=$1
 
-#javaOpts="-Xms300m -Xmx300m"
-#gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseParallelGC -XX:NewRatio=3 -XX:ParallelGCThreads=8 -XX:+UseCGroupMemoryLimitForHeap -XX:+ShrinkHeapInSteps"
-#gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseG1GC"
 
-docker run -d -p 1433:1433 -p 5001:5001 --memory="600m" --restart unless-stopped\
- -e JAVA_OPTIONS=$javaOpts -e GC_OPTIONS=$gcOpts\
- --name sql_c sql_i\
+#environment specific config
+#sets all cfg* variables
+source $configFile
+source DockerOpts
+
+
+docker run -d\
+ ${containOpts[*]}\
+ -p 1433:1433 -p 5001:5001\
+ --name ${nm}_c sql_i\
  --server.port=5001\
- --jms.inputQ=sqlQ --spring.datasource.url=$sqlUrl --spring.activemq.broker-url=$amqBroker --spring.datasource.username=$sqlLogin --spring.datasource.password=$sqlPwd
+ --jms.inputQ=sqlQ --spring.datasource.url=$cfgSqlUrl --spring.datasource.username=$cfgSqlLogin --spring.datasource.password=$cfgSqlPwd --database.pingonstartup=true\
+ ${miscOpts[*]}

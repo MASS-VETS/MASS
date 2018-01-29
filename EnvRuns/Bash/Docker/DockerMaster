@@ -20,44 +20,53 @@ fi
 source $configFile
 
 
+#--- Copy sample messages to the testing host folder
+echo "*** Copy samplemessages to ${cfgHostPath}/testing"
+cp -R samplemessages/. ${cfgHostPath}/testing
+
+
 #Stop all Docker Containers
+echo "*** Stop all Docker Containers"
 cmd/DockerStopC
 
-#Remove all hammer containers (so that they don't get restared below)
-#--- Remove all hammer containers
-containers=$(docker ps -q -a -f name=hammer)
-if [ ${#containers} -gt 0 ] ; then
-	docker rm -f $containers
-fi
 
 if [ $reConfig -gt 0 ] ; then
-	#Remove all containers (except ActiveMQ)
+	echo "*** Remove all Docker Containers"
+	#Remove all containers
 	cmd/DockerRmvC
+else
+	#Remove all hammer and nail containers (so that they don't get restarted below)
+	echo "*** Remove hammer and nail Containers"
+	#--- Remove hammer and nail containers
+	containers=$(docker ps -q -a -f name=hammer -f name=nail)
+	if [ ${#containers} -gt 0 ] ; then
+		docker rm -f $containers
+	fi
 fi
+
 
 #delete all docker images and rebuild them, but only if asked to
 if [ $rebuildI -gt 0 ] ; then
-	#remove Docker container ActiveMQ (losing all queue entries)
-	cmd/DockerRmvCAmq
+	echo "*** Delete all Docker Images"
 	#Clear all Docker Images
 	cmd/DockerClearI
 	#Build docker images
 	cmd/DockerBuild
-	#reRun Docker container ActiveMQ (losing all queue entries)
-	cmd/DockerRunAmq
-else
-	#restart Docker container ActiveMQ
-	cmd/DockerStartCAmq
 fi
 
 if [ $reConfig -gt 0 ] ; then
-	#Docker container SQL
-	cmd/DockerRunSql $cfgAmqBroker $cfgSqlUrl $cfgSqlLogin $cfgSqlPwd
-	cmd/DockerRunMon $cfgMonServer
-	cmd/DockerRunFileXfer $cfgAmqBroker $configFile
-	#Docker container all Interface Instances
-	./DockerInts $cfgAmqBroker $configFile $cfgIntDest $cfgIntIndest
+	echo "*** Run SQL Docker Container"
+	cmd/DockerRunSql $configFile
+	echo "*** Run Monitor Docker Container"
+	cmd/DockerRunMon $configFile
+	echo "*** Run File Transfer Docker Containers"
+	./DockerFileXfers $configFile
+	echo "*** Run Interface Docker Containers"
+	./DockerInts $configFile
+	echo "*** Run ActimeMQ Docker Container"
+	cmd/DockerRunAmq $configFile
 else
+	echo "*** Restart all Docker Containers"
 	cmd/DockerStartC
 fi
 

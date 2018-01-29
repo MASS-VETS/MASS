@@ -1,0 +1,79 @@
+#!/bin/bash
+
+#SSL setup
+#called by DockerRunFileXfer and DockerInts
+if [ $cfgUseSSL -gt 0 ] ; then
+    i=0
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.enabled=true"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.client-auth=need"
+	
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store=/hostpath/ssl/${cfgKeystoreName}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store-password=${cfgKeystorePwd}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-password=${cfgKeyPwd}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.key-store-type=JKS"
+	
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store=/hostpath/ssl/${cfgTruststoreName}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-password=${cfgTruststorePwd}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-password=${cfgTrustPwd}"
+	i=$((i+1)); serverSslOpts[$i]="--server.ssl.trust-store-type=JKS"
+	
+	i=0
+	i=$((i+1)); clientSslOpts[$i]="--keystore.enabled=true"
+	i=$((i+1)); clientSslOpts[$i]="--keystore.password=${cfgKeystorePwd}"
+	i=$((i+1)); clientSslOpts[$i]="--keystore.location=/hostpath/ssl/${cfgKeystoreName}"
+	i=$((i+1)); clientSslOpts[$i]="--keystore.type=JKS"
+else
+	serverSslOpts[1]="--server.ssl.enabled=false"
+	clientSslOpts[1]="--keystore.enabled=false"
+	clientSslOpts[2]="--ssl.enabled=false"
+fi
+
+#command line arguments PRIOR to container name
+i=0
+i=$((i+1)); containOpts[$i]="-v ${cfgHostPath}:/hostpath"
+i=$((i+1)); containOpts[$i]="-v ${cfgHostPath}/amq:/data/activemq"
+i=$((i+1)); containOpts[$i]="-e ENV=dev"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS1=$cfgJavaOpts1"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS2=$cfgJavaOpts2"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS3=$cfgJavaOpts3"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS4=$cfgJavaOpts4"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS5=$cfgJavaOpts5"
+#i=$((i+1)); containOpts[$i]="-e JAVA_OPTS6=$cfgJavaOpts6"
+i=$((i+1)); containOpts[$i]="--restart unless-stopped"
+i=$((i+1)); containOpts[$i]="--memory=400m"
+
+
+#command line arguments AFTER container name
+i=0
+i=$((i+1)); miscOpts[$i]="--spring.activemq.broker-url=$cfgAmqBroker"
+i=$((i+1)); miscOpts[$i]="--spring.activemq.packages.trust-all=true"
+
+#kaha 
+#i=$((i+1)); miscOpts[$i]="--spring.activemq.kahaDB.journalDiskSyncStrategy=periodic"
+#i=$((i+1)); miscOpts[$i]="--spring.activemq.kahaDB.preallocationStartegy=zeros"
+
+#pool activemq connections (which gains us cached connections)
+i=$((i+1)); miscOpts[$i]="--spring.activemq.pool.enabled=true"
+i=$((i+1)); miscOpts[$i]="--spring.activemq.pool.max-connections=20"
+i=$((i+1)); miscOpts[$i]="--spring.activemq.pool.create-connection-on-startup=true"
+
+#i=$((i+1)); miscOpts[$i]="--spring.activemq.non-blocking-redelivery=true"
+i=$((i+1)); miscOpts[$i]="--server.tomcat.max-threads=500"
+i=$((i+1)); miscOpts[$i]="--logging.file=/hostpath/logs/app-${nm}.log"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm.ReceiveOverHapiService=ERROR"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.comm.SendAndGetAckService=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.storage.HL7MessageDbService=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.monitoring.MonitorService=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.transforms.TransformService=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.transmit.FileGetterOverHttpClient=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.transmit.FileSenderOverHttpClient=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.gov.va.mass.adapter.core.HttpClientProvider=INFO"
+i=$((i+1)); miscOpts[$i]="--logging.level.org.apache.commons.logging=ERROR"		#set this to TRACE if want to see more of what's going on inside any container
+#i=$((i+1)); miscOpts[$i]="--logging.level.root=TRACE"
+i=$((i+1)); miscOpts[$i]="--logging.level.javax.net.ssl=DEBUG"
+i=$((i+1)); miscOpts[$i]="--logging.level.javax.net=DEBUG"
+
+#i=$((i+1)); miscOpts[$i]="--debug"
+
+# "trace", "debug", "info", "warn", "error" or "off". 
+#i=$((i+1)); miscOpts[$i]="--logging.enabled=/hostpath/logs/app.log"

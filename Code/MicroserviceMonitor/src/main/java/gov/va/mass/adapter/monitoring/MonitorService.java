@@ -1,13 +1,15 @@
 package gov.va.mass.adapter.monitoring;
 
 import java.net.URISyntaxException;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import gov.va.mass.adapter.core.HttpClientProvider;
 import gov.va.mass.adapter.monitoring.config.AlertConfig;
 import gov.va.mass.adapter.monitoring.config.InterfaceConfig;
 import gov.va.mass.adapter.monitoring.config.MicroserviceConfig;
@@ -28,135 +30,105 @@ public class MonitorService {
 	private MonitorConfig config;
 	
 	@Autowired
-	private AlertSpamPreventor spamPreventor;
-	
-	@Autowired
-	RestTemplate restTemplate;
-	
-	@Autowired
 	EmailTemplate emailTemplate;
 	
-	@Value("${start.wait}")
-	private long startWaitSecs;
-
-	@Value("${docker.server}")
-	private String dockerServer;
-
-	private long beganAt = now();
-		
+	@Autowired
+	AlertManager alertManager;
+	
+	private HttpClientProvider clients = new HttpClientProvider();
+	
+	private long beganAt = System.currentTimeMillis() / 1000;
+	
 	@Scheduled(cron = "${monitor.rate}")
-	public void showProperty() throws URISyntaxException {
-
-		//wait to allow all microservices time to start before hitting them for info
-		if (now() - beganAt < startWaitSecs)
-		{
-			log.info("Waiting " + startWaitSecs + " seconds so that monitored microservices may have time to start...");
+	public void monitor() throws URISyntaxException {
+		
+		// wait to allow all microservices time to start before hitting them for info
+		if ((System.currentTimeMillis() / 1000) - beganAt < config.getStartWait()) {
+			log.debug("Waiting {} seconds so that monitored microservices may have time to start...", config.getStartWait());
 			return;
 		}
-
-		MicroserviceStats stats = new MicroserviceStats(restTemplate, serverUrl(config.getMessagedb().getUrl()));
-		log.info("Message db");
-		log.info("   " + stats.toString() + " url: " + serverUrl(config.getMessagedb().getUrl()));
-		checkAlertsForMicroServiceStats(stats, "MessageDB");
-				
-		// poll all the interfaces
+		
+		alertManager.clear();
+		
+		log.debug("Checking DB service");
+		checkMicroService(config.getMessagedb(), "MessageDB");
 		for (InterfaceConfig intf : config.getInterfaces()) {
-			log.info("Interface '" + intf.getName() + "'");
-			checkAlertsForMicroService(intf, intf.getReceiver(), "Receiver");
-			checkAlertsForMicroService(intf, intf.getTransform(), "Transform");
-			checkAlertsForMicroService(intf, intf.getSender(), "Sender");
+			log.debug("Checking interface '{}'", intf.getName());
+			checkMicroService(intf.getReceiver(), intf.getName() + " Reciever");
+			checkMicroService(intf.getTransform(), intf.getName() + " Transform");
+			checkMicroService(intf.getSender(), intf.getName() + " Sender");
 		}
 		
-		// poll activemq
-		BrokerStats bstats = new BrokerStats(restTemplate, serverUrl(config.getJms().getUri()));
-		log.info("ActiveMQ");
-		checkAlertsForBroker(bstats);
-		for (QueueStats q : bstats.queues) {
-			log.info("   " + q.toString());
-			checkAlertsForQueue(q);
-		}
+		log.debug("Checking JMS Broker");
+		checkBroker();
+		
+		alertManager.sendAlertsAsEmails(config.getEmail().getToAddress(), emailTemplate);
 	}
 	
-	private void checkAlertsForBroker(BrokerStats s) {
-		String emailAddress = config.getEmail().getToAddress();
-		if (!s.successfullyPolled) {
-			if (spamPreventor.shouldSendEmail(AlertType.ServiceDown, "JMS Broker")) {
-				emailTemplate.SendMail(emailAddress, "Service Down Alert",
-						getEmailText(AlertType.ServiceDown, "JMS Broker"));
+	private void checkMicroService(MicroserviceConfig microService, String name)
+			throws URISyntaxException {
+		if (microService == null) {
+			return;
+		}
+		String url = microService.fullUri(config.getServer());
+		if (url == null || url.isEmpty()) {
+			return;
+		}
+		CloseableHttpClient client;
+		if (microService.getUseSsl()) {
+			KeyStore keyStore = config.getKeyStore().createKeystore(clients);
+			KeyStore trustStore = config.getTrustStore().createKeystore(clients);
+			if (keyStore != null && trustStore != null) {
+				try {
+					client = clients.getSslTlsClient(keyStore, trustStore, config.getKeyStore().getKeyStorePassword());
+				} catch (GeneralSecurityException e) {
+					log.error("Attempt to check truststore {} for keystore {} caused error.", config.getTrustStore(), config.getKeyStore(), e);
+					client = clients.getSimpleClient();
+				}
+			} else {
+				client = clients.getSimpleClient();
 			}
+		} else {
+			client = clients.getSimpleClient();
 		}
+		MicroserviceStats stats = new MicroserviceStats(client, url);
+		log.debug("{} url: {}", stats.toString() , url);
+		
+		if (!stats.isAlive) {
+			alertManager.raiseAlert(AlertType.ServiceDown, name);
+		}
+		
+		if (stats.runState.equalsIgnoreCase("ErrorCondition")) {
+			alertManager.raiseAlert(AlertType.ServiceStoppedItself, name, stats.errorMessage);
+		}
+		return;
 	}
 	
-	private void checkAlertsForMicroService(InterfaceConfig intf, MicroserviceConfig msConfig, String msName) throws URISyntaxException {
-		String url = msConfig.getUrl();
-		if (url != null) {
-			String serverUrl = serverUrl(url);
-			MicroserviceStats stats = new MicroserviceStats(restTemplate, serverUrl);
-			log.info("   " + stats.toString() + " url: " + serverUrl);
-			checkAlertsForMicroServiceStats(stats, intf.getName() + " Transform");
+	private void checkBroker() throws URISyntaxException {
+		CloseableHttpClient client = clients.getUsrPwdClient(config.getJms().getUsername(), config.getJms().getPassword());
+		BrokerStats stats = new BrokerStats(client, config.getJms().fullUri(config.getServer()));
+		if (!stats.successfullyPolled) {
+			alertManager.raiseAlert(AlertType.ServiceDown, "JMS Broker");
 		}
-	}
-	
-	private void checkAlertsForMicroServiceStats(MicroserviceStats s, String name) {
-		String emailAddress = config.getEmail().getToAddress();
-		if (!s.isAlive && spamPreventor.shouldSendEmail(AlertType.ServiceDown, name)) {
-			emailTemplate.SendMail(emailAddress, "Service Down Alert",
-					getEmailText(AlertType.ServiceDown, name));
-		}
-		if (s.runState.equalsIgnoreCase("ErrorCondition")
-				&& spamPreventor.shouldSendEmail(AlertType.ServiceStoppedItself, name)) {
-			emailTemplate.SendMail(emailAddress, "Service Error Alert",
-					getEmailText(AlertType.ServiceStoppedItself, name, s.errorMessage));
-		}
-	}
-	
-	
-	
-	private void checkAlertsForQueue(QueueStats q) {
-		String emailAddress = config.getEmail().getToAddress();
-		boolean found = false;
-		for (AlertConfig alert : config.getAlerts()) {
-			if (!(q.name.equals(alert.getName())))
-				continue;
-			found = true;
-			// check to see if messages are backed up
-			if (greaterThanThreshold(q.queueSize, alert.getQueueMax())
-					&& spamPreventor.shouldSendEmail(AlertType.QueueSizeThresholdReached, "Q" + q.name)) {
-				emailTemplate.SendMail(emailAddress, "Queue Depth Alert",
-						getEmailText(AlertType.QueueSizeThresholdReached, q.name, q.queueSize, alert.getQueueMax()));
+		for (QueueStats q : stats.queues) {
+			log.debug(q.toString());
+			boolean found = false;
+			for (AlertConfig alert : config.getAlerts()) {
+				if (!(q.name.equals(alert.getName())))
+					continue;
+				found = true;
+				// check to see if messages are backed up
+				if (greaterThanThreshold(q.queueSize, alert.getQueueMax())) {
+					alertManager.raiseAlert(AlertType.QueueSizeThresholdReached, q.name, q.queueSize, alert.getQueueMax());
+				}
+				// check to make sure someone is listening to this queue
+				if (lessThanThreshold(q.consumerCount, alert.getConsumerMin())) {
+					alertManager.raiseAlert(AlertType.NotEnoughConsumersOnQueue, q.name, alert.getConsumerMin(), q.consumerCount);
+				}
 			}
-			// check to make sure someone is listening to this queue
-			if (lessThanThreshold(q.consumerCount, alert.getConsumerMin())
-					&& spamPreventor.shouldSendEmail(AlertType.NotEnoughConsumersOnQueue, "Q" + q.name)) {
-				emailTemplate.SendMail(emailAddress, "Consumer Count Alert",
-						getEmailText(AlertType.NotEnoughConsumersOnQueue, q.name, alert.getConsumerMin(), q.consumerCount));
+			if (!found) {
+				alertManager.raiseAlert(AlertType.UnmonitoredQueue, q.name);
 			}
-		}
-		if (!found && spamPreventor.shouldSendEmail(AlertType.UnmonitoredQueue, "Q" + q.name)) {
-			emailTemplate.SendMail(emailAddress, "Unmonitored Queue Alert",
-					getEmailText(AlertType.UnmonitoredQueue, q.name));
-		}
-	}
-	
-	private String getEmailText(AlertType type, String entity, Object... args) {
-		switch (type) {
-		case NotEnoughConsumersOnQueue:
-			return String.format(
-					"Queue %s requires at least %d consumer(s), but only has %d.", entity, args[0], args[1]);
-		case QueueSizeThresholdReached:
-			return String.format(
-					"Queue %s depth is %d. Threshold: %d.", entity, args[0], args[1]);
-		case ServiceDown:
-			return String.format(
-					"Service %s is not responding.", entity);
-		case ServiceStoppedItself:
-			return String.format(
-					"Service %s has stopped and is waiting for error resolution.\n\nError:\n%s", args[0]);
-		case UnmonitoredQueue:
-			return String.format(
-					"Queue %s was not configured in the monitor.", entity);
-		default:
-			return "An unknown error has occurred within the adapter.";
 		}
 	}
 	
@@ -172,13 +144,5 @@ public class MonitorService {
 			return false;
 		}
 		return value < threshold;
-	}
-	
-	private String serverUrl(String url) {
-		return this.dockerServer + ":" + url + "/";	
-	}
-		
-	protected long now() {
-		return System.currentTimeMillis() / 1000;
 	}
 }

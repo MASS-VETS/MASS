@@ -3,16 +3,7 @@ package gov.va.mass.adapter.monitoring.config;
 /**
  * @author avolkano
  */
-public class JmsBrokerConfig {
-	private String uri;
-	
-	public String getUri() {
-		return this.uri;
-	}
-	
-	public void setUri(String uri) {
-		this.uri = uri;
-	}
+public class JmsBrokerConfig extends MicroserviceConfig {
 	
 	private String username;
 	

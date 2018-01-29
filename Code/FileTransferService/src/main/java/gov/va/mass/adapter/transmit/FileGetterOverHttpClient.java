@@ -18,8 +18,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -57,7 +55,7 @@ public class FileGetterOverHttpClient extends MicroserviceBase {
 		tempFile = stream2file(is);
 		byte[] filebytes = FileCopyUtils.copyToByteArray(tempFile);
 		
-		logger.debug("File saved of size " + filebytes.length);
+		logger.debug("File saved of size {}", filebytes.length);
 		
 		// Send to the database
 		if (databaseQueue != null && !databaseQueue.isEmpty()) {
@@ -75,7 +73,7 @@ public class FileGetterOverHttpClient extends MicroserviceBase {
 			mmsg.put("dateTime", dateTime);
 			
 			jmsMsgTemplate.convertAndSend(databaseQueue, mmsg);
-			logger.info("Forwarded to queue = " + databaseQueue);
+			logger.info("Forwarded to queue = {}", databaseQueue);
 		}
 		
 		return tempFile;
@@ -105,10 +103,6 @@ public class FileGetterOverHttpClient extends MicroserviceBase {
 		
 		try {
 			httpClient = tlsHttpClientProvider.getTLSHttpClient(); // builder.build();
-			if (httpClient == null) {
-				this.state.serviceFailed();
-				return new ResponseEntity<>(HttpStatus.NOT_IMPLEMENTED);
-			}
 			httpGet = new HttpGet(DESTINATION_URL_GET);
 			
 			httpGet.setHeader(HttpHeaders.ACCEPT, "text/csv");
@@ -138,9 +132,6 @@ public class FileGetterOverHttpClient extends MicroserviceBase {
 			e.printStackTrace();
 			this.state.serviceFailed();
 		} catch (IOException e) {
-			e.printStackTrace();
-			this.state.serviceFailed();
-		} catch (Exception e) {
 			e.printStackTrace();
 			this.state.serviceFailed();
 		} finally {

@@ -1,0 +1,17 @@
+#!/bin/bash
+#descriptive names for incoming params
+configFile=$1
+nm=$2
+rcvport=$3
+
+#environment specific config
+#sets all cfg* variables
+source ../$configFile
+
+#--- DOCKER CONTAINER for a single interface running nail
+docker run -d\
+  -v ${cfgHostPath}:/hostpath\
+  --memory="600m"\
+  -p ${rcvport}:${rcvport} --name nail_${nm}_c nail_i\
+  --server.port=${rcvport}\
+  --server.ssl.enabled=${cfgUseSSL}

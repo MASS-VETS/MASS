@@ -53,7 +53,7 @@ import org.springframework.web.client.RestTemplate;
 public class TLSHttpClientProvider {
 
 	@Value("${keystore.enabled}")
-	private boolean TLS_ENABLED = true;
+	private boolean TLS_ENABLED = false;
 
 	@Value("${keystore.location}")
 	private String KEYSTORE_LOCATION;// = "C:/work/1twowayssl/adapterkeys/adapterks.jks"
@@ -75,15 +75,7 @@ public class TLSHttpClientProvider {
 
 	public CloseableHttpClient getTLSHttpClient ( ) {
 		if (httpClient == null ) {
-			SSLContext sslContext = null;
-			// If TLS is enabled.
-			if (TLS_ENABLED) {
-				sslContext = configureSSLContext();
-				if (sslContext == null) {
-					return null;
-				}
-			}
-
+			SSLContext sslContext = configureSSLContext();
 			HttpClientBuilder builder = prepareHttpClientBuilder(sslContext);
 			httpClient = builder.build() ;
 		}
@@ -104,22 +96,25 @@ public class TLSHttpClientProvider {
 		KeyStore keyStore = null;
 		SSLContext sslContext = null;
 
-		try {
-			keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
-			InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
-			keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());
-			logger.debug("Key store has " + keyStore.size() + " keys");
-		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			logger.error("Problem with keystore " + e.toString());
-		}
-
-		try {
-			sslContext = SSLContexts.custom().loadKeyMaterial(keyStore, KEYSTORE_PASSWORD.toCharArray())
-					.loadTrustMaterial(new TrustSelfSignedStrategy()).setProtocol("TLSv1") // TODO: TLS version needs to
-																							// be uniform
-					.build();
-		} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
-			logger.error("Could not create SSLContext " + e.toString());
+		// If TLS is enabled.
+		if (TLS_ENABLED) {
+			try {
+				keyStore = KeyStore.getInstance(KEYSTORE_TYPE);
+				InputStream keyStoreInput = new FileInputStream(KEYSTORE_LOCATION);
+				keyStore.load(keyStoreInput, KEYSTORE_PASSWORD.toCharArray());
+				logger.debug("Key store has {} keys", keyStore.size());
+			} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+				logger.error("Problem with keystore.", e);
+			}
+	
+			try {
+				sslContext = SSLContexts.custom().loadKeyMaterial(keyStore, KEYSTORE_PASSWORD.toCharArray())
+						.loadTrustMaterial(new TrustSelfSignedStrategy()).setProtocol("TLSv1") // TODO: TLS version needs to
+																								// be uniform
+						.build();
+			} catch (KeyManagementException | UnrecoverableKeyException | NoSuchAlgorithmException | KeyStoreException e) {
+				logger.error("Could not create SSLContex.", e);
+			}
 		}
 		
 		return sslContext;
@@ -137,7 +132,7 @@ public class TLSHttpClientProvider {
 		if (TLS_ENABLED) {
 			SSLConnectionSocketFactory sslConnectionFactory = null;
 			String env = System.getenv("ENV") ; 
-			logger.debug("ssl conn fact. creation " + env);
+			logger.debug("ssl conn fact. creation {}", env);
 			if (env.equals("prod") || env.equals("preprod") || env.equals("accept") ) {
 				sslConnectionFactory = new SSLConnectionSocketFactory(sslContext,
 						BrowserCompatHostnameVerifier.INSTANCE); 

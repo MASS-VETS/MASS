@@ -2,7 +2,7 @@ package gov.va.mass.adapter.monitoring.stats;
 
 import java.net.URISyntaxException;
 import javax.json.JsonObject;
-import org.springframework.web.client.RestTemplate;
+import org.apache.http.impl.client.CloseableHttpClient;
 
 /**
  * @author avolkano
@@ -22,9 +22,9 @@ public class MicroserviceStats {
 	
 	// {"status":"pulseSuccess","serviceName":"ReceiveOverHapiService","pastTime":1511672356,"currentTime":1511694073,"lastCalledTime":-1,"serviceIn":0,"serviceOutSuccess":0,"serviceOutFailed":0}
 	
-	public MicroserviceStats(RestTemplate restTemplate, String baseUri) throws URISyntaxException {
+	public MicroserviceStats(CloseableHttpClient client, String baseUri) throws URISyntaxException {
 		String path = "heartbeat/pulse";
-		JsonObject pulse = RestJsonHelper.getObjectAtPath(restTemplate, baseUri, path);
+		JsonObject pulse = RestJsonHelper.getObjectAtPath(client, baseUri, path);
 		
 		if (pulse.isEmpty()) {
 			return; // couldn't ping the microservice

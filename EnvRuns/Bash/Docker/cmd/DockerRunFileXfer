@@ -1,32 +1,27 @@
 #!/bin/bash
 #descriptive names for incoming params
-amqBroker=$1
-configFile=$2
+configFile=$1
+nm=$2
+port=$3
+intGuid=$4
+desturlGet=$5
+desturlPost=$6
+
+
+if ! [ -z $destUrlPost ]; then
+  postArg=--destination.url.post=$desturlPost
+fi
+
 
 #environment specific config
 #sets all cfg* variables
 source $configFile
-
-if [ $cfgUseSSL -gt 0 ] ; then
-	serverSslOpts[1]="--server.ssl.key-store=/keystore/${cfgKeystoreName}"
-	serverSslOpts[2]="--server.ssl.key-store-password=${cfgKeystorePwd}"
-	serverSslOpts[3]="--server.ssl.key-password=${cfgServerSslKeyPwd}"
-	serverSslOpts[4]="--server.ssl.keyStoreType=JKS"
-	serverSslOpts[5]="--server.ssl.client-auth=need"
-	clientSslOpts[1]="--keystore.enabled=true"
-	clientSslOpts[2]="--keystore.password=$cfgKeystorePwd"
-	clientSslOpts[3]="--keystore.type=JKS" 
-	clientSslOpts[4]="--keystore.location=/keystore/$cfgKeystoreName"
-else
-	serverSslOpts=""
-	clientSslOpts[1]="--keystore.enabled=false"
-fi
-
+source DockerOpts
 
 
 #javaOpts="-Xms300m -Xmx300m"
-javaOpts="-Xms75m"
-javaOpts="-XX:NativeMemoryTracking=summary"
+#javaOpts="-Xms75m"
+#javaOpts="-Dlog4j2.configuration=/logs/log4j2-spring.xml"
 #gcOpts="-XX:+PrintFlagsFinal -XX:+PrintGCDetails -XX:+UseParallelGC -XX:NewRatio=3 -XX:ParallelGCThreads=8 -XX:+UseCGroupMemoryLimitForHeap -XX:-ShrinkHeapInSteps\
 # -XX:MetaspaceSize=200m -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=25"
 #this just crashes the process with 'too many errors'
@@ -34,58 +29,12 @@ javaOpts="-XX:NativeMemoryTracking=summary"
 
 
 
-intNm="PCMM"
-intGuid=FDD64944-665D-4AAD-9C8A-BAADC496AF2C
-
-#--- DOCKER CONTAINER: PCMM Query Full
-port=8433
-nm=${intNm}_query_full_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i\
- --server.port=$port --destination.url.get=$cfgPcmmQueryFullDestGet\
- ${clientSslOpts[*]}
-
-#--- DOCKER CONTAINER: PCMM Query Delta
-port=8434
-nm=${intNm}_query_delta_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=$cfgPcmmQueryDeltaDestGet\
- ${clientSslOpts[*]}
- 
-#--- DOCKER CONTAINER: PCMM Query Status
-port=8435
-nm=${intNm}_query_status_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --destination.url.get=$cfgPcmmQueryStatusDestGet\
- ${clientSslOpts[*]}
-
- #--- DOCKER CONTAINER: PCMM Get File
-port=8436
-nm=${intNm}_get_file_c
-docker run -e ENV='dev' -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=$cfgPcmmFileGetDestGet\
- ${clientSslOpts[*]}
-
-
-
-
-
-intNm="AC"
-
-#--- DOCKER CONTAINER: AudioCare Get and Post
-port=8533
-intGuid=29F55FB8-BE79-431A-9D33-7598F26D6582
-nm=${intNm}_get_post_c
-docker run -e ENV='dev' -e MALLOC_ARENA_MAX=4 -e JAVA_OPTIONS=$javaOpts -v ${cfgHostKeystorePath}:/keystore\
- -d -p ${port}:${port} --memory="400m" --restart unless-stopped --name ${nm} fxfer_i --server.port=$port\
- --jms.databaseQ=sqlQ --interface.id=$intGuid --spring.activemq.broker-url=$amqBroker\
- --destination.url.get=$cfgAcDestGet\
- --destination.url.post=$cfgAcDestPost\
+#--- DOCKER CONTAINER: File Transfer
+docker run -d\
+ ${containOpts[*]}\
+ -p ${port}:${port} --name ${nm} fxfer_i\
+ --server.port=$port --jms.databaseQ=sqlQ --interface.id=$intGuid --destination.url.get=$desturlGet $postArg\
  ${clientSslOpts[*]}\
- ${serverSslOpts[*]}
- 
+ ${serverSslOpts[*]}\
+ ${miscOpts[*]}
 
